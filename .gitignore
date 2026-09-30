@@ -1,0 +1,41 @@
+# Segredos — NUNCA versionar
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Banco de dados local (SQLite de teste)
+*.db
+*.sqlite3
+*.sqlite
+
+# Node / build frontend
+node_modules/
+.next/
+dist/
+build/
+npm-debug.log*
+yarn-error.log*
+
+# Editores / sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Estado de ferramentas de agentes (sessões e índices locais)
+.codegraph/
+.omc/
+.omo/
