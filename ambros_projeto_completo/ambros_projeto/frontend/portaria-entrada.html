@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Portaria - Entrada</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js" defer></script>
+<style>
+  :root{--sidebar-bg:#1b2434;--sidebar-bg2:#141c29;--sidebar-hover:#243044;--brand-blue:#2f6bff;--text-muted:#8a93a6;--content-bg:#f4f6f9;--card-radius:12px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:260px;flex-shrink:0;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;transition:transform .25s ease;z-index:1040}
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{display:flex;align-items:center;gap:12px;padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .profile img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:15px}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10.5px;letter-spacing:1.5px;color:var(--text-muted);padding:16px 18px 6px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 18px;color:#c1c9d6;font-size:14.5px;cursor:pointer}
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item .chev{margin-left:auto;font-size:12px;color:var(--text-muted);transition:transform .2s}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:0 10px;padding:11px 12px}
+  .subnav{display:none;padding:2px 0 6px}
+  .subnav.open{display:block}
+  .subnav .nav-item{padding-left:44px;font-size:13.5px}
+  .subnav .nav-item.active{background:transparent;color:#6ea3f5;margin:0;padding-left:44px}
+  .subnav .nav-item i.lead{font-size:8px}
+  .sidebar-foot{padding:18px;border-top:1px solid rgba(255,255,255,.06);margin-top:8px}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:14px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11.5px;line-height:1.5}
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:400}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:20px}
+  .bell{position:relative;font-size:19px;color:#6b7280;cursor:pointer}
+  .bell .badge{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;font-size:10px;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+  .topuser{display:flex;align-items:center;gap:10px}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+  .content{padding:24px;flex:1}
+  .page-head{margin-bottom:20px}
+  .page-head h4{margin:0;color:#3b4453;font-weight:600}
+  .breadcrumb-mini{font-size:13px;color:#9aa2b1}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px}
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:22px}
+  .panel h6{font-size:16px;font-weight:600;color:#3b4453;margin:0 0 16px}
+  .seg{display:flex;gap:10px;margin-bottom:20px}
+  .seg button{flex:1;padding:12px;border:1.5px solid #e3e7ee;background:#fff;border-radius:10px;font-size:14px;font-weight:600;color:#54607a;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .seg button.on{border-color:var(--brand-blue);background:#eef4ff;color:var(--brand-blue)}
+  .form-label{font-size:13px;font-weight:600;color:#54607a;margin-bottom:4px}
+  .search-big{position:relative;margin-bottom:18px}
+  .search-big i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9aa2b1;font-size:18px}
+  .search-big input{width:100%;padding:14px 14px 14px 44px;border:1px solid #e3e7ee;border-radius:10px;font-size:15px}
+  .found{border:1px solid #e3e7ee;border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:18px;background:#fafbfd}
+  .found img{width:54px;height:54px;border-radius:50%;object-fit:cover}
+  .found .fn{font-weight:600;color:#3b4453}
+  .found .fm{font-size:13px;color:#8a93a6}
+  .btn-register{width:100%;padding:14px;font-size:15px;font-weight:600}
+  .clock{text-align:center;padding:10px 0 4px}
+  .clock .time{font-size:40px;font-weight:700;color:#3b4453;line-height:1}
+  .clock .date{font-size:13px;color:#9aa2b1;margin-top:4px}
+  .recent-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f4f6f8}
+  .recent-item:last-child{border-bottom:none}
+  .recent-item .ri-ico{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:#fff;flex-shrink:0}
+  .ri-in{background:#22c55e}.ri-out{background:#14b8a6}
+  .recent-item .rn{font-weight:600;color:#3b4453;font-size:14px}
+  .recent-item .rm{font-size:12.5px;color:#9aa2b1}
+  .recent-item .rt{margin-left:auto;font-size:13px;color:#8a93a6;font-weight:600}
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1}
+  .footer .heart{color:#ef4444}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+  @media(max-width:992px){.grid{grid-template-columns:1fr}}
+  @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.show{transform:translateX(0)}.main{margin-left:0}.overlay.show{display:block}.topuser .tn,.topuser .th{display:none}.footer{flex-direction:column;gap:6px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div><div class="name">AMBROS</div><div class="sub">CONTROLE DE ACESSO</div></div>
+    </div>
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div><div class="pname">Portaria</div><div class="pstatus"><span class="dot"></span>Online</div></div>
+    </div>
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <a class="nav-item" href="ambros-dashboard.html"><i class="bi bi-house-door-fill lead"></i> Dashboard</a>
+    <div class="nav-item" data-toggle="cadastros"><i class="bi bi-person-vcard-fill lead"></i> Cadastros <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="cadastros">
+      <a class="nav-item" href="moradores.html"><i class="bi bi-circle lead"></i> Moradores</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Visitantes</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Funcionários</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Prestadores de Serviço</a>
+    </div>
+    <div class="nav-item" data-toggle="portaria"><i class="bi bi-door-open-fill lead"></i> Portaria <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav open" id="portaria">
+      <a class="nav-item active" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Entrada</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Saída</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Consulta Rápida</a>
+    </div>
+    <div class="nav-item" data-toggle="veiculos"><i class="bi bi-car-front-fill lead"></i> Veículos <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="veiculos">
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Moradores</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Visitantes</a>
+    </div>
+    <div class="nav-item" data-toggle="relatorios"><i class="bi bi-bar-chart-fill lead"></i> Relatórios <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="relatorios">
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Acessos</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Visitantes</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Veículos</a>
+    </div>
+    <div class="nav-item" data-toggle="config"><i class="bi bi-gear-fill lead"></i> Configurações <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="config">
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Geral</a>
+      <a class="nav-item" href="#"><i class="bi bi-circle lead"></i> Usuários</a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="t"><i class="fa-solid fa-shield-halved" style="margin-right:6px"></i>AMBROS</div>
+      <div class="s">Sistema de Controle de Acesso<br>Versão 1.0.0</div>
+    </div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <span class="title">Portaria — Entrada</span>
+      <div class="right">
+        <div class="bell"><i class="bi bi-bell-fill"></i><span class="badge">5</span></div>
+        <div class="topuser">
+          <div style="text-align:right"><div class="tn">Portaria</div><div class="th">Bom dia!</div></div>
+          <img src="https://i.pravatar.cc/80?img=12" alt="user">
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <h4>Registrar Entrada</h4>
+        <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Dashboard</a> / Portaria / Entrada</div>
+      </div>
+
+      <div class="grid">
+        <!-- ===== Registro ===== -->
+        <div class="panel">
+          <h6>Quem está entrando?</h6>
+          <div class="seg">
+            <button class="on" id="btMorador"><i class="bi bi-house-door"></i> Morador</button>
+            <button id="btVisitante"><i class="bi bi-person"></i> Visitante</button>
+          </div>
+
+          <div class="search-big">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Buscar por nome, CPF ou placa do veículo...">
+          </div>
+
+          <div class="found">
+            <img src="https://i.pravatar.cc/80?img=8">
+            <div>
+              <div class="fn">João Silva <span class="badge text-bg-primary ms-1">Morador</span></div>
+              <div class="fm">Bloco 10 / Apt 201 · Vaga V-078 · Veículo XYZ9F87</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6"><label class="form-label">Veículo</label>
+              <select class="form-select"><option>A pé (sem veículo)</option><option selected>XYZ9F87 — vaga V-078</option></select></div>
+            <div class="col-md-6"><label class="form-label">Vaga</label><input class="form-control" value="V-078" readonly></div>
+            <div class="col-12"><label class="form-label">Observação (opcional)</label><input class="form-control" placeholder="Ex.: acompanhado de entregador"></div>
+          </div>
+
+          <button class="btn btn-success btn-register"><i class="bi bi-box-arrow-in-right"></i> Confirmar entrada</button>
+        </div>
+
+        <!-- ===== Relógio + recentes ===== -->
+        <div>
+          <div class="panel mb-3">
+            <div class="clock">
+              <div class="time" id="clock">09:41</div>
+              <div class="date">Quarta-feira, 22 de julho de 2026</div>
+            </div>
+          </div>
+          <div class="panel">
+            <h6>Movimentações recentes</h6>
+            <div class="recent-item"><div class="ri-ico ri-in"><i class="bi bi-box-arrow-in-right"></i></div>
+              <div><div class="rn">Carlos Lima</div><div class="rm">Morador · Bloco 05/502</div></div><div class="rt">09:31</div></div>
+            <div class="recent-item"><div class="ri-ico ri-in"><i class="bi bi-box-arrow-in-right"></i></div>
+              <div><div class="rn">José Santos</div><div class="rm">Visitante · visita João Silva</div></div><div class="rt">09:20</div></div>
+            <div class="recent-item"><div class="ri-ico ri-out"><i class="bi bi-box-arrow-right"></i></div>
+              <div><div class="rn">Maria Oliveira</div><div class="rm">Morador · Bloco 08/103</div></div><div class="rt">09:18</div></div>
+            <div class="recent-item"><div class="ri-ico ri-in"><i class="bi bi-box-arrow-in-right"></i></div>
+              <div><div class="rn">João Silva</div><div class="rm">Morador · Bloco 10/201</div></div><div class="rt">09:12</div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso. Todos os direitos reservados.</span>
+      <span>Desenvolvido com <i class="bi bi-heart-fill heart"></i> para seu condomínio</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.nav-item[data-toggle]').forEach(function(item){
+    item.addEventListener('click',function(){
+      var el=document.getElementById(this.dataset.toggle);
+      el.classList.toggle('open');
+      var chev=this.querySelector('.chev');
+      if(chev) chev.style.transform=el.classList.contains('open')?'rotate(180deg)':'rotate(0)';
+    });
+  });
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){sidebar.classList.toggle('show');overlay.classList.toggle('show');});
+  overlay.addEventListener('click',function(){sidebar.classList.remove('show');overlay.classList.remove('show');});
+
+  // Segmented (morador/visitante)
+  var bm=document.getElementById('btMorador'), bv=document.getElementById('btVisitante');
+  bm.addEventListener('click',()=>{bm.classList.add('on');bv.classList.remove('on');});
+  bv.addEventListener('click',()=>{bv.classList.add('on');bm.classList.remove('on');});
+
+  // Relógio ao vivo
+  function tick(){var d=new Date();document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+  tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
