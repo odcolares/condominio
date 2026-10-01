@@ -1,0 +1,258 @@
+{
+  "usuarios": [
+    {
+      "id": 1,
+      "nome": "Administrador",
+      "email": "adm@adm.com",
+      "senha_hash": "123",
+      "perfil": "admin",
+      "ativo": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    }
+  ],
+  "moradores": [
+    {
+      "id": 1,
+      "nome_completo": "Carlos Lima",
+      "cpf": "123.456.789-00",
+      "telefone": "(11) 98765-4321",
+      "whatsapp": "(11) 98765-4321",
+      "bloco": "05",
+      "apartamento": "502",
+      "vinculo": "proprietario",
+      "foto_url": null,
+      "numero_vaga": "V-045",
+      "ativo": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    },
+    {
+      "id": 2,
+      "nome_completo": "Maria Oliveira",
+      "cpf": "987.654.321-00",
+      "telefone": "(11) 91234-5678",
+      "whatsapp": null,
+      "bloco": "08",
+      "apartamento": "103",
+      "vinculo": "inquilino",
+      "foto_url": null,
+      "numero_vaga": "V-112",
+      "ativo": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    },
+    {
+      "id": 3,
+      "nome_completo": "João Silva",
+      "cpf": "456.789.123-00",
+      "telefone": "(11) 99887-7665",
+      "whatsapp": null,
+      "bloco": "10",
+      "apartamento": "201",
+      "vinculo": "proprietario",
+      "foto_url": null,
+      "numero_vaga": "V-078",
+      "ativo": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    }
+  ],
+  "veiculos": [
+    {
+      "id": 1,
+      "placa": "ABC1D23",
+      "modelo": "Onix",
+      "cor": "Prata",
+      "vaga": "V-045",
+      "morador_id": 1,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    },
+    {
+      "id": 2,
+      "placa": "XYZ9F87",
+      "modelo": "HB20",
+      "cor": "Preto",
+      "vaga": "V-078",
+      "morador_id": 3,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    },
+    {
+      "id": 3,
+      "placa": "BRA2E19",
+      "modelo": "Jeep Compass",
+      "cor": "Preto",
+      "vaga": "V-099",
+      "morador_id": 1,
+      "criado_em": "2026-10-01T20:37:16.227Z"
+    }
+  ],
+  "visitantes": [
+    {
+      "id": 3,
+      "nome": "Fernando Souza",
+      "documento": "44.555.666-7",
+      "tipo_documento": "RG",
+      "telefone": "(11) 97711-2233",
+      "foto_url": null,
+      "placa_veiculo": "XYZ1A22",
+      "vaga": null,
+      "bloco": "05",
+      "apartamento": "502",
+      "morador_visitado_id": 1,
+      "agendado_para": null,
+      "presente": false,
+      "criado_em": "2026-10-01T20:37:16.231Z"
+    },
+    {
+      "id": 1,
+      "nome": "José Santos",
+      "documento": "111.222.333-44",
+      "tipo_documento": "CPF",
+      "telefone": null,
+      "foto_url": null,
+      "placa_veiculo": "ABC1D23",
+      "vaga": null,
+      "bloco": "10",
+      "apartamento": "201",
+      "morador_visitado_id": 3,
+      "agendado_para": null,
+      "presente": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    },
+    {
+      "id": 2,
+      "nome": "Ana Paula",
+      "documento": "555.666.777-88",
+      "tipo_documento": "CPF",
+      "telefone": null,
+      "foto_url": null,
+      "placa_veiculo": null,
+      "vaga": null,
+      "bloco": "08",
+      "apartamento": "103",
+      "morador_visitado_id": 2,
+      "agendado_para": null,
+      "presente": true,
+      "criado_em": "2026-10-01T20:37:11.815Z"
+    }
+  ],
+  "acessos": [
+    {
+      "id": 6,
+      "tipo_pessoa": "visitante",
+      "pessoa_id": 3,
+      "nome": "Fernando Souza",
+      "sentido": "saida",
+      "placa_veiculo": "XYZ1A22",
+      "vaga": null,
+      "observacao": "Saída tranquila",
+      "registrado_em": "2026-10-01T20:37:16.234Z"
+    },
+    {
+      "id": 5,
+      "tipo_pessoa": "visitante",
+      "pessoa_id": 3,
+      "nome": "Fernando Souza",
+      "sentido": "entrada",
+      "placa_veiculo": "XYZ1A22",
+      "vaga": null,
+      "observacao": "Visita a Carlos Lima (Bl 05 Apto 502)",
+      "registrado_em": "2026-10-01T20:37:16.231Z"
+    },
+    {
+      "id": 1,
+      "tipo_pessoa": "morador",
+      "pessoa_id": 1,
+      "nome": "Carlos Lima",
+      "sentido": "entrada",
+      "placa_veiculo": "ABC1D23",
+      "vaga": "V-045",
+      "observacao": null,
+      "registrado_em": "2026-10-01T20:27:11.815Z"
+    },
+    {
+      "id": 2,
+      "tipo_pessoa": "visitante",
+      "pessoa_id": 1,
+      "nome": "José Santos",
+      "sentido": "entrada",
+      "placa_veiculo": "ABC1D23",
+      "vaga": null,
+      "observacao": null,
+      "registrado_em": "2026-10-01T20:16:11.815Z"
+    },
+    {
+      "id": 3,
+      "tipo_pessoa": "morador",
+      "pessoa_id": 2,
+      "nome": "Maria Oliveira",
+      "sentido": "saida",
+      "placa_veiculo": null,
+      "vaga": null,
+      "observacao": null,
+      "registrado_em": "2026-10-01T20:14:11.815Z"
+    },
+    {
+      "id": 4,
+      "tipo_pessoa": "morador",
+      "pessoa_id": 3,
+      "nome": "João Silva",
+      "sentido": "entrada",
+      "placa_veiculo": "XYZ9F87",
+      "vaga": "V-078",
+      "observacao": null,
+      "registrado_em": "2026-10-01T20:08:11.815Z"
+    }
+  ],
+  "encomendas": [
+    {
+      "id": 1,
+      "morador_id": 1,
+      "morador_nome": "Carlos Lima",
+      "morador_unidade": "Bloco 05 - Apto 502",
+      "morador_telefone": "(11) 98765-4321",
+      "morador_whatsapp": "(11) 98765-4321",
+      "morador_telegram": "@carloslima",
+      "codigo_rastreio": "BR839210492AA",
+      "transportadora": "Mercado Livre",
+      "tipo_volume": "Caixa Média",
+      "local_armazenamento": "Armário A - Prateleira 2",
+      "observacoes": "Entregue pela van amarela do Mercado Livre",
+      "codigo_retirada": "RET-8421",
+      "status": "pendente",
+      "recebido_em": "2026-10-01T18:37:11.815Z",
+      "recebido_por": "Portaria Central",
+      "retirado_em": null,
+      "retirado_por": null,
+      "notificacao_enviada_whatsapp": true,
+      "notificacao_enviada_telegram": true,
+      "mensagem_aviso": "📦 AMBROS - Encomenda Recebida!\nMorador: Carlos Lima (Bl 05 - Apto 502)\nTransportadora: Mercado Livre (BR839210492AA)\nCódigo único para retirada: RET-8421\nApresente na portaria para retirar."
+    },
+    {
+      "id": 2,
+      "morador_id": 2,
+      "morador_nome": "Maria Oliveira",
+      "morador_unidade": "Bloco 08 - Apto 103",
+      "morador_telefone": "(11) 91234-5678",
+      "morador_whatsapp": "(11) 91234-5678",
+      "morador_telegram": null,
+      "codigo_rastreio": "AMZ-993812",
+      "transportadora": "Amazon",
+      "tipo_volume": "Envelope",
+      "local_armazenamento": "Guichê Principal",
+      "observacoes": "Livros",
+      "codigo_retirada": "RET-1934",
+      "status": "entregue",
+      "recebido_em": "2026-10-01T15:37:11.815Z",
+      "recebido_por": "Portaria Central",
+      "retirado_em": "2026-10-01T19:37:11.815Z",
+      "retirado_por": "Maria Oliveira (Própria)",
+      "notificacao_enviada_whatsapp": true,
+      "notificacao_enviada_telegram": false,
+      "mensagem_aviso": "📦 AMBROS - Encomenda Recebida!\nMorador: Maria Oliveira (Bl 08 - Apto 103)\nTransportadora: Amazon (AMZ-993812)\nCódigo único para retirada: RET-1934\nApresente na portaria para retirar."
+    }
+  ],
+  "nextUserId": 2,
+  "nextMoradorId": 4,
+  "nextVeiculoId": 4,
+  "nextVisitanteId": 4,
+  "nextAcessoId": 7,
+  "nextEncomendaId": 3
+}

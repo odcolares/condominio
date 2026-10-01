@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Gestão de Visitantes</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:260px;flex-shrink:0;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;transition:transform .25s ease;z-index:1040}
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{display:flex;align-items:center;gap:12px;padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .profile img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:15px}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10.5px;letter-spacing:1.5px;color:var(--text-muted);padding:16px 18px 6px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 18px;color:#c1c9d6;font-size:14.5px;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item .chev{margin-left:auto;font-size:12px;color:var(--text-muted);transition:transform .2s}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:0 10px;padding:11px 12px;width:calc(100% - 20px)}
+  .subnav{display:none;padding:2px 0 6px}
+  .subnav.open{display:block}
+  .subnav .nav-item{padding-left:44px;font-size:13.5px}
+  .subnav .nav-item.active{background:transparent;color:#6ea3f5;margin:0;padding-left:44px}
+  .subnav .nav-item i.lead{font-size:8px}
+  .sidebar-foot{padding:18px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:14px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11.5px;line-height:1.5}
+  
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:22px}
+  .stat-card{background:#fff;border-radius:var(--card-radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px}
+  .stat-icon.present{background:#ecfdf5;color:#059669}
+  .stat-icon.schedule{background:#eff6ff;color:#2563eb}
+  .stat-icon.total{background:#f8fafc;color:#475569}
+  .stat-val{font-size:26px;font-weight:700;color:#0f172a;line-height:1}
+  .stat-lbl{font-size:13px;color:#64748b;margin-top:4px}
+
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;justify-content:space-between}
+  
+  .filter-tabs{display:inline-flex;background:#f1f5f9;padding:4px;border-radius:8px;gap:4px}
+  .filter-tab{border:none;background:none;padding:6px 14px;font-size:13.5px;font-weight:500;color:#64748b;border-radius:6px;cursor:pointer;transition:all .15s}
+  .filter-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .table-custom{margin:0}
+  .table-custom th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+  .table-custom tr:hover td{background:#fafafa}
+
+  .avatar-circle{width:36px;height:36px;border-radius:50%;background:#e2e8f0;color:#475569;display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0}
+
+  .status-badge-in{display:inline-flex;align-items:center;gap:6px;color:#059669;font-weight:600;font-size:13px}
+  .status-badge-out{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-weight:500;font-size:13px}
+  .status-badge-in .dot{width:8px;height:8px;border-radius:50%;background:#10b981}
+  .status-badge-out .dot{width:8px;height:8px;border-radius:50%;background:#94a3b8}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+    .topuser .tn,.topuser .th{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria Central</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <a class="nav-item" href="ambros-dashboard.html"><i class="bi bi-house-door-fill lead"></i> Dashboard</a>
+    <a class="nav-item" href="encomendas.html"><i class="bi bi-box-seam-fill lead"></i> Encomendas</a>
+
+    <div class="nav-item" data-toggle="cadastros"><i class="bi bi-person-vcard-fill lead"></i> Cadastros <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav open" id="cadastros">
+      <a class="nav-item" href="moradores.html"><i class="bi bi-circle lead"></i> Moradores</a>
+      <a class="nav-item active" href="visitantes.html"><i class="bi bi-circle lead"></i> Visitantes</a>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Funcionários</div>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Prestadores de Serviço</div>
+    </div>
+
+    <div class="nav-item" data-toggle="portaria"><i class="bi bi-door-open-fill lead"></i> Portaria <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="portaria">
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Entrada / Saída</a>
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Consulta Rápida</a>
+    </div>
+
+    <div class="nav-item" data-toggle="veiculos"><i class="bi bi-car-front-fill lead"></i> Veículos <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="veiculos">
+      <a class="nav-item" href="veiculos.html"><i class="bi bi-circle lead"></i> Gestão de Veículos</a>
+    </div>
+
+    <div class="nav-item" onclick="logout()"><i class="bi bi-box-arrow-left lead"></i> Sair do Sistema</div>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Versão 1.0.0 · Módulo Visitantes</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="title">Gestão de Visitantes</div>
+
+      <div class="right">
+        <a class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" href="portaria-entrada.html">
+          <i class="bi bi-box-arrow-in-right"></i> Portaria Entrada/Saída
+        </a>
+        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" onclick="abrirModalCadastroVisitante()">
+          <i class="bi bi-person-plus-fill"></i> Novo Visitante
+        </button>
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Portaria Principal</div>
+          </div>
+          <i class="bi bi-box-arrow-right text-muted ms-1"></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h4>Cadastro & Acesso de Visitantes</h4>
+          <div class="breadcrumb-mini">
+            <a href="ambros-dashboard.html">Início</a> · Cadastros · Visitantes & Visitas
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas Resumo -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon present"><i class="bi bi-building-check"></i></div>
+          <div>
+            <div class="stat-val" id="statPresentes">-</div>
+            <div class="stat-lbl">Presentes no Condomínio</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon schedule"><i class="bi bi-calendar-event"></i></div>
+          <div>
+            <div class="stat-val" id="statAgendados">-</div>
+            <div class="stat-lbl">Agendados para Hoje</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-people"></i></div>
+          <div>
+            <div class="stat-val" id="statTotal">-</div>
+            <div class="stat-lbl">Total Cadastrado</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel e Tabela -->
+      <div class="panel">
+        <div class="toolbar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filtro="todos" onclick="mudarFiltro('todos', this)">Todos</button>
+            <button class="filter-tab" data-filtro="presentes" onclick="mudarFiltro('presentes', this)">No Condomínio</button>
+            <button class="filter-tab" data-filtro="fora" onclick="mudarFiltro('fora', this)">Fora / Agendados</button>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center" style="min-width:300px">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control" id="buscaInput" placeholder="Buscar por nome, documento, morador, placa..." oninput="filtrarVisitantes()">
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="carregarDados()" title="Atualizar dados">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Visitante</th>
+                <th>Documento</th>
+                <th>Unidade Visitada</th>
+                <th>Veículo & Vaga</th>
+                <th>Status no Condomínio</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabVisitantes">
+              <tr><td colspan="6" class="text-center text-muted py-4">Carregando visitantes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div>AMBROS · Sistema Integrado de Controle de Acesso e Portaria</div>
+      <div>Controle de Visitantes & Agendamento</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CADASTRO / EDIÇÃO VISITANTE ===================== -->
+<div class="modal fade" id="modalVisitante" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2" id="modalVisitanteTitulo">
+          <i class="bi bi-person-plus-fill text-primary"></i> Cadastrar Visitante
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="visitanteEditId">
+
+        <div class="row g-3">
+          <div class="col-md-7">
+            <label class="form-label font-medium text-sm">Nome Completo *</label>
+            <input type="text" class="form-control" id="formNome" placeholder="Ex: Roberto Silva" required>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label font-medium text-sm">Telefone / WhatsApp</label>
+            <input type="text" class="form-control" id="formTelefone" placeholder="(11) 98765-4321">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label font-medium text-sm">Tipo de Documento</label>
+            <select class="form-select" id="formTipoDoc">
+              <option value="RG" selected>RG</option>
+              <option value="CPF">CPF</option>
+              <option value="CNH">CNH</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label font-medium text-sm">Número do Documento</label>
+            <input type="text" class="form-control" id="formDoc" placeholder="Ex: 12.345.678-9">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label font-medium text-sm">Morador a ser Visitado</label>
+            <select class="form-select" id="formMoradorSelect" onchange="aoSelecionarMorador()">
+              <option value="">Selecione o morador...</option>
+            </select>
+            <div id="infoUnidadeSelecionada" class="form-text mt-1 text-primary fw-semibold d-none"></div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label font-medium text-sm">Placa do Veículo (se houver)</label>
+            <input type="text" class="form-control text-uppercase font-monospace" id="formPlaca" placeholder="Ex: ABC1D23">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label font-medium text-sm">Vaga Temporária</label>
+            <input type="text" class="form-control text-uppercase font-monospace" id="formVaga" placeholder="Ex: V-VIS01">
+          </div>
+
+          <div class="col-12">
+            <div class="p-3 rounded bg-light border">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="checkEntradaImediata" checked>
+                <label class="form-check-label fw-semibold text-dark" for="checkEntradaImediata">
+                  <i class="bi bi-box-arrow-in-right text-success"></i> Registrar Entrada Imediata na Portaria
+                </label>
+                <div class="text-muted" style="font-size:12px">
+                  Marca o visitante como presente no condomínio e grava o registro no histórico de acessos da portaria.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="visitanteErroMsg" class="alert alert-danger d-none py-2 text-sm mt-3"></div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="btnSalvarVisitante" onclick="salvarVisitante()">
+          <i class="bi bi-check-lg"></i> Salvar Visitante
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  // Preencher nome do usuário
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.href = "login.html";
+  }
+
+  // Submenus sidebar
+  document.querySelectorAll('.nav-item[data-toggle]').forEach(function(item){
+    item.addEventListener('click',function(){
+      var el=document.getElementById(this.dataset.toggle);
+      if(!el) return;
+      el.classList.toggle('open');
+      var chev=this.querySelector('.chev');
+      if(chev) chev.style.transform=el.classList.contains('open')?'rotate(180deg)':'rotate(0)';
+    });
+  });
+
+  // Mobile sidebar
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){
+    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click',function(){
+    sidebar.classList.remove('show'); overlay.classList.remove('show');
+  });
+
+  let listaVisitantes = [];
+  let listaMoradores = [];
+  let filtroAtual = "todos";
+
+  async function carregarDados() {
+    await Promise.all([carregarStats(), carregarVisitantes(), carregarMoradores()]);
+  }
+
+  async function carregarStats() {
+    try {
+      const resp = await fetch("/visitantes/stats", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401) { logout(); return; }
+      if (resp.ok) {
+        const stats = await resp.json();
+        document.getElementById("statPresentes").textContent = stats.presentes;
+        document.getElementById("statAgendados").textContent = stats.agendados_hoje;
+        document.getElementById("statTotal").textContent = stats.total;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function carregarMoradores() {
+    try {
+      const resp = await fetch("/moradores?limit=200", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaMoradores = await resp.json();
+        const select = document.getElementById("formMoradorSelect");
+        select.innerHTML = '<option value="">Selecione o morador...</option>' + 
+          listaMoradores.map(m => `
+            <option value="${m.id}" data-unidade="Bloco ${m.bloco||'0'} - Apto ${m.apartamento||'0'}">
+              ${m.nome_completo} (Bl ${m.bloco||'0'} - Apto ${m.apartamento||'0'})
+            </option>
+          `).join('');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function aoSelecionarMorador() {
+    const select = document.getElementById("formMoradorSelect");
+    const opt = select.options[select.selectedIndex];
+    const info = document.getElementById("infoUnidadeSelecionada");
+    if (opt && opt.dataset.unidade) {
+      info.textContent = `Destino: ${opt.dataset.unidade}`;
+      info.classList.remove("d-none");
+    } else {
+      info.classList.add("d-none");
+    }
+  }
+
+  async function carregarVisitantes() {
+    try {
+      const resp = await fetch("/visitantes", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaVisitantes = await resp.json();
+        renderizarTabela();
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("tabVisitantes").innerHTML = `
+        <tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar visitantes.</td></tr>
+      `;
+    }
+  }
+
+  function renderizarTabela() {
+    const tbody = document.getElementById("tabVisitantes");
+    const busca = document.getElementById("buscaInput").value.toLowerCase().trim();
+
+    const filtrados = listaVisitantes.filter(v => {
+      if (filtroAtual === "presentes" && !v.presente) return false;
+      if (filtroAtual === "fora" && v.presente) return false;
+
+      if (busca) {
+        const mNome = v.nome.toLowerCase().includes(busca);
+        const mDoc = v.documento ? v.documento.toLowerCase().includes(busca) : false;
+        const mPlaca = v.placa_veiculo ? v.placa_veiculo.toLowerCase().includes(busca) : false;
+        const mTel = v.telefone ? v.telefone.toLowerCase().includes(busca) : false;
+        const mMorador = v.morador_nome ? v.morador_nome.toLowerCase().includes(busca) : false;
+        const mUnid = v.morador_unidade ? v.morador_unidade.toLowerCase().includes(busca) : false;
+        if (!mNome && !mDoc && !mPlaca && !mTel && !mMorador && !mUnid) return false;
+      }
+      return true;
+    });
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="bi bi-people fs-2 d-block mb-2 text-secondary"></i>
+            Nenhum visitante encontrado com os filtros atuais.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(v => {
+      const iniciais = v.nome.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
+
+      return `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-circle">${iniciais}</div>
+              <div>
+                <div class="fw-bold text-dark">${v.nome}</div>
+                <div style="font-size:12px;color:#64748b">${v.telefone || "Sem telefone"}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            ${v.documento ? `<strong>${v.tipo_documento || 'DOC'}:</strong> ${v.documento}` : '<span class="text-muted" style="font-size:12px">Não informado</span>'}
+          </td>
+          <td>
+            ${v.morador_nome ? `
+              <div class="fw-semibold text-dark">${v.morador_nome}</div>
+              <div style="font-size:12px;color:#64748b">${v.morador_unidade || ''}</div>
+            ` : (v.morador_unidade ? v.morador_unidade : '<span class="text-muted" style="font-size:12px">Avulso</span>')}
+          </td>
+          <td>
+            ${v.placa_veiculo ? `
+              <span class="font-monospace fw-bold">${v.placa_veiculo}</span>
+              ${v.vaga ? `<span class="badge bg-light text-dark border ms-1">${v.vaga}</span>` : ''}
+            ` : '<span class="text-muted" style="font-size:12px">A pé / Sem carro</span>'}
+          </td>
+          <td>
+            ${v.presente ? `
+              <div class="status-badge-in mb-1">
+                <span class="dot"></span> No Condomínio
+              </div>
+              <button class="btn btn-outline-danger btn-sm py-0 px-2" style="font-size:11.5px" onclick="registrarSaidaRapida(${v.id})">
+                <i class="bi bi-box-arrow-right"></i> Registrar Saída
+              </button>
+            ` : `
+              <div class="status-badge-out mb-1">
+                <span class="dot"></span> Fora
+              </div>
+              <button class="btn btn-outline-success btn-sm py-0 px-2" style="font-size:11.5px" onclick="registrarEntradaRapida(${v.id})">
+                <i class="bi bi-box-arrow-in-right"></i> Registrar Entrada
+              </button>
+            `}
+          </td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-light btn-sm border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Ações
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="#" onclick="abrirModalEdicaoVisitante(${v.id});return false"><i class="bi bi-pencil"></i> Editar Dados</a></li>
+                <li><a class="dropdown-item" href="portaria-entrada.html"><i class="bi bi-door-open text-primary"></i> Abrir na Portaria</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="excluirVisitante(${v.id});return false"><i class="bi bi-trash"></i> Excluir</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function mudarFiltro(filtro, btn) {
+    filtroAtual = filtro;
+    document.querySelectorAll(".filter-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderizarTabela();
+  }
+
+  function filtrarVisitantes() {
+    renderizarTabela();
+  }
+
+  function abrirModalCadastroVisitante() {
+    document.getElementById("visitanteEditId").value = "";
+    document.getElementById("modalVisitanteTitulo").innerHTML = '<i class="bi bi-person-plus-fill text-primary"></i> Cadastrar Visitante';
+    document.getElementById("formNome").value = "";
+    document.getElementById("formTelefone").value = "";
+    document.getElementById("formTipoDoc").value = "RG";
+    document.getElementById("formDoc").value = "";
+    document.getElementById("formMoradorSelect").value = "";
+    document.getElementById("infoUnidadeSelecionada").classList.add("d-none");
+    document.getElementById("formPlaca").value = "";
+    document.getElementById("formVaga").value = "";
+    document.getElementById("checkEntradaImediata").checked = true;
+    document.getElementById("visitanteErroMsg").classList.add("d-none");
+
+    const modal = new bootstrap.Modal(document.getElementById("modalVisitante"));
+    modal.show();
+  }
+
+  function abrirModalEdicaoVisitante(id) {
+    const v = listaVisitantes.find(item => item.id === id);
+    if (!v) return;
+
+    document.getElementById("visitanteEditId").value = v.id;
+    document.getElementById("modalVisitanteTitulo").innerHTML = '<i class="bi bi-pencil-square text-primary"></i> Editar Visitante';
+    document.getElementById("formNome").value = v.nome;
+    document.getElementById("formTelefone").value = v.telefone || "";
+    document.getElementById("formTipoDoc").value = v.tipo_documento || "RG";
+    document.getElementById("formDoc").value = v.documento || "";
+    document.getElementById("formMoradorSelect").value = v.morador_visitado_id || "";
+    aoSelecionarMorador();
+    document.getElementById("formPlaca").value = v.placa_veiculo || "";
+    document.getElementById("formVaga").value = v.vaga || "";
+    document.getElementById("checkEntradaImediata").checked = v.presente;
+    document.getElementById("visitanteErroMsg").classList.add("d-none");
+
+    const modal = new bootstrap.Modal(document.getElementById("modalVisitante"));
+    modal.show();
+  }
+
+  async function salvarVisitante() {
+    const id = document.getElementById("visitanteEditId").value;
+    const nome = document.getElementById("formNome").value.trim();
+    const telefone = document.getElementById("formTelefone").value.trim();
+    const tipo_documento = document.getElementById("formTipoDoc").value;
+    const documento = document.getElementById("formDoc").value.trim();
+    const morador_visitado_id = document.getElementById("formMoradorSelect").value;
+    const placa_veiculo = document.getElementById("formPlaca").value.trim().toUpperCase();
+    const vaga = document.getElementById("formVaga").value.trim().toUpperCase();
+    const entrada_imediata = document.getElementById("checkEntradaImediata").checked;
+    const errDiv = document.getElementById("visitanteErroMsg");
+
+    if (!nome) {
+      errDiv.textContent = "Informe o nome completo do visitante!";
+      errDiv.classList.remove("d-none");
+      return;
+    }
+
+    const btn = document.getElementById("btnSalvarVisitante");
+    btn.disabled = true;
+
+    try {
+      const url = id ? `/visitantes/${id}` : "/visitantes";
+      const method = id ? "PUT" : "POST";
+
+      const payload = {
+        nome,
+        telefone: telefone || null,
+        tipo_documento,
+        documento: documento || null,
+        morador_visitado_id: morador_visitado_id || null,
+        placa_veiculo: placa_veiculo || null,
+        vaga: vaga || null,
+        entrada_imediata
+      };
+
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok) {
+        errDiv.textContent = resData.detail || "Erro ao salvar visitante.";
+        errDiv.classList.remove("d-none");
+        return;
+      }
+
+      bootstrap.Modal.getInstance(document.getElementById("modalVisitante")).hide();
+      carregarDados();
+    } catch (err) {
+      console.error(err);
+      errDiv.textContent = "Erro ao conectar com o servidor.";
+      errDiv.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Ações de 1 clique: Entrada e Saída
+  async function registrarEntradaRapida(id) {
+    try {
+      const resp = await fetch(`/visitantes/${id}/entrada`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
+      if (resp.ok) {
+        carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function registrarSaidaRapida(id) {
+    try {
+      const resp = await fetch(`/visitantes/${id}/saida`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
+      if (resp.ok) {
+        carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function excluirVisitante(id) {
+    if (!confirm("Tem certeza que deseja excluir o cadastro deste visitante?")) return;
+    try {
+      const resp = await fetch(`/visitantes/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Inicialização
+  carregarDados();
+</script>
+</body>
+</html>

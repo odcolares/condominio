@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Gestão de Encomendas</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --brand-dark-blue:#1d4ed8;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:260px;flex-shrink:0;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;transition:transform .25s ease;z-index:1040}
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{display:flex;align-items:center;gap:12px;padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .profile img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:15px}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10.5px;letter-spacing:1.5px;color:var(--text-muted);padding:16px 18px 6px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 18px;color:#c1c9d6;font-size:14.5px;cursor:pointer;border:none;background:none;width:100%;text-align:left}
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item .chev{margin-left:auto;font-size:12px;color:var(--text-muted);transition:transform .2s}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:0 10px;padding:11px 12px;width:calc(100% - 20px)}
+  .subnav{display:none;padding:2px 0 6px}
+  .subnav.open{display:block}
+  .subnav .nav-item{padding-left:44px;font-size:13.5px}
+  .subnav .nav-item.active{background:transparent;color:#6ea3f5;margin:0;padding-left:44px}
+  .subnav .nav-item i.lead{font-size:8px}
+  .sidebar-foot{padding:18px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:14px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11.5px;line-height:1.5}
+  
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:22px}
+  .stat-card{background:#fff;border-radius:var(--card-radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px}
+  .stat-icon.pending{background:#eff6ff;color:#2563eb}
+  .stat-icon.done{background:#f0fdf4;color:#16a34a}
+  .stat-icon.total{background:#f8fafc;color:#475569}
+  .stat-val{font-size:26px;font-weight:700;color:#0f172a;line-height:1}
+  .stat-lbl{font-size:13px;color:#64748b;margin-top:4px}
+
+  /* Scanner Hero Bar */
+  .scanner-bar{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 3px rgba(0,0,0,.05);padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .scanner-input-wrap{flex:1;min-width:280px;position:relative}
+  .scanner-input-wrap i.bi-upc-scan{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;color:#64748b}
+  .scanner-input-wrap input{width:100%;padding:10px 14px 10px 42px;border:1px solid #cbd5e1;border-radius:8px;font-size:14.5px;transition:border-color .15s}
+  .scanner-input-wrap input:focus{outline:none;border-color:var(--brand-blue);box-shadow:0 0 0 3px rgba(47,107,255,.15)}
+
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;justify-content:space-between}
+  
+  /* Filter Segmented Control */
+  .filter-tabs{display:inline-flex;background:#f1f5f9;padding:4px;border-radius:8px;gap:4px}
+  .filter-tab{border:none;background:none;padding:6px 14px;font-size:13.5px;font-weight:500;color:#64748b;border-radius:6px;cursor:pointer;transition:all .15s}
+  .filter-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .table-custom{margin:0}
+  .table-custom th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+  .table-custom tr:hover td{background:#fafafa}
+
+  /* Code Highlight Box */
+  .ret-code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:13px;letter-spacing:1px;padding:4px 8px;border-radius:6px;background:#f1f5f9;color:#0f172a;border:1px solid #e2e8f0;display:inline-block}
+
+  /* Status Text */
+  .status-text-pending{color:#d97706;font-weight:600}
+  .status-text-done{color:#16a34a;font-weight:600}
+
+  /* Action Buttons */
+  .btn-action{padding:5px 9px;font-size:12.5px;border-radius:6px}
+
+  /* Camera Scanner Container */
+  .camera-container{position:relative;width:100%;max-width:480px;margin:0 auto;overflow:hidden;border-radius:12px;background:#000;aspect-ratio:4/3}
+  .camera-container video{width:100%;height:100%;object-fit:cover}
+  .scan-guide{position:absolute;inset:20% 15%;border:2px dashed #22c55e;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.4);pointer-events:none}
+  .scan-line{position:absolute;width:100%;height:2px;background:#ef4444;box-shadow:0 0 8px #ef4444;top:0;animation:scanMove 2s infinite ease-in-out}
+  @keyframes scanMove{0%{top:0%}50%{top:100%}100%{top:0%}}
+
+  /* WhatsApp Notification Card Preview */
+  .wa-preview{background:#e7f5ed;border:1px solid #bbf7d0;border-radius:10px;padding:14px;font-size:13px;white-space:pre-wrap;color:#14532d;line-height:1.5}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+    .topuser .tn,.topuser .th{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria Central</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <a class="nav-item" href="ambros-dashboard.html"><i class="bi bi-house-door-fill lead"></i> Dashboard</a>
+    
+    <!-- ENCOMENDAS ATIVA NO MENU PRINCIPAL -->
+    <a class="nav-item active" href="encomendas.html"><i class="bi bi-box-seam-fill lead"></i> Encomendas</a>
+
+    <div class="nav-item" data-toggle="cadastros"><i class="bi bi-person-vcard-fill lead"></i> Cadastros <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="cadastros">
+      <a class="nav-item" href="moradores.html"><i class="bi bi-circle lead"></i> Moradores</a>
+      <a class="nav-item" href="visitantes.html"><i class="bi bi-circle lead"></i> Visitantes</a>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Funcionários</div>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Prestadores de Serviço</div>
+    </div>
+
+    <div class="nav-item" data-toggle="portaria"><i class="bi bi-door-open-fill lead"></i> Portaria <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="portaria">
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Entrada / Saída</a>
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Consulta Rápida</a>
+    </div>
+
+    <div class="nav-item" data-toggle="veiculos"><i class="bi bi-car-front-fill lead"></i> Veículos <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="veiculos">
+      <a class="nav-item" href="veiculos.html"><i class="bi bi-circle lead"></i> Gestão de Veículos</a>
+    </div>
+
+    <div class="nav-item" onclick="logout()"><i class="bi bi-box-arrow-left lead"></i> Sair do Sistema</div>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Versão 1.0.0 · Módulo Encomendas</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="title">Gestão de Encomendas</div>
+
+      <div class="right">
+        <button class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" onclick="abrirModalRetiradaRapida()">
+          <i class="bi bi-key-fill"></i> Retirar com Código
+        </button>
+        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" onclick="abrirModalCadastro()">
+          <i class="bi bi-plus-lg"></i> Nova Encomenda
+        </button>
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Portaria Principal</div>
+          </div>
+          <i class="bi bi-box-arrow-right text-muted ms-1"></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h4>Controle de Encomendas & Entregas</h4>
+          <div class="breadcrumb-mini">
+            <a href="ambros-dashboard.html">Início</a> · Encomendas · Recebimento & Retirada
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-2" onclick="abrirLeitorCamera()">
+            <i class="bi bi-camera-fill text-primary"></i> Leitor de Código de Barras (Câmera)
+          </button>
+        </div>
+      </div>
+
+      <!-- Métricas Resumo -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon pending"><i class="bi bi-clock-history"></i></div>
+          <div>
+            <div class="stat-val" id="statPendentes">-</div>
+            <div class="stat-lbl">Aguardando Retirada</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon done"><i class="bi bi-check2-circle"></i></div>
+          <div>
+            <div class="stat-val" id="statRetiradasHoje">-</div>
+            <div class="stat-lbl">Retiradas Hoje</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-box-seam"></i></div>
+          <div>
+            <div class="stat-val" id="statTotal">-</div>
+            <div class="stat-lbl">Total Registrado</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Leitura Rápida (USB Scanner ou Digitação) -->
+      <div class="scanner-bar">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-upc text-primary fs-4"></i>
+          <div>
+            <strong style="font-size:14px;color:#1e293b">Leitor de Código de Barras</strong>
+            <div style="font-size:12px;color:#64748b">Compatível com leitores USB / Bluetooth e entrada manual</div>
+          </div>
+        </div>
+        <div class="scanner-input-wrap">
+          <i class="bi bi-upc-scan"></i>
+          <input type="text" id="quickBarcodeInput" placeholder="Aproxime o leitor de código de barras ou digite o rastreio..." autocomplete="off">
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-sm px-3" onclick="processarCodigoBarrasRapido()">
+            <i class="bi bi-arrow-return-left"></i> Processar
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-light btn-sm border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              Exemplos
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" onclick="preencherExemplo('BR839210492AA');return false">Correios (BR839210492AA)</a></li>
+              <li><a class="dropdown-item" href="#" onclick="preencherExemplo('MELI-998241');return false">Mercado Livre (MELI-998241)</a></li>
+              <li><a class="dropdown-item" href="#" onclick="preencherExemplo('AMZ-771239');return false">Amazon (AMZ-771239)</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela e Filtros -->
+      <div class="panel">
+        <div class="toolbar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-status="todos" onclick="mudarFiltroStatus('todos', this)">Todas</button>
+            <button class="filter-tab" data-status="pendente" onclick="mudarFiltroStatus('pendente', this)">Aguardando Retirada</button>
+            <button class="filter-tab" data-status="entregue" onclick="mudarFiltroStatus('entregue', this)">Já Retiradas</button>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center" style="min-width:300px">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control" id="buscaInput" placeholder="Buscar por morador, apto, rastreio ou código..." oninput="filtrarEncomendas()">
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="carregarDados()" title="Atualizar dados">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Destinatário</th>
+                <th>Transportadora & Volume</th>
+                <th>Cód. Rastreio / Barras</th>
+                <th>Cód. Único Retirada</th>
+                <th>Chegada & Local</th>
+                <th>Status</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabEncomendas">
+              <tr><td colspan="7" class="text-center text-muted py-4">Carregando encomendas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div>AMBROS · Sistema Integrado de Controle de Acesso e Portaria</div>
+      <div>WhatsApp Oficial & Telegram Integrados</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL: NOVA ENCOMENDA ===================== -->
+<div class="modal fade" id="modalCadastro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-box-seam-fill text-primary"></i> Cadastrar Nova Encomenda
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          
+          <!-- Seleção de Morador -->
+          <div class="col-12">
+            <label class="form-label font-medium text-sm">Morador Destinatário *</label>
+            <select class="form-select" id="cadMoradorSelect" onchange="aoSelecionarMorador()">
+              <option value="">Selecione o morador...</option>
+            </select>
+            <div id="moradorInfoCard" class="mt-2 p-2 rounded bg-light border d-none" style="font-size:13px">
+              <span id="infoMoradorUnidade" class="fw-bold"></span> · 
+              <span id="infoMoradorTel"></span> · 
+              <span id="infoMoradorWhats" class="text-success"><i class="bi bi-whatsapp"></i> WhatsApp Cadastrado</span>
+            </div>
+          </div>
+
+          <!-- Código de Barras / Rastreio -->
+          <div class="col-md-7">
+            <label class="form-label font-medium text-sm">Código de Barras / Rastreio *</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="cadCodigoRastreio" placeholder="Ex: BR839210492AA ou bipe com leitor">
+              <button class="btn btn-outline-secondary" type="button" onclick="abrirLeitorCameraParaCampo()" title="Ler código com câmera">
+                <i class="bi bi-camera"></i> Câmera
+              </button>
+              <button class="btn btn-outline-secondary" type="button" onclick="gerarCodigoAleatorioRastreio()" title="Gerar código rápido">
+                <i class="bi bi-magic"></i>
+              </button>
+            </div>
+            <div class="form-text" style="font-size:11.5px">Pode ser bipado pelo leitor USB ou apontado para a câmera</div>
+          </div>
+
+          <!-- Transportadora -->
+          <div class="col-md-5">
+            <label class="form-label font-medium text-sm">Transportadora</label>
+            <input type="text" class="form-control" id="cadTransportadora" list="transportadorasList" placeholder="Ex: Mercado Livre, Correios...">
+            <datalist id="transportadorasList">
+              <option value="Mercado Livre">
+              <option value="Correios">
+              <option value="Amazon">
+              <option value="Shopee">
+              <option value="Loggi">
+              <option value="Jadlog">
+              <option value="FedEx">
+              <option value="Total Express">
+              <option value="Entregador Local / Delivery">
+            </datalist>
+          </div>
+
+          <!-- Tipo de Volume -->
+          <div class="col-md-6">
+            <label class="form-label font-medium text-sm">Tipo de Volume</label>
+            <select class="form-select" id="cadTipoVolume">
+              <option value="Caixa Pequena">Caixa Pequena</option>
+              <option value="Caixa Média" selected>Caixa Média</option>
+              <option value="Caixa Grande">Caixa Grande</option>
+              <option value="Pacote">Pacote</option>
+              <option value="Envelope / Documento">Envelope / Documento</option>
+              <option value="Sacola">Sacola</option>
+              <option value="Fardo">Fardo</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+
+          <!-- Local de Armazenamento -->
+          <div class="col-md-6">
+            <label class="form-label font-medium text-sm">Local na Portaria / Armário</label>
+            <input type="text" class="form-control" id="cadLocal" placeholder="Ex: Armário A - Prateleira 2" value="Armário Principal">
+          </div>
+
+          <!-- Observações -->
+          <div class="col-12">
+            <label class="form-label font-medium text-sm">Observações (opcional)</label>
+            <input type="text" class="form-control" id="cadObs" placeholder="Ex: Produto frágil, deixado pelo entregador João">
+          </div>
+
+          <!-- Notificações -->
+          <div class="col-12">
+            <div class="p-3 rounded bg-light border">
+              <div class="fw-semibold text-sm mb-2 text-dark">
+                <i class="bi bi-bell-fill text-primary"></i> Disparo Automático de Avisos ao Morador:
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="cadNotifWhatsApp" checked>
+                <label class="form-check-label text-sm" for="cadNotifWhatsApp">
+                  <i class="bi bi-whatsapp text-success"></i> Avisar pelo WhatsApp Oficial
+                </label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="cadNotifTelegram" checked>
+                <label class="form-check-label text-sm" for="cadNotifTelegram">
+                  <i class="bi bi-telegram text-primary"></i> Avisar pelo Telegram
+                </label>
+              </div>
+              <div class="text-muted mt-1" style="font-size:12px">
+                <i class="bi bi-shield-check text-success"></i> O sistema gerará automaticamente um <strong>Código Único de Retirada (ex: RET-XXXX)</strong> e incluirá na mensagem para segurança da entrega.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="btnSalvarEncomenda" onclick="salvarEncomenda()">
+          <i class="bi bi-check-lg"></i> Registrar & Gerar Código
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: SUCESSO & AVISO GERADO ===================== -->
+<div class="modal fade" id="modalSucessoAviso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-check-circle-fill"></i> Encomenda Registrada com Sucesso!
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <div class="mb-3">
+          <div class="text-muted" style="font-size:13px">CÓDIGO ÚNICO GERADO PARA RETIRADA:</div>
+          <div class="ret-code fs-2 px-4 py-2 mt-1 border-2 border-primary text-primary" id="sucessoCodigoRetirada">
+            RET-0000
+          </div>
+          <div class="text-muted mt-1" style="font-size:12px">
+            O morador precisará apresentar este código na portaria para retirar.
+          </div>
+        </div>
+
+        <div class="text-start mb-3">
+          <label class="form-label font-medium text-xs text-muted text-uppercase">Mensagem de Notificação Formatada:</label>
+          <div class="wa-preview" id="sucessoMensagemTexto"></div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button class="btn btn-success d-flex align-items-center justify-content-center gap-2 py-2" id="btnAbrirWhatsAppSucesso" onclick="abrirWhatsAppLink()">
+            <i class="bi bi-whatsapp fs-5"></i> Enviar Mensagem no WhatsApp Agora
+          </button>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary w-50 d-flex align-items-center justify-content-center gap-2" id="btnAbrirTelegramSucesso" onclick="abrirTelegramLink()">
+              <i class="bi bi-telegram"></i> Abrir Telegram
+            </button>
+            <button class="btn btn-outline-secondary w-50 d-flex align-items-center justify-content-center gap-2" onclick="copiarMensagemSucesso()">
+              <i class="bi bi-clipboard"></i> Copiar Mensagem
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: RETIRADA COM CÓDIGO ===================== -->
+<div class="modal fade" id="modalRetirada" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-key-fill text-primary"></i> Registrar Retirada de Encomenda
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="retiradaEncomendaId">
+
+        <div id="retiradaDetalhesEncomenda" class="mb-3 p-3 rounded bg-light border" style="font-size:13.5px">
+          <div><strong>Morador:</strong> <span id="retMoradorNome">-</span></div>
+          <div><strong>Unidade:</strong> <span id="retMoradorUnidade">-</span></div>
+          <div><strong>Volume:</strong> <span id="retVolume">-</span> (<span id="retTransportadora">-</span>)</div>
+          <div><strong>Rastreio:</strong> <span id="retRastreio" class="font-monospace">-</span></div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">
+            Código Único de Retirada do Morador *
+          </label>
+          <input type="text" class="form-control form-control-lg text-center font-monospace fw-bold" id="retiradaCodigoInput" placeholder="Ex: RET-8421" autocomplete="off">
+          <div class="form-text" style="font-size:12px">Código enviado ao morador no aviso do WhatsApp/Telegram</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">Quem está retirando?</label>
+          <input type="text" class="form-control" id="retiradaQuemRetirou" placeholder="Ex: Próprio Morador, Filho(a), Cônjuge">
+        </div>
+
+        <div id="retiradaErroMsg" class="alert alert-danger d-none py-2 text-sm" role="alert"></div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success d-inline-flex align-items-center gap-2" onclick="confirmarRetirada()">
+          <i class="bi bi-check2-circle"></i> Confirmar Entrega do Pacote
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: LEITOR DE CÂMERA ===================== -->
+<div class="modal fade" id="modalCamera" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow bg-dark text-white">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-camera-video-fill text-success"></i> Leitor de Código de Barras
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="pararCamera()"></button>
+      </div>
+      <div class="modal-body p-3 text-center">
+        <!-- Live Video Scanner -->
+        <div class="camera-container" id="cameraBox">
+          <video id="cameraVideo" playsinline autoplay muted></video>
+          <div class="scan-guide">
+            <div class="scan-line"></div>
+          </div>
+        </div>
+
+        <!-- Status text -->
+        <div class="mt-3 text-sm text-light" id="cameraStatus">
+          Aponte a câmera para o código de barras ou etiqueta de rastreio da encomenda...
+        </div>
+
+        <!-- Live camera controls -->
+        <div class="mt-2 d-flex justify-content-center gap-2" id="cameraLiveControls">
+          <button class="btn btn-outline-light btn-sm" onclick="trocarCamera()"><i class="bi bi-arrow-repeat"></i> Trocar Câmera</button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="abrirCapturaFoto()"><i class="bi bi-camera"></i> Tirar Foto</button>
+          <button class="btn btn-danger btn-sm" onclick="pararCamera();fecharModalCamera()"><i class="bi bi-x-lg"></i> Fechar</button>
+        </div>
+
+        <!-- Fallback Options when camera permission is restricted -->
+        <div id="cameraFallbackOptions" class="d-none mt-3 text-start">
+          <div class="p-3 rounded bg-secondary bg-opacity-25 border border-secondary mb-3">
+            <div class="d-flex align-items-center gap-2 text-warning fw-semibold mb-1">
+              <i class="bi bi-shield-exclamation fs-5"></i>
+              <span>Câmera contínua restrita pelo navegador</span>
+            </div>
+            <div class="text-light opacity-75" style="font-size:12.5px">
+              O navegador ou contexto em janela incorporada (iFrame) não autorizou a transmissão contínua de vídeo. Você pode <strong>tirar uma foto da etiqueta</strong> ou <strong>digitar o código</strong> abaixo.
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-success d-flex align-items-center justify-content-center gap-2 py-2" onclick="abrirCapturaFoto()">
+              <i class="bi bi-camera-fill fs-5"></i> Tirar / Carregar Foto da Etiqueta
+            </button>
+          </div>
+
+          <!-- Preview da imagem capturada se houver -->
+          <div id="photoPreviewBox" class="d-none mb-3 text-center">
+            <img id="photoPreviewImg" class="rounded border border-secondary img-fluid" style="max-height:160px" alt="Foto capturada">
+            <div class="text-muted mt-1" style="font-size:11.5px" id="photoStatusText">Processando foto...</div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label text-light text-xs text-uppercase opacity-75">Ou digite / confirme o código de rastreio:</label>
+            <div class="input-group">
+              <input type="text" id="manualBarcodeInput" class="form-control" placeholder="Ex: BR839210492AA" autocomplete="off">
+              <button class="btn btn-primary" onclick="confirmarCodigoManual()">Usar Código</button>
+            </div>
+          </div>
+
+          <!-- Exemplos rápidos para testes -->
+          <div class="mt-3 pt-2 border-top border-secondary text-center">
+            <div class="text-muted mb-2" style="font-size:11.5px">Exemplos rápidos para teste:</div>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('BR839210492AA')">Correios</button>
+              <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('MELI-998241')">Mercado Livre</button>
+              <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('AMZ-771239')">Amazon</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden input for HTML5 file capture -->
+        <input type="file" id="cameraPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="processarFotoCapturada(this)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Som de Bipe Web Audio -->
+<script>
+  function emitirBipe() {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1800, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (_) {}
+  }
+</script>
+
+<!-- Script Principal -->
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  // Preencher nome do usuário
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.href = "login.html";
+  }
+
+  // Submenus sidebar
+  document.querySelectorAll('.nav-item[data-toggle]').forEach(function(item){
+    item.addEventListener('click',function(){
+      var el=document.getElementById(this.dataset.toggle);
+      if(!el) return;
+      el.classList.toggle('open');
+      var chev=this.querySelector('.chev');
+      if(chev) chev.style.transform=el.classList.contains('open')?'rotate(180deg)':'rotate(0)';
+    });
+  });
+
+  // Mobile sidebar
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){
+    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click',function(){
+    sidebar.classList.remove('show'); overlay.classList.remove('show');
+  });
+
+  // Estado global
+  let listaEncomendas = [];
+  let listaMoradores = [];
+  let filtroStatusAtual = "todos";
+  let linkWhatsAppAtual = "";
+  let linkTelegramAtual = "";
+  let textoMensagemAtual = "";
+  let videoStream = null;
+  let detectorBarras = null;
+  let destinoCodigoBarras = "quick"; // 'quick' | 'campoCadastro'
+
+  // Carregar dados iniciais
+  async function carregarDados() {
+    await Promise.all([carregarStats(), carregarEncomendas(), carregarMoradores()]);
+  }
+
+  async function carregarStats() {
+    try {
+      const resp = await fetch("/encomendas/stats", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401) { logout(); return; }
+      if (resp.ok) {
+        const stats = await resp.json();
+        document.getElementById("statPendentes").textContent = stats.pendentes;
+        document.getElementById("statRetiradasHoje").textContent = stats.retiradas_hoje;
+        document.getElementById("statTotal").textContent = stats.total;
+      }
+    } catch (err) {
+      console.error("Erro ao carregar métricas:", err);
+    }
+  }
+
+  async function carregarMoradores() {
+    try {
+      const resp = await fetch("/moradores?limit=200", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaMoradores = await resp.json();
+        const select = document.getElementById("cadMoradorSelect");
+        select.innerHTML = '<option value="">Selecione o morador...</option>' + 
+          listaMoradores.map(m => `
+            <option value="${m.id}" data-unidade="Bloco ${m.bloco||'0'} - Apto ${m.apartamento||'0'}" data-tel="${m.telefone||''}" data-whats="${m.whatsapp||m.telefone||''}">
+              ${m.nome_completo} (Bl ${m.bloco||'0'} - Apto ${m.apartamento||'0'})
+            </option>
+          `).join('');
+      }
+    } catch (err) {
+      console.error("Erro ao carregar moradores:", err);
+    }
+  }
+
+  function aoSelecionarMorador() {
+    const select = document.getElementById("cadMoradorSelect");
+    const infoCard = document.getElementById("moradorInfoCard");
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) {
+      infoCard.classList.add("d-none");
+      return;
+    }
+    document.getElementById("infoMoradorUnidade").textContent = opt.dataset.unidade;
+    document.getElementById("infoMoradorTel").textContent = opt.dataset.tel ? `Tel: ${opt.dataset.tel}` : "Sem telefone";
+    infoCard.classList.remove("d-none");
+  }
+
+  async function carregarEncomendas() {
+    try {
+      const resp = await fetch(`/encomendas?status=${filtroStatusAtual}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaEncomendas = await resp.json();
+        renderizarTabela();
+      }
+    } catch (err) {
+      console.error("Erro ao carregar encomendas:", err);
+      document.getElementById("tabEncomendas").innerHTML = `
+        <tr><td colspan="7" class="text-center text-danger py-4">Erro ao carregar encomendas. Tente recarregar.</td></tr>
+      `;
+    }
+  }
+
+  function renderizarTabela() {
+    const tbody = document.getElementById("tabEncomendas");
+    const busca = document.getElementById("buscaInput").value.toLowerCase().trim();
+
+    const filtrados = listaEncomendas.filter(e => {
+      if (filtroStatusAtual !== "todos" && e.status !== filtroStatusAtual) return false;
+      if (busca) {
+        const mNome = e.morador_nome.toLowerCase().includes(busca);
+        const mUnid = e.morador_unidade.toLowerCase().includes(busca);
+        const mRast = e.codigo_rastreio.toLowerCase().includes(busca);
+        const mCod = e.codigo_retirada.toLowerCase().includes(busca);
+        const mTransp = e.transportadora.toLowerCase().includes(busca);
+        if (!mNome && !mUnid && !mRast && !mCod && !mTransp) return false;
+      }
+      return true;
+    });
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+            Nenhuma encomenda encontrada com os filtros atuais.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(e => {
+      const isPendente = e.status === "pendente";
+      const dataRec = new Date(e.recebido_em);
+      const dataRecStr = `${String(dataRec.getDate()).padStart(2,'0')}/${String(dataRec.getMonth()+1).padStart(2,'0')} às ${String(dataRec.getHours()).padStart(2,'0')}:${String(dataRec.getMinutes()).padStart(2,'0')}`;
+      
+      let statusHtml = "";
+      if (isPendente) {
+        statusHtml = `<span class="status-text-pending"><i class="bi bi-clock-history"></i> Aguardando Retirada</span>`;
+      } else {
+        const dataRet = e.retirado_em ? new Date(e.retirado_em) : null;
+        const dataRetStr = dataRet ? `${String(dataRet.getDate()).padStart(2,'0')}/${String(dataRet.getMonth()+1).padStart(2,'0')} às ${String(dataRet.getHours()).padStart(2,'0')}:${String(dataRet.getMinutes()).padStart(2,'0')}` : '';
+        statusHtml = `
+          <div class="status-text-done"><i class="bi bi-check2-circle"></i> Retirada</div>
+          <div style="font-size:11.5px;color:#64748b">Por: ${e.retirado_por || 'Morador'} (${dataRetStr})</div>
+        `;
+      }
+
+      return `
+        <tr>
+          <td>
+            <div class="fw-bold text-dark">${e.morador_nome}</div>
+            <div style="font-size:12px;color:#64748b">${e.morador_unidade}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">${e.transportadora}</div>
+            <div style="font-size:12px;color:#64748b">${e.tipo_volume}</div>
+          </td>
+          <td>
+            <span class="font-monospace fw-semibold">${e.codigo_rastreio}</span>
+          </td>
+          <td>
+            <span class="ret-code ${isPendente ? 'border-primary text-primary' : ''}">${e.codigo_retirada}</span>
+          </td>
+          <td>
+            <div>${dataRecStr}</div>
+            <div style="font-size:12px;color:#64748b"><i class="bi bi-geo-alt"></i> ${e.local_armazenamento}</div>
+          </td>
+          <td>${statusHtml}</td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-light btn-sm border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Ações
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                ${isPendente ? `
+                  <li><a class="dropdown-item fw-semibold text-primary" href="#" onclick="abrirModalRetirada(${e.id});return false"><i class="bi bi-key-fill text-primary"></i> Registrar Retirada</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                ` : ''}
+                <li><a class="dropdown-item text-success" href="#" onclick="abrirWhatsAppDireto(${e.id});return false"><i class="bi bi-whatsapp"></i> Avisar no WhatsApp</a></li>
+                <li><a class="dropdown-item text-primary" href="#" onclick="abrirTelegramDireto(${e.id});return false"><i class="bi bi-telegram"></i> Avisar no Telegram</a></li>
+                <li><a class="dropdown-item" href="#" onclick="verDetalhesMensagem(${e.id});return false"><i class="bi bi-chat-text"></i> Ver Mensagem & Código</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="excluirEncomenda(${e.id});return false"><i class="bi bi-trash"></i> Excluir Registro</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function mudarFiltroStatus(status, btn) {
+    filtroStatusAtual = status;
+    document.querySelectorAll(".filter-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    carregarEncomendas();
+  }
+
+  function filtrarEncomendas() {
+    renderizarTabela();
+  }
+
+  // Preencher exemplo de código de barras
+  function preencherExemplo(code) {
+    document.getElementById("quickBarcodeInput").value = code;
+    processarCodigoBarrasRapido();
+  }
+
+  // Processamento do código de barras rápido
+  function processarCodigoBarrasRapido() {
+    const input = document.getElementById("quickBarcodeInput");
+    const cod = input.value.trim();
+    if (!cod) return;
+
+    emitirBipe();
+
+    // Verifica se já existe uma encomenda pendente com esse rastreio ou código de retirada
+    const existente = listaEncomendas.find(e => 
+      e.codigo_rastreio.toUpperCase() === cod.toUpperCase() || 
+      e.codigo_retirada.toUpperCase() === cod.toUpperCase()
+    );
+
+    if (existente) {
+      if (existente.status === "pendente") {
+        abrirModalRetirada(existente.id, cod);
+      } else {
+        document.getElementById("buscaInput").value = cod;
+        filtrarEncomendas();
+      }
+    } else {
+      // Abre cadastro com o código pré-preenchido
+      abrirModalCadastro(cod);
+    }
+    input.value = "";
+  }
+
+  // Pressionar enter no input do leitor rápido
+  document.getElementById("quickBarcodeInput").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      processarCodigoBarrasRapido();
+    }
+  });
+
+  // Modal Cadastro
+  function abrirModalCadastro(codigoPreenchido = "") {
+    document.getElementById("cadMoradorSelect").value = "";
+    document.getElementById("moradorInfoCard").classList.add("d-none");
+    document.getElementById("cadCodigoRastreio").value = codigoPreenchido;
+    document.getElementById("cadTransportadora").value = "";
+    document.getElementById("cadObs").value = "";
+    document.getElementById("cadLocal").value = "Armário de Encomendas";
+    document.getElementById("cadNotifWhatsApp").checked = true;
+    document.getElementById("cadNotifTelegram").checked = true;
+
+    if (codigoPreenchido) {
+      // Tenta inferir transportadora pelo formato do código
+      if (codigoPreenchido.startsWith("BR") || codigoPreenchido.endsWith("BR")) {
+        document.getElementById("cadTransportadora").value = "Correios";
+      } else if (codigoPreenchido.startsWith("MELI")) {
+        document.getElementById("cadTransportadora").value = "Mercado Livre";
+      } else if (codigoPreenchido.startsWith("AMZ")) {
+        document.getElementById("cadTransportadora").value = "Amazon";
+      }
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById("modalCadastro"));
+    modal.show();
+  }
+
+  function gerarCodigoAleatorioRastreio() {
+    const tipos = ["BR", "ML", "AMZ", "LOG"];
+    const prefix = tipos[Math.floor(Math.random() * tipos.length)];
+    const num = Math.floor(10000000 + Math.random() * 90000000);
+    document.getElementById("cadCodigoRastreio").value = `${prefix}${num}BR`;
+  }
+
+  async function salvarEncomenda() {
+    const moradorId = document.getElementById("cadMoradorSelect").value;
+    const codigoRastreio = document.getElementById("cadCodigoRastreio").value.trim();
+    const transportadora = document.getElementById("cadTransportadora").value.trim();
+    const tipoVolume = document.getElementById("cadTipoVolume").value;
+    const localArmazenamento = document.getElementById("cadLocal").value.trim();
+    const observacoes = document.getElementById("cadObs").value.trim();
+    const notificarWhats = document.getElementById("cadNotifWhatsApp").checked;
+    const notificarTele = document.getElementById("cadNotifTelegram").checked;
+
+    if (!moradorId) {
+      alert("Por favor, selecione o morador destinatário!");
+      return;
+    }
+    if (!codigoRastreio) {
+      alert("Por favor, informe ou escaneie o código de rastreio/barras!");
+      return;
+    }
+
+    const btn = document.getElementById("btnSalvarEncomenda");
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Registrando...`;
+
+    try {
+      const resp = await fetch("/encomendas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          morador_id: moradorId,
+          codigo_rastreio: codigoRastreio,
+          transportadora,
+          tipo_volume: tipoVolume,
+          local_armazenamento: localArmazenamento,
+          observacoes,
+          notificar_whatsapp: notificarWhats,
+          notificar_telegram: notificarTele
+        })
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok) {
+        alert(resData.detail || "Erro ao registrar encomenda");
+        return;
+      }
+
+      // Fecha modal de cadastro
+      bootstrap.Modal.getInstance(document.getElementById("modalCadastro")).hide();
+
+      // Recarrega lista e métricas
+      carregarDados();
+
+      // Abre modal de sucesso com o código único gerado e opções de disparo
+      linkWhatsAppAtual = resData.whatsappUrl || "";
+      linkTelegramAtual = resData.telegramUrl || "";
+      textoMensagemAtual = resData.mensagem_aviso || "";
+
+      document.getElementById("sucessoCodigoRetirada").textContent = resData.codigo_retirada;
+      document.getElementById("sucessoMensagemTexto").textContent = resData.mensagem_aviso;
+
+      const modalSucesso = new bootstrap.Modal(document.getElementById("modalSucessoAviso"));
+      modalSucesso.show();
+
+      emitirBipe();
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao conectar com o servidor.");
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<i class="bi bi-check-lg"></i> Registrar & Gerar Código`;
+    }
+  }
+
+  function abrirWhatsAppLink() {
+    if (linkWhatsAppAtual) {
+      window.open(linkWhatsAppAtual, "_blank");
+    } else {
+      alert("Telefone ou WhatsApp do morador não encontrado no cadastro.");
+    }
+  }
+
+  function abrirTelegramLink() {
+    if (linkTelegramAtual) {
+      window.open(linkTelegramAtual, "_blank");
+    }
+  }
+
+  function copiarMensagemSucesso() {
+    if (textoMensagemAtual) {
+      navigator.clipboard.writeText(textoMensagemAtual).then(() => {
+        alert("Mensagem copiada para a área de transferência!");
+      }).catch(() => {
+        alert("Não foi possível copiar automaticamente.");
+      });
+    }
+  }
+
+  // Notificações diretas da tabela
+  async function abrirWhatsAppDireto(id) {
+    try {
+      const resp = await fetch(`/encomendas/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const enc = await resp.json();
+        if (enc.whatsappUrl) {
+          window.open(enc.whatsappUrl, "_blank");
+          // Atualiza flag de notificação
+          fetch(`/encomendas/${id}/notificar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ canal: "whatsapp" })
+          });
+        } else {
+          alert(`O morador ${enc.morador_nome} não possui WhatsApp cadastrado.`);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function abrirTelegramDireto(id) {
+    try {
+      const resp = await fetch(`/encomendas/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const enc = await resp.json();
+        if (enc.telegramUrl) {
+          window.open(enc.telegramUrl, "_blank");
+          fetch(`/encomendas/${id}/notificar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ canal: "telegram" })
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function verDetalhesMensagem(id) {
+    const enc = listaEncomendas.find(e => e.id === id);
+    if (!enc) return;
+
+    linkWhatsAppAtual = enc.morador_whatsapp ? `https://api.whatsapp.com/send?phone=${enc.morador_whatsapp.replace(/\D/g,'')}&text=${encodeURIComponent(enc.mensagem_aviso)}` : "";
+    linkTelegramAtual = `https://t.me/share/url?url=${encodeURIComponent('https://ambros.condominio.app')}&text=${encodeURIComponent(enc.mensagem_aviso)}`;
+    textoMensagemAtual = enc.mensagem_aviso;
+
+    document.getElementById("sucessoCodigoRetirada").textContent = enc.codigo_retirada;
+    document.getElementById("sucessoMensagemTexto").textContent = enc.mensagem_aviso;
+
+    const modalSucesso = new bootstrap.Modal(document.getElementById("modalSucessoAviso"));
+    modalSucesso.show();
+  }
+
+  // Retirada
+  function abrirModalRetirada(id, codPreenchido = "") {
+    const enc = listaEncomendas.find(e => e.id === id);
+    if (!enc) return;
+
+    document.getElementById("retiradaEncomendaId").value = enc.id;
+    document.getElementById("retMoradorNome").textContent = enc.morador_nome;
+    document.getElementById("retMoradorUnidade").textContent = enc.morador_unidade;
+    document.getElementById("retVolume").textContent = enc.tipo_volume;
+    document.getElementById("retTransportadora").textContent = enc.transportadora;
+    document.getElementById("retRastreio").textContent = enc.codigo_rastreio;
+    
+    // Se o código digitado for o código de retirada, já preenche
+    document.getElementById("retiradaCodigoInput").value = codPreenchido.toUpperCase().startsWith("RET") ? codPreenchido : "";
+    document.getElementById("retiradaQuemRetirou").value = `${enc.morador_nome} (Titular)`;
+    
+    const errDiv = document.getElementById("retiradaErroMsg");
+    errDiv.classList.add("d-none");
+    errDiv.textContent = "";
+
+    const modal = new bootstrap.Modal(document.getElementById("modalRetirada"));
+    modal.show();
+  }
+
+  function abrirModalRetiradaRapida() {
+    const pendentes = listaEncomendas.filter(e => e.status === "pendente");
+    if (pendentes.length === 0) {
+      alert("Não há encomendas aguardando retirada no momento!");
+      return;
+    }
+    // Abre com a primeira ou pede código
+    abrirModalRetirada(pendentes[0].id);
+  }
+
+  async function confirmarRetirada() {
+    const id = document.getElementById("retiradaEncomendaId").value;
+    const codRetirada = document.getElementById("retiradaCodigoInput").value.trim();
+    const quemRetirou = document.getElementById("retiradaQuemRetirou").value.trim();
+    const errDiv = document.getElementById("retiradaErroMsg");
+
+    if (!codRetirada) {
+      errDiv.textContent = "Informe o código de retirada apresentado pelo morador!";
+      errDiv.classList.remove("d-none");
+      return;
+    }
+
+    try {
+      const resp = await fetch(`/encomendas/${id}/retirar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          codigo_retirada: codRetirada,
+          retirado_por: quemRetirou
+        })
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok) {
+        errDiv.textContent = resData.detail || "Código de retirada incorreto!";
+        errDiv.classList.remove("d-none");
+        return;
+      }
+
+      emitirBipe();
+      bootstrap.Modal.getInstance(document.getElementById("modalRetirada")).hide();
+      carregarDados();
+    } catch (err) {
+      console.error(err);
+      errDiv.textContent = "Erro ao registrar retirada no servidor.";
+      errDiv.classList.remove("d-none");
+    }
+  }
+
+  async function excluirEncomenda(id) {
+    try {
+      const resp = await fetch(`/encomendas/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ===================== LEITOR DE CÓDIGO DE BARRAS COM CÂMERA & FOTO =====================
+  let scannerAtivo = false;
+  let animFrameId = null;
+
+  async function abrirLeitorCamera() {
+    destinoCodigoBarras = "quick";
+    iniciarCamera();
+  }
+
+  async function abrirLeitorCameraParaCampo() {
+    destinoCodigoBarras = "campoCadastro";
+    iniciarCamera();
+  }
+
+  function fecharModalCamera() {
+    pararCamera();
+    const modalEl = document.getElementById("modalCamera");
+    const modalInst = bootstrap.Modal.getInstance(modalEl);
+    if (modalInst) modalInst.hide();
+  }
+
+  function resetarModalCameraUI() {
+    const box = document.getElementById("cameraBox");
+    if (box) box.style.display = "block";
+    const liveCtrls = document.getElementById("cameraLiveControls");
+    if (liveCtrls) liveCtrls.classList.remove("d-none");
+    const fallback = document.getElementById("cameraFallbackOptions");
+    if (fallback) fallback.classList.add("d-none");
+    const photoBox = document.getElementById("photoPreviewBox");
+    if (photoBox) photoBox.classList.add("d-none");
+    const manualInput = document.getElementById("manualBarcodeInput");
+    if (manualInput) manualInput.value = "";
+  }
+
+  function ativarModoFallbackCamera(mensagem) {
+    pararCamera();
+    const box = document.getElementById("cameraBox");
+    if (box) box.style.display = "none";
+    const liveCtrls = document.getElementById("cameraLiveControls");
+    if (liveCtrls) liveCtrls.classList.add("d-none");
+    const statusText = document.getElementById("cameraStatus");
+    if (statusText) statusText.textContent = mensagem || "Câmera contínua restrita pelo contexto atual.";
+    const fallback = document.getElementById("cameraFallbackOptions");
+    if (fallback) fallback.classList.remove("d-none");
+  }
+
+  async function iniciarCamera() {
+    resetarModalCameraUI();
+    const modal = new bootstrap.Modal(document.getElementById("modalCamera"));
+    modal.show();
+
+    const video = document.getElementById("cameraVideo");
+    const statusText = document.getElementById("cameraStatus");
+    statusText.textContent = "Conectando à câmera do dispositivo...";
+
+    // Verifica se navigator.mediaDevices está disponível no contexto atual
+    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
+      ativarModoFallbackCamera("O navegador ou quadro incorporado não permite streaming de vídeo.");
+      return;
+    }
+
+    try {
+      if (videoStream) {
+        videoStream.getTracks().forEach(t => t.stop());
+      }
+
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      video.srcObject = videoStream;
+      await video.play();
+
+      scannerAtivo = true;
+      statusText.textContent = "Aponte para o código de barras ou etiqueta de rastreio...";
+
+      // Verifica se BarcodeDetector nativo está disponível
+      if ("BarcodeDetector" in window) {
+        try {
+          detectorBarras = new BarcodeDetector({
+            formats: ["code_128", "code_39", "ean_13", "ean_8", "qr_code", "itf", "upc_a", "upc_e"]
+          });
+        } catch (_) {
+          detectorBarras = null;
+        }
+      }
+
+      loopLeituraCamera();
+    } catch (err) {
+      // Bloqueio de permissão no iframe ou pelo usuário é tratado graciosamente sem erro fatal
+      console.warn("Acesso contínuo à câmera restrito pelo navegador ou iFrame:", err && err.message ? err.message : err);
+      ativarModoFallbackCamera("Acesso à câmera de vídeo bloqueado pelo navegador ou iFrame.");
+    }
+  }
+
+  async function loopLeituraCamera() {
+    if (!scannerAtivo) return;
+    const video = document.getElementById("cameraVideo");
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA && detectorBarras) {
+      try {
+        const barcodes = await detectorBarras.detect(video);
+        if (barcodes.length > 0) {
+          const barcodeValue = barcodes[0].rawValue;
+          onBarcodeDetected(barcodeValue);
+          return;
+        }
+      } catch (_) {}
+    }
+
+    animFrameId = requestAnimationFrame(loopLeituraCamera);
+  }
+
+  function onBarcodeDetected(code) {
+    emitirBipe();
+    pararCamera();
+    fecharModalCamera();
+
+    if (destinoCodigoBarras === "campoCadastro") {
+      document.getElementById("cadCodigoRastreio").value = code;
+    } else {
+      document.getElementById("quickBarcodeInput").value = code;
+      processarCodigoBarrasRapido();
+    }
+  }
+
+  function pararCamera() {
+    scannerAtivo = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+  }
+
+  let modoCameraAtual = "environment";
+  async function trocarCamera() {
+    modoCameraAtual = modoCameraAtual === "environment" ? "user" : "environment";
+    pararCamera();
+    try {
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") return;
+      const video = document.getElementById("cameraVideo");
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: modoCameraAtual } }
+      });
+      video.srcObject = videoStream;
+      await video.play();
+      scannerAtivo = true;
+      loopLeituraCamera();
+    } catch (_) {
+      ativarModoFallbackCamera("Não foi possível alternar para esta câmera.");
+    }
+  }
+
+  // Acionamento do input de arquivo/foto
+  function abrirCapturaFoto() {
+    const input = document.getElementById("cameraPhotoInput");
+    if (input) input.click();
+  }
+
+  // Processa a foto tirada ou selecionada pelo usuário
+  async function processarFotoCapturada(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const previewBox = document.getElementById("photoPreviewBox");
+    const previewImg = document.getElementById("photoPreviewImg");
+    const statusTxt = document.getElementById("photoStatusText");
+
+    previewBox.classList.remove("d-none");
+    statusTxt.textContent = "Processando imagem...";
+
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      previewImg.src = e.target.result;
+
+      // Cria elemento Image para detecção
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = async function() {
+        if ("BarcodeDetector" in window) {
+          try {
+            const detector = new BarcodeDetector({
+              formats: ["code_128", "code_39", "ean_13", "ean_8", "qr_code", "itf", "upc_a", "upc_e"]
+            });
+            const barcodes = await detector.detect(img);
+            if (barcodes.length > 0) {
+              const code = barcodes[0].rawValue;
+              statusTxt.textContent = `Código detectado: ${code}`;
+              document.getElementById("manualBarcodeInput").value = code;
+              setTimeout(() => {
+                onBarcodeDetected(code);
+              }, 400);
+              return;
+            }
+          } catch (_) {}
+        }
+
+        // Se não conseguiu detectar automaticamente pela imagem
+        statusTxt.textContent = "Foto carregada. Digite o código visível na imagem:";
+        document.getElementById("manualBarcodeInput").focus();
+      };
+    };
+    reader.readAsDataURL(file);
+    input.value = "";
+  }
+
+  function confirmarCodigoManual() {
+    const input = document.getElementById("manualBarcodeInput");
+    const code = input.value.trim();
+    if (!code) {
+      alert("Por favor, digite o código de rastreio ou código de barras.");
+      return;
+    }
+    onBarcodeDetected(code);
+  }
+
+  function usarCodigoExemplo(code) {
+    document.getElementById("manualBarcodeInput").value = code;
+    onBarcodeDetected(code);
+  }
+
+  // Inicialização
+  carregarDados();
+</script>
+</body>
+</html>

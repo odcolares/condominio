@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Moradores</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{--sidebar-bg:#1b2434;--sidebar-bg2:#141c29;--sidebar-hover:#243044;--brand-blue:#2f6bff;--text-muted:#8a93a6;--content-bg:#f4f6f9;--card-radius:12px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:260px;flex-shrink:0;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;transition:transform .25s ease;z-index:1040}
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{display:flex;align-items:center;gap:12px;padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .profile img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:15px}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10.5px;letter-spacing:1.5px;color:var(--text-muted);padding:16px 18px 6px}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 18px;color:#c1c9d6;font-size:14.5px;cursor:pointer}
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item .chev{margin-left:auto;font-size:12px;color:var(--text-muted);transition:transform .2s}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:0 10px;padding:11px 12px}
+  .subnav{display:none;padding:2px 0 6px}
+  .subnav.open{display:block}
+  .subnav .nav-item{padding-left:44px;font-size:13.5px}
+  .subnav .nav-item.active{background:transparent;color:#6ea3f5;margin:0;padding-left:44px}
+  .subnav .nav-item i.lead{font-size:8px}
+  .sidebar-foot{padding:18px;border-top:1px solid rgba(255,255,255,.06);margin-top:8px}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:14px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11.5px;line-height:1.5}
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:400}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:20px}
+  .bell{position:relative;font-size:19px;color:#6b7280;cursor:pointer}
+  .bell .badge{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;font-size:10px;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#3b4453;font-weight:600}
+  .breadcrumb-mini{font-size:13px;color:#9aa2b1}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .toolbar .search{flex:1;min-width:220px;position:relative}
+  .toolbar .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9aa2b1}
+  .toolbar .search input{width:100%;padding:9px 12px 9px 36px;border:1px solid #dde2ea;border-radius:8px;font-size:14px}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:13px;color:#9aa2b1;font-weight:600;text-align:left;padding:12px 10px;border-bottom:1px solid #eef0f3}
+  tbody td{padding:14px 10px;font-size:14px;color:#4b5563;border-bottom:1px solid #f4f6f8;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .morador-item{display:flex;align-items:center;gap:12px}
+  .morador-avatar{width:40px;height:40px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+  .morador-nome{font-weight:600;color:#1e293b}
+  .morador-cpf{font-size:12px;color:#94a3b8}
+  .badge-proprietario{background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .badge-inquilino{background:#fef3c7;color:#b45309;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .action-btn{width:32px;height:32px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;display:inline-grid;place-items:center;color:#64748b;cursor:pointer;margin-right:4px}
+  .action-btn:hover{background:#f8fafc;color:#1e293b}
+  .action-btn.del:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .footer .heart{color:#ef4444}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <a class="nav-item" href="ambros-dashboard.html"><i class="bi bi-house-door-fill lead"></i> Dashboard</a>
+    <a class="nav-item" href="encomendas.html"><i class="bi bi-box-seam-fill lead"></i> Encomendas</a>
+
+    <div class="nav-item" data-toggle="cadastros"><i class="bi bi-person-vcard-fill lead"></i> Cadastros <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav open" id="cadastros">
+      <a class="nav-item active" href="moradores.html"><i class="bi bi-circle lead"></i> Moradores</a>
+      <a class="nav-item" href="visitantes.html"><i class="bi bi-circle lead"></i> Visitantes</a>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Funcionários</div>
+      <div class="nav-item"><i class="bi bi-circle lead"></i> Prestadores de Serviço</div>
+    </div>
+
+    <div class="nav-item" data-toggle="portaria"><i class="bi bi-door-open-fill lead"></i> Portaria <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="portaria">
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Entrada / Saída</a>
+      <a class="nav-item" href="portaria-entrada.html"><i class="bi bi-circle lead"></i> Consulta Rápida</a>
+    </div>
+
+    <div class="nav-item" data-toggle="veiculos"><i class="bi bi-car-front-fill lead"></i> Veículos <i class="bi bi-chevron-down chev"></i></div>
+    <div class="subnav" id="veiculos">
+      <a class="nav-item" href="veiculos.html"><i class="bi bi-circle lead"></i> Gestão de Veículos</a>
+    </div>
+
+    <div class="nav-item" onclick="logout()"><i class="bi bi-box-arrow-left lead"></i> Sair do Sistema</div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Moradores</div>
+
+      <div class="right">
+        <div class="bell"><i class="bi bi-bell"></i><span class="badge">3</span></div>
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Portaria Principal</div>
+          </div>
+          <i class="bi bi-box-arrow-right text-muted ms-2"></i>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h4>Gestão de Moradores</h4>
+          <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Cadastros / Moradores</div>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMorador">
+          <i class="bi bi-person-plus me-1"></i> Novo Morador
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="inputBusca" placeholder="Buscar por nome, CPF ou bloco...">
+          </div>
+          <select class="form-select w-auto" id="selectBloco">
+            <option value="">Todos os blocos</option>
+            <option value="05">Bloco 05</option>
+            <option value="08">Bloco 08</option>
+            <option value="10">Bloco 10</option>
+          </select>
+          <select class="form-select w-auto" id="selectVinculo">
+            <option value="">Todos os vínculos</option>
+            <option value="proprietario">Proprietário</option>
+            <option value="inquilino">Inquilino</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Morador</th>
+                <th>Bloco / Apt</th>
+                <th>Vínculo</th>
+                <th>Contato</th>
+                <th>Vaga</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaMoradores">
+              <tr><td colspan="6" class="text-center py-4 text-muted">Carregando lista de moradores...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso. Todos os direitos reservados.</span>
+      <span>Desenvolvido para condomínios inteligentes</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ===== Modal Novo Morador ===== -->
+<div class="modal fade" id="modalMorador" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2 text-primary"></i>Novo Morador</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger d-none" id="modalErro"></div>
+        <form id="formMorador">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label">Nome completo *</label>
+              <input class="form-control" id="fNome" required placeholder="Ex.: Rodrigo Silva">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">CPF *</label>
+              <input class="form-control" id="fCpf" required placeholder="000.000.000-00">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Telefone</label>
+              <input class="form-control" id="fTelefone" placeholder="(11) 90000-0000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">WhatsApp</label>
+              <input class="form-control" id="fWhatsapp" placeholder="(11) 90000-0000">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Bloco</label>
+              <input class="form-control" id="fBloco" placeholder="Ex.: 05">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Apartamento</label>
+              <input class="form-control" id="fApartamento" placeholder="Ex.: 502">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Vínculo</label>
+              <select class="form-select" id="fVinculo">
+                <option value="proprietario">Proprietário</option>
+                <option value="inquilino">Inquilino</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Veículo (Placa)</label>
+              <input class="form-control" id="fPlaca" placeholder="ABC1D23">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Número da Vaga</label>
+              <input class="form-control" id="fVaga" placeholder="Ex.: V-045">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="btnSalvarMorador"><i class="bi bi-check-lg"></i> Salvar Morador</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.href = "login.html";
+  }
+
+  // Sidebar toggle
+  document.querySelectorAll('.nav-item[data-toggle]').forEach(function(item){
+    item.addEventListener('click',function(){
+      var el=document.getElementById(this.dataset.toggle);
+      if(!el) return;
+      el.classList.toggle('open');
+      var chev=this.querySelector('.chev');
+      if(chev) chev.style.transform=el.classList.contains('open')?'rotate(180deg)':'rotate(0)';
+    });
+  });
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){sidebar.classList.toggle('show');overlay.classList.toggle('show');});
+  overlay.addEventListener('click',function(){sidebar.classList.remove('show');overlay.classList.remove('show');});
+
+  async function carregarMoradores() {
+    const busca = document.getElementById("inputBusca").value.trim();
+    const bloco = document.getElementById("selectBloco").value;
+    const vinculo = document.getElementById("selectVinculo").value;
+
+    const params = new URLSearchParams();
+    if (busca) params.append("busca", busca);
+    if (bloco) params.append("bloco", bloco);
+    if (vinculo) params.append("vinculo", vinculo);
+
+    try {
+      const resp = await fetch(`/moradores?${params.toString()}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      const data = await resp.json();
+      const tbody = document.getElementById("tabelaMoradores");
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Nenhum morador encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(m => {
+        const iniciais = m.nome_completo.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        const badgeClass = m.vinculo === 'inquilino' ? 'badge-inquilino' : 'badge-proprietario';
+        const vinculoTxt = m.vinculo === 'inquilino' ? 'Inquilino' : 'Proprietário';
+        const contato = m.telefone || m.whatsapp || '—';
+        return `
+          <tr>
+            <td>
+              <div class="morador-item">
+                <div class="morador-avatar">${iniciais}</div>
+                <div>
+                  <div class="morador-nome">${m.nome_completo}</div>
+                  <div class="morador-cpf">CPF: ${m.cpf}</div>
+                </div>
+              </div>
+            </td>
+            <td>Bloco ${m.bloco || '—'} / ${m.apartamento || '—'}</td>
+            <td><span class="${badgeClass}">${vinculoTxt}</span></td>
+            <td>${contato}</td>
+            <td>${m.numero_vaga || '—'}</td>
+            <td>
+              <button class="action-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+              <button class="action-btn del" onclick="excluirMorador(${m.id}, '${m.nome_completo}')" title="Excluir"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function excluirMorador(id, nome) {
+    try {
+      const resp = await fetch(`/moradores/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarMoradores();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  document.getElementById("btnSalvarMorador").addEventListener("click", async () => {
+    const nome = document.getElementById("fNome").value.trim();
+    const cpf = document.getElementById("fCpf").value.trim();
+    const errBox = document.getElementById("modalErro");
+
+    if (!nome || !cpf) {
+      errBox.textContent = "Nome completo e CPF são obrigatórios.";
+      errBox.classList.remove("d-none");
+      return;
+    }
+
+    const payload = {
+      nome_completo: nome,
+      cpf: cpf,
+      telefone: document.getElementById("fTelefone").value.trim() || null,
+      whatsapp: document.getElementById("fWhatsapp").value.trim() || null,
+      bloco: document.getElementById("fBloco").value.trim() || null,
+      apartamento: document.getElementById("fApartamento").value.trim() || null,
+      vinculo: document.getElementById("fVinculo").value,
+      numero_vaga: document.getElementById("fVaga").value.trim() || null,
+      placa_veiculo: document.getElementById("fPlaca").value.trim() || null
+    };
+
+    try {
+      const resp = await fetch("/moradores", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const d = await resp.json().catch(() => ({}));
+        errBox.textContent = d.detail || "Erro ao salvar morador.";
+        errBox.classList.remove("d-none");
+        return;
+      }
+
+      // Sucesso
+      errBox.classList.add("d-none");
+      document.getElementById("formMorador").reset();
+      const modalEl = document.getElementById("modalMorador");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+      carregarMoradores();
+    } catch (err) {
+      errBox.textContent = "Erro de conexão com o servidor.";
+      errBox.classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("inputBusca").addEventListener("input", carregarMoradores);
+  document.getElementById("selectBloco").addEventListener("change", carregarMoradores);
+  document.getElementById("selectVinculo").addEventListener("change", carregarMoradores);
+
+  carregarMoradores();
+</script>
+</body>
+</html>
