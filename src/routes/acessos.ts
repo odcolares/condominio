@@ -14,6 +14,10 @@ function resolverNome(tipo: TipoPessoa, pessoaId: number): string {
     const obj = db.visitantes.find((v) => v.id === pessoaId);
     return obj ? obj.nome : "";
   }
+  if (tipo === "prestador" || tipo === "funcionario") {
+    const obj = db.prestadores.find((p) => p.id === pessoaId);
+    return obj ? obj.nome : "";
+  }
   return "";
 }
 
@@ -35,7 +39,7 @@ acessosRouter.post("", authMiddleware, (req, res) => {
     pessoa_id,
     nome,
     sentido,
-    placa_veiculo: placa_veiculo ?? null,
+    placa_veiculo: placa_veiculo ? String(placa_veiculo).trim().toUpperCase() : null,
     vaga: vaga ?? null,
     observacao: observacao ?? null,
     registrado_em: new Date().toISOString(),
@@ -43,11 +47,19 @@ acessosRouter.post("", authMiddleware, (req, res) => {
 
   db.acessos.push(acesso);
 
-  // Atualiza presença do visitante se for o caso
+  // Atualiza presença do visitante
   if (tipo_pessoa === "visitante") {
     const visitante = db.visitantes.find((v) => v.id === pessoa_id);
     if (visitante) {
       visitante.presente = sentido === "entrada";
+    }
+  }
+
+  // Atualiza presença do prestador
+  if (tipo_pessoa === "prestador") {
+    const prestador = db.prestadores.find((p) => p.id === pessoa_id);
+    if (prestador) {
+      prestador.presente = sentido === "entrada";
     }
   }
 
@@ -60,6 +72,7 @@ acessosRouter.get("", authMiddleware, (req, res) => {
   const sentido = req.query.sentido as SentidoAcesso | undefined;
   const inicioStr = req.query.inicio as string | undefined;
   const fimStr = req.query.fim as string | undefined;
+  const busca = (req.query.busca as string | undefined)?.toLowerCase().trim();
   const skip = parseInt(req.query.skip as string, 10) || 0;
   const limit = parseInt(req.query.limit as string, 10) || 100;
 
@@ -72,6 +85,14 @@ acessosRouter.get("", authMiddleware, (req, res) => {
     const reg = new Date(a.registrado_em);
     if (inicio && reg < inicio) return false;
     if (fim && reg > fim) return false;
+
+    if (busca) {
+      const matchNome = a.nome?.toLowerCase().includes(busca);
+      const matchPlaca = a.placa_veiculo?.toLowerCase().includes(busca);
+      const matchObs = a.observacao?.toLowerCase().includes(busca);
+      if (!matchNome && !matchPlaca && !matchObs) return false;
+    }
+
     return true;
   });
 

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Prestadores de Serviço & Obras</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{
+    flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px;
+  }
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{
+    background:var(--brand-blue);color:#fff;border-radius:8px;
+    margin:2px 10px;padding:10px 14px;font-weight:600;
+  }
+
+  /* Subcategorias Organizadas */
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+  .stat-card{background:#fff;border-radius:var(--card-radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px}
+  .stat-icon.present{background:#ecfdf5;color:#059669}
+  .stat-icon.active{background:#eff6ff;color:#2563eb}
+  .stat-icon.tools{background:#fef3c7;color:#d97706}
+  .stat-icon.expired{background:#fef2f2;color:#dc2626}
+  .stat-val{font-size:26px;font-weight:700;color:#0f172a;line-height:1}
+  .stat-lbl{font-size:13px;color:#64748b;margin-top:4px}
+
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;justify-content:space-between}
+  
+  .filter-tabs{display:inline-flex;background:#f1f5f9;padding:4px;border-radius:8px;gap:4px}
+  .filter-tab{border:none;background:none;padding:6px 14px;font-size:13px;font-weight:500;color:#64748b;border-radius:6px;cursor:pointer;transition:all .15s}
+  .filter-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .table-custom{margin:0}
+  .table-custom th{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+  .table-custom tr:hover td{background:#fafafa}
+
+  .avatar-tool{width:38px;height:38px;border-radius:8px;background:#e0e7ff;color:#4338ca;display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+  .badge-cracha{background:#e2e8f0;color:#334155;font-weight:600;font-size:12px;padding:3px 8px;border-radius:6px;display:inline-block;letter-spacing:1px}
+
+  .status-badge-in{display:inline-flex;align-items:center;gap:6px;color:#059669;font-weight:600;font-size:13px}
+  .status-badge-out{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-weight:500;font-size:13px}
+  .status-badge-in .dot{width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+  .status-badge-out .dot{width:8px;height:8px;border-radius:50%;background:#94a3b8}
+
+  .badge-valido{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .badge-vencido{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:600}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="avatar">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria</div>
+        <div class="pstatus"><span class="dot"></span> Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <!-- Dashboard Top Level -->
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Subcategoria: Portaria & Segurança (Ativo aqui) -->
+      <div class="nav-group open" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem active" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Cadastros do Condomínio -->
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Convivência & Morador -->
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Gestão & Auditoria -->
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Ambros v2.0 · P1 Ativo</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Prestadores de Serviço & Obras</div>
+      <div class="right">
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Sair do sistema</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h4>Controle de Prestadores de Serviço, Obras & Reformas</h4>
+          <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Prestadores & Obras</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalNovo()">
+          <i class="bi bi-person-plus-fill me-1"></i> Nova Autorização / Prestador
+        </button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon present"><i class="bi bi-person-walking"></i></div>
+          <div>
+            <div class="stat-val" id="statPresentes">0</div>
+            <div class="stat-lbl">No Condomínio Agora</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon active"><i class="bi bi-shield-check"></i></div>
+          <div>
+            <div class="stat-val" id="statAutorizados">0</div>
+            <div class="stat-lbl">Autorizações Válidas</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon tools"><i class="bi bi-hammer"></i></div>
+          <div>
+            <div class="stat-val" id="statObras">0</div>
+            <div class="stat-lbl">Obras de Unidade</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon expired"><i class="bi bi-calendar-x"></i></div>
+          <div>
+            <div class="stat-val" id="statExpirados">0</div>
+            <div class="stat-lbl">Autorizações Expiradas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Panel -->
+      <div class="panel">
+        <div class="toolbar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="todos" onclick="setFiltro('todos', this)">Todos</button>
+            <button class="filter-tab" data-filter="presentes" onclick="setFiltro('presentes', this)">Presentes Agora</button>
+            <button class="filter-tab" data-filter="unidade" onclick="setFiltro('unidade', this)">Obras de Unidade</button>
+            <button class="filter-tab" data-filter="condominio" onclick="setFiltro('condominio', this)">Condomínio / Geral</button>
+          </div>
+
+          <div class="d-flex gap-2">
+            <div class="input-group" style="max-width: 320px;">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control" id="buscaInput" placeholder="Buscar prestador, empresa, crachá..." oninput="filtrarLocal()">
+            </div>
+            <button class="btn btn-outline-secondary" onclick="carregarPrestadores()" title="Atualizar">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Prestador / Contato</th>
+                <th>Empresa & Função</th>
+                <th>Vínculo / Autorizador</th>
+                <th>Período Autorizado</th>
+                <th>Crachá Provisório</th>
+                <th>Presença</th>
+                <th style="width: 190px;" class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPrestadores">
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <div class="spinner-border spinner-border-sm me-2"></div> Carregando prestadores...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso</span>
+      <span>Módulo P1: Prestadores & Obras Ativo</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL NOVO / EDITAR PRESTADOR ===================== -->
+<div class="modal fade" id="modalPrestador" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle"><i class="bi bi-tools text-primary me-2"></i>Cadastrar Prestador de Serviço</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formPrestador" onsubmit="salvarPrestador(event)">
+          <input type="hidden" id="prestadorId">
+
+          <h6 class="text-primary fw-bold mb-3"><i class="bi bi-person-fill me-1"></i> Dados do Profissional</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Nome Completo *</label>
+              <input type="text" class="form-control" id="cadNome" required placeholder="Ex: Marcos Ribeiro">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Tipo Doc. *</label>
+              <select class="form-select" id="cadTipoDoc">
+                <option value="CPF">CPF</option>
+                <option value="RG">RG</option>
+                <option value="CNH">CNH</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Número do Doc. *</label>
+              <input type="text" class="form-control" id="cadDoc" required placeholder="000.000.000-00">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Empresa / Razão Social</label>
+              <input type="text" class="form-control" id="cadEmpresa" placeholder="Ex: Marmoraria Gran Prime (ou Autônomo)">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Função / Profissão *</label>
+              <input type="text" class="form-control" id="cadFuncao" required placeholder="Ex: Instalador, Eletricista, Pintor">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Telefone / WhatsApp</label>
+              <input type="text" class="form-control" id="cadTelefone" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+
+          <h6 class="text-primary fw-bold mb-3"><i class="bi bi-house-door-fill me-1"></i> Autorização e Vínculo</h6>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Tipo de Vínculo *</label>
+              <select class="form-select" id="cadTipoVinculo" onchange="toggleVinculo()">
+                <option value="unidade">Obra / Serviço de Unidade (Morador)</option>
+                <option value="condominio">Manutenção Geral do Condomínio</option>
+              </select>
+            </div>
+            <div class="col-md-8" id="boxMorador">
+              <label class="form-label small fw-semibold">Morador / Unidade Autorizadora *</label>
+              <select class="form-select" id="cadMoradorId" onchange="selecionarMorador()">
+                <option value="">Selecione a unidade autorizadora...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Data de Início *</label>
+              <input type="date" class="form-control" id="cadDataInicio" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Data de Término *</label>
+              <input type="date" class="form-control" id="cadDataFim" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Horário Permitido</label>
+              <input type="text" class="form-control" id="cadHorario" value="08:00 às 17:00 (Seg a Sex)">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-semibold">Placa do Veículo (opcional)</label>
+              <input type="text" class="form-control text-uppercase" id="cadPlaca" placeholder="ABC1D23">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Número do Crachá Provisório</label>
+              <input type="text" class="form-control text-uppercase" id="cadCracha" placeholder="Ex: CR-012">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label small fw-semibold">Observações / Escopo do Serviço</label>
+              <input type="text" class="form-control" id="cadObs" placeholder="Ex: Troca de piso e forro de gesso. Autorizado pelo síndico.">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnSalvarPrestador">
+              <i class="bi bi-check-circle-fill me-1"></i> Salvar Autorização
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL REGISTRO DE ENTRADA RÁPIDA ===================== -->
+<div class="modal fade" id="modalEntrada" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title"><i class="bi bi-box-arrow-in-right me-2"></i>Registrar Entrada de Prestador</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="entradaPrestadorId">
+        <div class="p-3 bg-light rounded mb-3">
+          <div class="fw-bold" id="entradaNome">Marcos Ribeiro</div>
+          <div class="text-muted small" id="entradaDetalhe">Marmoraria Gran Prime · Bl 05 / 502</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Entregar Crachá Provisório:</label>
+          <input type="text" class="form-control text-uppercase" id="entradaCracha" placeholder="Ex: CR-012">
+          <div class="form-text">Identificação visual para permanência nas áreas comuns.</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Placa do Veículo (se estiver embarcado):</label>
+          <input type="text" class="form-control text-uppercase" id="entradaPlaca" placeholder="ABC1D23">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Observação do Porteiro (opcional):</label>
+          <input type="text" class="form-control" id="entradaObs" placeholder="Ex: Acompanhado de 1 ajudante">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" onclick="confirmarEntrada()">
+          <i class="bi bi-check2-circle me-1"></i> Confirmar Entrada
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.replace("login.html");
+  }
+
+  // Preencher nome do usuário
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.replace("login.html");
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+
+  let prestadoresLista = [];
+  let moradoresLista = [];
+  let filtroAtual = "todos";
+  let modalPrestadorBs = null;
+  let modalEntradaBs = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    modalPrestadorBs = new bootstrap.Modal(document.getElementById("modalPrestador"));
+    modalEntradaBs = new bootstrap.Modal(document.getElementById("modalEntrada"));
+    carregarMoradores();
+    carregarPrestadores();
+  });
+
+  async function carregarMoradores() {
+    try {
+      const resp = await fetch("/moradores", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        moradoresLista = await resp.json();
+        const sel = document.getElementById("cadMoradorId");
+        sel.innerHTML = '<option value="">Selecione a unidade autorizadora...</option>' +
+          moradoresLista.map(m => `
+            <option value="${m.id}" data-bloco="${m.bloco || ''}" data-apto="${m.apartamento || ''}" data-nome="${m.nome_completo}">
+              Bloco ${m.bloco || '—'} / Apto ${m.apartamento || '—'} — ${m.nome_completo}
+            </option>
+          `).join('');
+      }
+    } catch (err) {
+      console.warn("Aviso ao carregar moradores:", err);
+    }
+  }
+
+  async function carregarPrestadores() {
+    try {
+      const resp = await fetch("/prestadores", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      if (resp.ok) {
+        prestadoresLista = await resp.json();
+        atualizarMetricas();
+        renderizarTabela();
+      }
+    } catch (err) {
+      console.warn("Aviso ao carregar prestadores:", err);
+    }
+  }
+
+  function atualizarMetricas() {
+    const hoje = new Date().toISOString().split("T")[0];
+    const presentes = prestadoresLista.filter(p => p.presente).length;
+    const autorizados = prestadoresLista.filter(p => p.ativo && p.data_fim >= hoje).length;
+    const obras = prestadoresLista.filter(p => p.tipo_vinculo === "unidade").length;
+    const expirados = prestadoresLista.filter(p => p.data_fim < hoje).length;
+
+    document.getElementById("statPresentes").textContent = presentes;
+    document.getElementById("statAutorizados").textContent = autorizados;
+    document.getElementById("statObras").textContent = obras;
+    document.getElementById("statExpirados").textContent = expirados;
+  }
+
+  function setFiltro(tipo, el) {
+    filtroAtual = tipo;
+    document.querySelectorAll(".filter-tab").forEach(b => b.classList.remove("active"));
+    el.classList.add("active");
+    renderizarTabela();
+  }
+
+  function filtrarLocal() {
+    renderizarTabela();
+  }
+
+  function renderizarTabela() {
+    const busca = document.getElementById("buscaInput").value.toLowerCase().trim();
+    const hoje = new Date().toISOString().split("T")[0];
+
+    const filtrados = prestadoresLista.filter(p => {
+      // Filtro de aba
+      if (filtroAtual === "presentes" && !p.presente) return false;
+      if (filtroAtual === "unidade" && p.tipo_vinculo !== "unidade") return false;
+      if (filtroAtual === "condominio" && p.tipo_vinculo !== "condominio") return false;
+
+      // Busca texto
+      if (busca) {
+        const matchNome = p.nome.toLowerCase().includes(busca);
+        const matchDoc = p.documento.toLowerCase().includes(busca);
+        const matchEmpresa = (p.empresa || '').toLowerCase().includes(busca);
+        const matchFuncao = p.funcao.toLowerCase().includes(busca);
+        const matchPlaca = (p.placa_veiculo || '').toLowerCase().includes(busca);
+        const matchCracha = (p.cracha_numero || '').toLowerCase().includes(busca);
+        const matchMorador = (p.morador_autorizador_nome || '').toLowerCase().includes(busca);
+        if (!matchNome && !matchDoc && !matchEmpresa && !matchFuncao && !matchPlaca && !matchCracha && !matchMorador) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    const tbody = document.getElementById("tabelaPrestadores");
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum prestador encontrado com os filtros aplicados.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(p => {
+      const isVencido = p.data_fim < hoje;
+      const statusPrazo = isVencido 
+        ? `<span class="badge-vencido"><i class="bi bi-x-circle me-1"></i>Expirado</span>`
+        : `<span class="badge-valido"><i class="bi bi-check-circle me-1"></i>Válido</span>`;
+
+      const vinculoTxt = p.tipo_vinculo === "unidade"
+        ? `<div><strong>Bl ${p.bloco || '—'} / ${p.apartamento || '—'}</strong></div><div class="text-muted small">${p.morador_autorizador_nome || 'Morador'}</div>`
+        : `<div><strong>Condomínio</strong></div><div class="text-muted small">Administração Geral</div>`;
+
+      const presenceBadge = p.presente
+        ? `<span class="status-badge-in"><span class="dot"></span> Presente</span>`
+        : `<span class="status-badge-out"><span class="dot"></span> Fora</span>`;
+
+      const formatarData = (dStr) => {
+        if (!dStr) return "—";
+        const parts = dStr.split("-");
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dStr;
+      };
+
+      const actionBtn = p.presente
+        ? `<button class="btn btn-sm btn-outline-danger" onclick="abrirSaida(${p.id})" title="Registrar Saída"><i class="bi bi-box-arrow-left me-1"></i>Saída</button>`
+        : `<button class="btn btn-sm btn-outline-success" onclick="abrirEntrada(${p.id})" title="Registrar Entrada"><i class="bi bi-box-arrow-in-right me-1"></i>Entrada</button>`;
+
+      return `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-tool"><i class="bi bi-tools"></i></div>
+              <div>
+                <div class="fw-bold">${p.nome}</div>
+                <div class="text-muted small">${p.tipo_documento}: ${p.documento}</div>
+                ${p.telefone ? `<div class="text-muted small"><i class="bi bi-telephone me-1"></i>${p.telefone}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="fw-semibold text-primary">${p.funcao}</div>
+            <div class="text-muted small">${p.empresa || 'Profissional Autônomo'}</div>
+            ${p.placa_veiculo ? `<div class="badge bg-light text-dark border mt-1"><i class="bi bi-car-front me-1"></i>${p.placa_veiculo}</div>` : ''}
+          </td>
+          <td>${vinculoTxt}</td>
+          <td>
+            <div>${formatarData(p.data_inicio)} até <strong>${formatarData(p.data_fim)}</strong></div>
+            <div class="mt-1">${statusPrazo}</div>
+            <div class="text-muted small mt-1"><i class="bi bi-clock me-1"></i>${p.horario_permitido || 'Comercial'}</div>
+          </td>
+          <td>
+            ${p.cracha_numero ? `<span class="badge-cracha">${p.cracha_numero}</span>` : '<span class="text-muted small">Sem crachá</span>'}
+          </td>
+          <td>${presenceBadge}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              ${actionBtn}
+              <button class="btn btn-sm btn-light border" onclick="editarPrestador(${p.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-light border text-danger" onclick="excluirPrestador(${p.id})" title="Excluir"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function toggleVinculo() {
+    const tipo = document.getElementById("cadTipoVinculo").value;
+    const box = document.getElementById("boxMorador");
+    box.style.display = tipo === "unidade" ? "block" : "none";
+  }
+
+  function selecionarMorador() {
+    // Morador selecionado no dropdown
+  }
+
+  function abrirModalNovo() {
+    document.getElementById("modalTitle").innerHTML = '<i class="bi bi-tools text-primary me-2"></i>Cadastrar Prestador de Serviço';
+    document.getElementById("prestadorId").value = "";
+    document.getElementById("formPrestador").reset();
+
+    const hoje = new Date().toISOString().split("T")[0];
+    const emUmaSemana = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+    document.getElementById("cadDataInicio").value = hoje;
+    document.getElementById("cadDataFim").value = emUmaSemana;
+    document.getElementById("cadHorario").value = "08:00 às 17:00 (Seg a Sex)";
+    document.getElementById("cadTipoVinculo").value = "unidade";
+    toggleVinculo();
+
+    modalPrestadorBs.show();
+  }
+
+  function editarPrestador(id) {
+    const p = prestadoresLista.find(item => item.id === id);
+    if (!p) return;
+
+    document.getElementById("modalTitle").innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i>Editar Autorização de Prestador';
+    document.getElementById("prestadorId").value = p.id;
+    document.getElementById("cadNome").value = p.nome;
+    document.getElementById("cadTipoDoc").value = p.tipo_documento;
+    document.getElementById("cadDoc").value = p.documento;
+    document.getElementById("cadEmpresa").value = p.empresa || "";
+    document.getElementById("cadFuncao").value = p.funcao;
+    document.getElementById("cadTelefone").value = p.telefone || "";
+    document.getElementById("cadTipoVinculo").value = p.tipo_vinculo;
+    document.getElementById("cadMoradorId").value = p.morador_autorizador_id || "";
+    document.getElementById("cadDataInicio").value = p.data_inicio;
+    document.getElementById("cadDataFim").value = p.data_fim;
+    document.getElementById("cadHorario").value = p.horario_permitido || "";
+    document.getElementById("cadPlaca").value = p.placa_veiculo || "";
+    document.getElementById("cadCracha").value = p.cracha_numero || "";
+    document.getElementById("cadObs").value = p.observacao || "";
+
+    toggleVinculo();
+    modalPrestadorBs.show();
+  }
+
+  async function salvarPrestador(e) {
+    e.preventDefault();
+    const id = document.getElementById("prestadorId").value;
+    const tipoVinculo = document.getElementById("cadTipoVinculo").value;
+    const moradorSel = document.getElementById("cadMoradorId");
+    const opt = moradorSel.selectedOptions[0];
+
+    const bloco = tipoVinculo === "unidade" && opt ? opt.getAttribute("data-bloco") : null;
+    const apartamento = tipoVinculo === "unidade" && opt ? opt.getAttribute("data-apto") : null;
+    const moradorId = tipoVinculo === "unidade" && opt ? opt.value : null;
+
+    const payload = {
+      nome: document.getElementById("cadNome").value.trim(),
+      tipo_documento: document.getElementById("cadTipoDoc").value,
+      documento: document.getElementById("cadDoc").value.trim(),
+      empresa: document.getElementById("cadEmpresa").value.trim() || null,
+      funcao: document.getElementById("cadFuncao").value.trim(),
+      telefone: document.getElementById("cadTelefone").value.trim() || null,
+      tipo_vinculo: tipoVinculo,
+      bloco,
+      apartamento,
+      morador_autorizador_id: moradorId ? Number(moradorId) : null,
+      data_inicio: document.getElementById("cadDataInicio").value,
+      data_fim: document.getElementById("cadDataFim").value,
+      horario_permitido: document.getElementById("cadHorario").value.trim(),
+      placa_veiculo: document.getElementById("cadPlaca").value.trim().toUpperCase() || null,
+      cracha_numero: document.getElementById("cadCracha").value.trim().toUpperCase() || null,
+      observacao: document.getElementById("cadObs").value.trim() || null,
+    };
+
+    const url = id ? `/prestadores/${id}` : "/prestadores";
+    const method = id ? "PUT" : "POST";
+
+    try {
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        modalPrestadorBs.hide();
+        carregarPrestadores();
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        alert(err.detail || "Erro ao salvar prestador.");
+      }
+    } catch (err) {
+      console.warn("Erro ao salvar prestador:", err);
+      alert("Falha de conexão com o servidor.");
+    }
+  }
+
+  function abrirEntrada(id) {
+    const p = prestadoresLista.find(item => item.id === id);
+    if (!p) return;
+
+    document.getElementById("entradaPrestadorId").value = p.id;
+    document.getElementById("entradaNome").textContent = `${p.nome} (${p.funcao})`;
+    document.getElementById("entradaDetalhe").textContent = p.tipo_vinculo === "unidade"
+      ? `${p.empresa || 'Autônomo'} · Bloco ${p.bloco || '—'} / Apto ${p.apartamento || '—'}`
+      : `${p.empresa || 'Autônomo'} · Manutenção Condomínio`;
+
+    document.getElementById("entradaCracha").value = p.cracha_numero || "";
+    document.getElementById("entradaPlaca").value = p.placa_veiculo || "";
+    document.getElementById("entradaObs").value = "";
+
+    modalEntradaBs.show();
+  }
+
+  async function confirmarEntrada() {
+    const id = document.getElementById("entradaPrestadorId").value;
+    const cracha = document.getElementById("entradaCracha").value.trim();
+    const placa = document.getElementById("entradaPlaca").value.trim();
+    const obs = document.getElementById("entradaObs").value.trim();
+
+    try {
+      const resp = await fetch(`/prestadores/${id}/entrada`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ cracha_numero: cracha, placa_veiculo: placa, observacao: obs })
+      });
+
+      if (resp.ok) {
+        modalEntradaBs.hide();
+        carregarPrestadores();
+      } else {
+        alert("Erro ao registrar entrada.");
+      }
+    } catch (err) {
+      console.warn("Erro ao registrar entrada:", err);
+    }
+  }
+
+  async function abrirSaida(id) {
+    const p = prestadoresLista.find(item => item.id === id);
+    if (!p) return;
+
+    if (!confirm(`Confirmar registro de saída para ${p.nome}?\nO crachá provisório será marcado como devolvido.`)) {
+      return;
+    }
+
+    try {
+      const resp = await fetch(`/prestadores/${id}/saida`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ observacao: "Saída registrada na portaria. Crachá recolhido." })
+      });
+
+      if (resp.ok) {
+        carregarPrestadores();
+      } else {
+        alert("Erro ao registrar saída.");
+      }
+    } catch (err) {
+      console.warn("Erro ao registrar saída:", err);
+    }
+  }
+
+  async function excluirPrestador(id) {
+    const p = prestadoresLista.find(item => item.id === id);
+    if (!p) return;
+
+    if (!confirm(`Deseja realmente remover o cadastro de ${p.nome}?`)) {
+      return;
+    }
+
+    try {
+      const resp = await fetch(`/prestadores/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarPrestadores();
+      }
+    } catch (err) {
+      console.warn("Erro ao excluir prestador:", err);
+    }
+  }
+</script>
+</body>
+</html>

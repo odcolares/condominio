@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Reservas de Áreas Comuns</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#1e293b}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{
+    flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px;
+  }
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{
+    background:var(--brand-blue);color:#fff;border-radius:8px;
+    margin:2px 10px;padding:10px 14px;font-weight:600;
+  }
+
+  /* Subcategorias Organizadas */
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Espaços Grid */
+  .espacos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+  .card-espaco{background:#fff;border-radius:var(--card-radius);padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid #e2e8f0;display:flex;flex-direction:column;justify-content:space-between}
+  .espaco-icon{width:46px;height:46px;border-radius:10px;background:#eff6ff;color:#2563eb;display:grid;place-items:center;font-size:22px;margin-bottom:12px}
+  .espaco-titulo{font-weight:700;font-size:16px;color:#0f172a;margin-bottom:4px}
+  .espaco-capacidade{font-size:12.5px;color:#64748b;margin-bottom:10px}
+  .espaco-regras{font-size:12px;color:#475569;background:#f8fafc;padding:8px 10px;border-radius:6px;margin-bottom:12px;line-height:1.4}
+  
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .table-custom th{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+
+  .badge-conf{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;font-size:11.5px;padding:3px 8px;border-radius:5px;font-weight:600}
+  .badge-canc{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:11.5px;padding:3px 8px;border-radius:5px;font-weight:600}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="avatar">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria</div>
+        <div class="pstatus"><span class="dot"></span> Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <!-- Dashboard Top Level -->
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Subcategoria: Portaria & Segurança -->
+      <div class="nav-group" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Cadastros do Condomínio -->
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Convivência & Morador (Ativo aqui) -->
+      <div class="nav-group open" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem active" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Gestão & Auditoria -->
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot mt-auto p-3 border-top border-secondary border-opacity-25">
+      <div class="text-white fw-bold small">Condomínio Residencial</div>
+      <div class="text-muted small">Ambros v2.0 · Módulo P2</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Reservas de Áreas Comuns & Lazer</div>
+      <div class="right">
+        <a href="portal-morador.html" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-phone me-1"></i> Abrir Portal do Morador</a>
+        <button class="btn btn-primary btn-sm" onclick="abrirModalReserva()"><i class="bi bi-plus-lg me-1"></i> Nova Reserva</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h4>Gestão de Espaços Compartilhados & Eventos</h4>
+          <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Reservas de Áreas Comuns</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalReserva()">
+          <i class="bi bi-calendar-plus-fill me-1"></i> Agendar Novo Espaço
+        </button>
+      </div>
+
+      <!-- Espaços Cards Grid -->
+      <h6 class="fw-bold text-dark mb-3"><i class="bi bi-grid-fill me-1 text-primary"></i> Espaços Disponíveis para Confraternizações</h6>
+      <div class="espacos-grid">
+        <div class="card-espaco">
+          <div>
+            <div class="espaco-icon"><i class="bi bi-gift-fill"></i></div>
+            <div class="espaco-titulo">Salão de Festas Principal</div>
+            <div class="espaco-capacidade"><i class="bi bi-people me-1"></i> Até 80 pessoas · Taxa R$ 120,00</div>
+            <div class="espaco-regras">Climatizado com mesas, cadeiras e freezer. Permitido som interno até às 22h.</div>
+          </div>
+          <button class="btn btn-outline-primary btn-sm w-100" onclick="solicitarEspaco('salao_festas')">Reservar Salão</button>
+        </div>
+
+        <div class="card-espaco">
+          <div>
+            <div class="espaco-icon" style="background:#fef3c7; color:#d97706;"><i class="bi bi-fire"></i></div>
+            <div class="espaco-titulo">Espaço Gourmet & Churrasqueira 1</div>
+            <div class="espaco-capacidade"><i class="bi bi-people me-1"></i> Até 25 pessoas · Taxa R$ 50,00</div>
+            <div class="espaco-regras">Churrasqueira a carvão, pia, grelha inox e bancada de apoio. Horário até às 22h.</div>
+          </div>
+          <button class="btn btn-outline-warning text-dark btn-sm w-100" onclick="solicitarEspaco('churrasqueira_1')">Reservar Churrasqueira 1</button>
+        </div>
+
+        <div class="card-espaco">
+          <div>
+            <div class="espaco-icon" style="background:#e0f2fe; color:#0284c7;"><i class="bi bi-water"></i></div>
+            <div class="espaco-titulo">Churrasqueira 2 (Área Piscina)</div>
+            <div class="espaco-capacidade"><i class="bi bi-people me-1"></i> Até 20 pessoas · Taxa R$ 50,00</div>
+            <div class="espaco-regras">Integrada à área verde da piscina. Horário de funcionamento das 10h às 21h.</div>
+          </div>
+          <button class="btn btn-outline-info text-dark btn-sm w-100" onclick="solicitarEspaco('churrasqueira_2')">Reservar Churrasqueira 2</button>
+        </div>
+
+        <div class="card-espaco">
+          <div>
+            <div class="espaco-icon" style="background:#dcfce7; color:#16a34a;"><i class="bi bi-dribbble"></i></div>
+            <div class="espaco-titulo">Quadra Poliesportiva</div>
+            <div class="espaco-capacidade"><i class="bi bi-people me-1"></i> Até 20 pessoas · Gratuito</div>
+            <div class="espaco-regras">Futsal, basquete e vôlei. Reservas de até 2 horas por unidade. Uso obrigatório de tênis.</div>
+          </div>
+          <button class="btn btn-outline-success btn-sm w-100" onclick="solicitarEspaco('quadra')">Reservar Quadra</button>
+        </div>
+
+        <div class="card-espaco">
+          <div>
+            <div class="espaco-icon" style="background:#f3e8ff; color:#9333ea;"><i class="bi bi-laptop"></i></div>
+            <div class="espaco-titulo">Coworking & Reunião</div>
+            <div class="espaco-capacidade"><i class="bi bi-people me-1"></i> Até 12 pessoas · Gratuito</div>
+            <div class="espaco-regras">Ambiente climatizado, silencioso, com pontos de energia e Wi-Fi de alta velocidade.</div>
+          </div>
+          <button class="btn btn-outline-secondary btn-sm w-100" onclick="solicitarEspaco('coworking')">Reservar Coworking</button>
+        </div>
+      </div>
+
+      <!-- Tabela de Reservas Agendadas -->
+      <div class="panel">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-check me-1 text-primary"></i> Reservas Confirmadas & Agendadas</h6>
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" id="filtroEspaco" onchange="carregarReservas()" style="width: auto;">
+              <option value="">Todos os Espaços</option>
+              <option value="salao_festas">Salão de Festas</option>
+              <option value="churrasqueira_1">Churrasqueira 1</option>
+              <option value="churrasqueira_2">Churrasqueira 2</option>
+              <option value="quadra">Quadra</option>
+              <option value="coworking">Coworking</option>
+            </select>
+            <button class="btn btn-sm btn-outline-secondary" onclick="carregarReservas()"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Data & Período</th>
+                <th>Espaço Comum</th>
+                <th>Morador / Unidade</th>
+                <th>Convidados</th>
+                <th>Status</th>
+                <th>Observações</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaReservas">
+              <tr><td colspan="7" class="text-center py-4 text-muted">Carregando reservas...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso</span>
+      <span>Módulo P2: Gestão de Reservas Ativo</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL NOVA RESERVA ===================== -->
+<div class="modal fade" id="modalReserva" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-calendar-plus me-2"></i>Solicitar Reserva de Espaço</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formReserva" onsubmit="salvarReserva(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Espaço Comum *</label>
+            <select class="form-select" id="resEspaco" required>
+              <option value="salao_festas">Salão de Festas Principal (Até 80 pessoas)</option>
+              <option value="churrasqueira_1">Espaço Gourmet & Churrasqueira 1 (Até 25 pessoas)</option>
+              <option value="churrasqueira_2">Churrasqueira 2 - Piscina (Até 20 pessoas)</option>
+              <option value="quadra">Quadra Poliesportiva</option>
+              <option value="coworking">Coworking & Reunião</option>
+            </select>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Data da Reserva *</label>
+              <input type="date" class="form-control" id="resData" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Período *</label>
+              <select class="form-select" id="resPeriodo" required>
+                <option value="dia_inteiro">Dia Inteiro</option>
+                <option value="manha">Manhã (08h às 12h)</option>
+                <option value="tarde">Tarde (12h às 18h)</option>
+                <option value="noite" selected>Noite (18h às 23h)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Morador / Unidade Solicitante *</label>
+            <select class="form-select" id="resMoradorId" required>
+              <option value="">Carregando moradores...</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Estimativa de Convidados</label>
+            <input type="number" class="form-control" id="resConvidados" value="15" min="1" max="100">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Finalidade / Observações</label>
+            <textarea class="form-control" id="resObs" rows="2" placeholder="Ex: Comemoração de aniversário em família"></textarea>
+          </div>
+
+          <div class="p-2 rounded bg-light border small text-muted">
+            <i class="bi bi-shield-check text-success me-1"></i> O sistema verifica automaticamente conflitos de data/horário para impedir sobreposições.
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle-fill me-1"></i> Confirmar Agendamento</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.replace("login.html");
+  }
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.replace("login.html");
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+
+  let reservasLista = [];
+  let moradoresLista = [];
+  let modalReservaBs = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    modalReservaBs = new bootstrap.Modal(document.getElementById("modalReserva"));
+    const amanha = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    document.getElementById("resData").value = amanha;
+    carregarMoradores();
+    carregarReservas();
+  });
+
+  async function carregarMoradores() {
+    try {
+      const resp = await fetch("/moradores", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        moradoresLista = await resp.json();
+        const sel = document.getElementById("resMoradorId");
+        sel.innerHTML = moradoresLista.map(m => `
+          <option value="${m.id}">Bloco ${m.bloco || '—'} / Apto ${m.apartamento || '—'} — ${m.nome_completo}</option>
+        `).join('');
+      }
+    } catch (err) {
+      console.warn("Aviso moradores:", err);
+    }
+  }
+
+  async function carregarReservas() {
+    const espaco = document.getElementById("filtroEspaco").value;
+    const url = espaco ? `/reservas?espaco=${espaco}` : "/reservas";
+
+    try {
+      const resp = await fetch(url, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      if (resp.ok) {
+        reservasLista = await resp.json();
+        renderizarReservas();
+      }
+    } catch (err) {
+      console.warn("Aviso reservas:", err);
+    }
+  }
+
+  function renderizarReservas() {
+    const tbody = document.getElementById("tabelaReservas");
+    if (reservasLista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma reserva encontrada para este filtro.</td></tr>';
+      return;
+    }
+
+    const periodoNome = {
+      dia_inteiro: 'Dia Inteiro',
+      manha: 'Manhã (08h-12h)',
+      tarde: 'Tarde (12h-18h)',
+      noite: 'Noite (18h-23h)'
+    };
+
+    tbody.innerHTML = reservasLista.map(r => {
+      const parts = r.data_reserva.split('-');
+      const dataFmt = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : r.data_reserva;
+
+      return `
+        <tr>
+          <td>
+            <div class="fw-bold text-dark">${dataFmt}</div>
+            <div class="text-muted small">${periodoNome[r.periodo] || r.periodo}</div>
+          </td>
+          <td>
+            <div class="fw-semibold text-primary">${r.espaco_nome}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">${r.morador_nome}</div>
+            <div class="text-muted small">Bloco ${r.bloco} / Apto ${r.apartamento}</div>
+          </td>
+          <td><span class="badge bg-light text-dark border">${r.convidados_estimados} convidados</span></td>
+          <td>
+            ${r.status === 'confirmada' ? '<span class="badge-conf"><i class="bi bi-check-circle me-1"></i>Confirmada</span>' : '<span class="badge-canc">Cancelada</span>'}
+          </td>
+          <td><div class="small text-muted" style="max-width: 220px;">${r.observacoes || '—'}</div></td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${r.id})" title="Cancelar Reserva">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function solicitarEspaco(espacoId) {
+    document.getElementById("resEspaco").value = espacoId;
+    modalReservaBs.show();
+  }
+
+  function abrirModalReserva() {
+    document.getElementById("formReserva").reset();
+    const amanha = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    document.getElementById("resData").value = amanha;
+    modalReservaBs.show();
+  }
+
+  async function salvarReserva(e) {
+    e.preventDefault();
+    const payload = {
+      espaco: document.getElementById("resEspaco").value,
+      data_reserva: document.getElementById("resData").value,
+      periodo: document.getElementById("resPeriodo").value,
+      morador_id: Number(document.getElementById("resMoradorId").value),
+      convidados_estimados: Number(document.getElementById("resConvidados").value),
+      observacoes: document.getElementById("resObs").value.trim() || null,
+    };
+
+    try {
+      const resp = await fetch("/reservas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        modalReservaBs.hide();
+        carregarReservas();
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        alert(err.detail || "Erro ao solicitar reserva. Verifique a disponibilidade.");
+      }
+    } catch (err) {
+      console.warn("Erro ao salvar reserva:", err);
+    }
+  }
+
+  async function cancelarReserva(id) {
+    if (!confirm("Deseja realmente cancelar esta reserva de espaço?")) return;
+    try {
+      const resp = await fetch(`/reservas/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarReservas();
+      }
+    } catch (err) {
+      console.warn("Erro ao cancelar reserva:", err);
+    }
+  }
+</script>
+</body>
+</html>

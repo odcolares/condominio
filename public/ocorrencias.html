@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Livro de Ocorrências & Alertas da Portaria</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{
+    flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px;
+  }
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{
+    background:var(--brand-blue);color:#fff;border-radius:8px;
+    margin:2px 10px;padding:10px 14px;font-weight:600;
+  }
+
+  /* Subcategorias Organizadas */
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+  .stat-card{background:#fff;border-radius:var(--card-radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px}
+  .stat-icon.total{background:#f1f5f9;color:#475569}
+  .stat-icon.abertas{background:#fef3c7;color:#d97706}
+  .stat-icon.resolvidas{background:#ecfdf5;color:#059669}
+  .stat-icon.alertas{background:#fef2f2;color:#dc2626}
+  .stat-val{font-size:26px;font-weight:700;color:#0f172a;line-height:1}
+  .stat-lbl{font-size:13px;color:#64748b;margin-top:4px}
+
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;justify-content:space-between}
+  
+  .nav-pills-custom{background:#f1f5f9;border-radius:8px;padding:4px;display:inline-flex;gap:4px}
+  .nav-pills-custom .nav-link{border:none;color:#64748b;font-size:13.5px;font-weight:600;padding:7px 16px;border-radius:6px}
+  .nav-pills-custom .nav-link.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .badge-grav-baixa{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .badge-grav-media{background:#fefce8;color:#854d0e;border:1px solid #fef08a;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .badge-grav-alta{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .badge-grav-critica{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:11.5px;padding:2px 8px;border-radius:4px;font-weight:700}
+
+  .badge-status-aberta{background:#fef3c7;color:#92400e;font-size:12px;padding:3px 8px;border-radius:5px;font-weight:600}
+  .badge-status-analise{background:#e0e7ff;color:#3730a3;font-size:12px;padding:3px 8px;border-radius:5px;font-weight:600}
+  .badge-status-resolvida{background:#dcfce7;color:#166534;font-size:12px;padding:3px 8px;border-radius:5px;font-weight:600}
+
+  .alerta-box{border-left:4px solid #dc2626;background:#fff5f5;padding:16px;border-radius:0 8px 8px 0;margin-bottom:12px}
+
+  .table-custom th{font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="avatar">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria</div>
+        <div class="pstatus"><span class="dot"></span> Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <!-- Dashboard Top Level -->
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Subcategoria: Portaria & Segurança (Ativo aqui) -->
+      <div class="nav-group open" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem active" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Cadastros do Condomínio -->
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Convivência & Morador -->
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Gestão & Auditoria -->
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Ambros v2.0 · P1 Ativo</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Livro de Ocorrências & Central de Alertas</div>
+      <div class="right">
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Sair do sistema</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h4>Livro de Ocorrências da Portaria & Lista de Restrições</h4>
+          <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Ocorrências & Alertas</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-danger" onclick="abrirModalRestricao()">
+            <i class="bi bi-shield-slash-fill me-1"></i> Nova Restrição / Alerta
+          </button>
+          <button class="btn btn-primary" onclick="abrirModalOcorrencia()">
+            <i class="bi bi-journal-plus me-1"></i> Registrar Ocorrência
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total"><i class="bi bi-journal-text"></i></div>
+          <div>
+            <div class="stat-val" id="statTotal">0</div>
+            <div class="stat-lbl">Total de Ocorrências</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon abertas"><i class="bi bi-clock-history"></i></div>
+          <div>
+            <div class="stat-val" id="statAbertas">0</div>
+            <div class="stat-lbl">Pendentes / Em Análise</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon resolvidas"><i class="bi bi-check-circle"></i></div>
+          <div>
+            <div class="stat-val" id="statResolvidas">0</div>
+            <div class="stat-lbl">Ocorrências Resolvidas</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon alertas"><i class="bi bi-shield-exclamation"></i></div>
+          <div>
+            <div class="stat-val" id="statAlertas">0</div>
+            <div class="stat-lbl">Alertas / Bloqueios Ativos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Checker for Gatekeeper (Porteiro) -->
+      <div class="panel border border-danger border-opacity-25" style="background: linear-gradient(135deg, #fff, #fff9f9);">
+        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+          <div>
+            <h6 class="mb-0 text-danger fw-bold"><i class="bi bi-radar me-1"></i> Radar de Segurança da Portaria — Verificação Instantânea</h6>
+            <span class="text-muted small">Digite uma placa ou CPF para conferir imediatamente se a pessoa ou veículo possui medida protetiva ou bloqueio de acesso.</span>
+          </div>
+        </div>
+        <div class="row g-2 align-items-center">
+          <div class="col-md-9">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-danger"></i></span>
+              <input type="text" class="form-control" id="radarInput" placeholder="Digite Placa (ex: PER9A99) ou CPF/Nome para checar..." onkeydown="if(event.key==='Enter') checarRadar()">
+              <button class="btn btn-danger px-4" onclick="checarRadar()"><i class="bi bi-shield-check me-1"></i> Verificar Acesso</button>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div id="radarResultado" class="small fw-semibold text-muted">Aguardando consulta...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="panel">
+        <ul class="nav nav-pills-custom mb-3" id="tabMain">
+          <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabOcorrencias"><i class="bi bi-journal-bookmark me-1"></i> Livro de Ocorrências</button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabRestricoes"><i class="bi bi-shield-slash me-1"></i> Lista de Restrições & Bloqueios</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- ================= ABA 1: OCORRÊNCIAS ================= -->
+          <div class="tab-pane fade show active" id="tabOcorrencias">
+            <div class="toolbar">
+              <div class="d-flex gap-2 flex-wrap">
+                <select class="form-select form-select-sm" id="filtroStatus" onchange="carregarOcorrencias()" style="width: auto;">
+                  <option value="">Todos os Status</option>
+                  <option value="aberta">Abertas</option>
+                  <option value="em_analise">Em Análise</option>
+                  <option value="resolvida">Resolvidas</option>
+                </select>
+                <select class="form-select form-select-sm" id="filtroGravidade" onchange="carregarOcorrencias()" style="width: auto;">
+                  <option value="">Todas as Gravidades</option>
+                  <option value="critica">Crítica</option>
+                  <option value="alta">Alta</option>
+                  <option value="media">Média</option>
+                  <option value="baixa">Baixa</option>
+                </select>
+                <select class="form-select form-select-sm" id="filtroCategoria" onchange="carregarOcorrencias()" style="width: auto;">
+                  <option value="">Todas as Categorias</option>
+                  <option value="barulho">Barulho / Perturbação</option>
+                  <option value="estacionamento">Vaga de Garagem</option>
+                  <option value="mudanca">Mudança / Horário</option>
+                  <option value="animal">Animais</option>
+                  <option value="patrimonio">Dano ao Patrimônio</option>
+                  <option value="seguranca">Segurança</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+
+              <div class="d-flex gap-2">
+                <div class="input-group" style="max-width: 280px;">
+                  <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                  <input type="text" class="form-control form-control-sm" id="buscaOcorrencia" placeholder="Buscar no livro..." oninput="filtrarOcorrenciasLocal()">
+                </div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="carregarOcorrencias()" title="Atualizar"><i class="bi bi-arrow-clockwise"></i></button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-custom">
+                <thead>
+                  <tr>
+                    <th>Data / Turno</th>
+                    <th>Título & Descrição</th>
+                    <th>Categoria</th>
+                    <th>Gravidade</th>
+                    <th>Unidade / Envolvido</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaOcorrencias">
+                  <tr><td colspan="7" class="text-center py-4 text-muted">Carregando ocorrências...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ================= ABA 2: RESTRIÇÕES & BLOQUEIOS ================= -->
+          <div class="tab-pane fade" id="tabRestricoes">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h6 class="fw-bold mb-0 text-dark">Pessoas e Veículos com Restrição de Acesso Cadastrada</h6>
+                <span class="text-muted small">Alertas emitidos automaticamente na portaria caso tentem ingressar no condomínio.</span>
+              </div>
+              <button class="btn btn-sm btn-danger" onclick="abrirModalRestricao()"><i class="bi bi-plus-lg me-1"></i> Adicionar Alerta</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-custom">
+                <thead>
+                  <tr>
+                    <th>Tipo & Identificador</th>
+                    <th>Nome / Referência</th>
+                    <th>Motivo da Restrição</th>
+                    <th>Instrução para a Portaria</th>
+                    <th>Severidade</th>
+                    <th class="text-end">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaRestricoes">
+                  <tr><td colspan="6" class="text-center py-4 text-muted">Carregando restrições...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso</span>
+      <span>Módulo P1: Ocorrências e Alertas da Portaria Ativo</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL NOVA OCORRÊNCIA ===================== -->
+<div class="modal fade" id="modalOcorrencia" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalOcorrenciaTitulo"><i class="bi bi-journal-plus text-primary me-2"></i>Registrar Ocorrência na Portaria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formOcorrencia" onsubmit="salvarOcorrencia(event)">
+          <input type="hidden" id="ocorrenciaId">
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-8">
+              <label class="form-label small fw-semibold">Título do Incidente / Fato *</label>
+              <input type="text" class="form-control" id="ocoTitulo" required placeholder="Ex: Som excessivo após horário permitido">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Categoria *</label>
+              <select class="form-select" id="ocoCategoria" required>
+                <option value="barulho">Barulho / Perturbação</option>
+                <option value="estacionamento">Vaga de Garagem</option>
+                <option value="mudanca">Mudança Fora do Horário</option>
+                <option value="animal">Animais</option>
+                <option value="patrimonio">Dano ao Patrimônio</option>
+                <option value="seguranca">Segurança / Invasão</option>
+                <option value="outros">Outros</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Gravidade *</label>
+              <select class="form-select" id="ocoGravidade" required>
+                <option value="baixa">Baixa (Informativa)</option>
+                <option value="media" selected>Média (Aviso / Advertência verbal)</option>
+                <option value="alta">Alta (Descumprimento grave de regulamento)</option>
+                <option value="critica">Crítica (Risco físico, polícia ou emergência)</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Bloco</label>
+              <input type="text" class="form-control" id="ocoBloco" placeholder="05">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label small fw-semibold">Apartamento</label>
+              <input type="text" class="form-control" id="ocoApto" placeholder="502">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-semibold">Nome do Morador / Envolvido</label>
+              <input type="text" class="form-control" id="ocoMorador" placeholder="Ex: Carlos Lima">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Descrição Detalhada do Fato *</label>
+            <textarea class="form-control" id="ocoDescricao" rows="3" required placeholder="Descreva com precisão o que aconteceu, horário aproximado, testemunhas e circunstâncias..."></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Ação Imediata Tomada pela Portaria</label>
+            <textarea class="form-control" id="ocoAcao" rows="2" placeholder="Ex: Entrado em contato via interfone, morador desligou o som imediatamente..."></textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Porteiro / Funcionário Responsável</label>
+              <input type="text" class="form-control" id="ocoPorteiro" value="Porteiro de Plantão">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Status Inicial</label>
+              <select class="form-select" id="ocoStatus">
+                <option value="aberta">Aberta (Pendente de análise do síndico)</option>
+                <option value="em_analise">Em Análise / Notificado</option>
+                <option value="resolvida">Resolvida na hora</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle-fill me-1"></i> Salvar Ocorrência</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL NOVA RESTRIÇÃO / ALERTA ===================== -->
+<div class="modal fade" id="modalRestricao" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-shield-slash-fill me-2"></i>Cadastrar Alerta ou Bloqueio de Acesso</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formRestricao" onsubmit="salvarRestricao(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Tipo de Identificador *</label>
+            <select class="form-select" id="resTipo" required>
+              <option value="cpf">CPF</option>
+              <option value="placa">Placa de Veículo</option>
+              <option value="rg">RG</option>
+              <option value="nome">Nome Completo</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Valor do Identificador *</label>
+            <input type="text" class="form-control text-uppercase" id="resValor" required placeholder="Ex: ABC1D23 ou 000.000.000-00">
+            <div class="form-text">Será conferido automaticamente sempre que digitado na portaria.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nome da Pessoa / Proprietário (se souber)</label>
+            <input type="text" class="form-control" id="resNome" placeholder="Ex: Fulano de Tal">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Motivo Legal / Administrativo *</label>
+            <textarea class="form-control" id="resMotivo" rows="2" required placeholder="Ex: Medida protetiva judicial, ordem do síndico, dano doloso anterior..."></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Instrução Obrigatória para a Portaria *</label>
+            <textarea class="form-control" id="resInstrucao" rows="2" required placeholder="Ex: NÃO ABRIR O PORTÃO SOB NENHUMA HIPÓTESE. Chamar a administração ou 190."></textarea>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="resBloqueioTotal" checked>
+              <label class="form-check-label fw-bold text-danger" for="resBloqueioTotal">Bloqueio Total Imediato (Entrada Estritamente Proibida)</label>
+            </div>
+            <div class="form-text">Se desmarcado, funcionará como um aviso de atenção/alerta aos porteiros.</div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger"><i class="bi bi-shield-lock-fill me-1"></i> Salvar Bloqueio / Alerta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.replace("login.html");
+  }
+
+  // Preencher nome do usuário
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+      document.getElementById("ocoPorteiro").value = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.replace("login.html");
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click', () => {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  });
+
+  let ocorrenciasLista = [];
+  let restricoesLista = [];
+  let modalOcorrenciaBs = null;
+  let modalRestricaoBs = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    modalOcorrenciaBs = new bootstrap.Modal(document.getElementById("modalOcorrencia"));
+    modalRestricaoBs = new bootstrap.Modal(document.getElementById("modalRestricao"));
+    carregarOcorrencias();
+    carregarRestricoes();
+  });
+
+  async function carregarOcorrencias() {
+    const status = document.getElementById("filtroStatus").value;
+    const gravidade = document.getElementById("filtroGravidade").value;
+    const categoria = document.getElementById("filtroCategoria").value;
+
+    const params = new URLSearchParams();
+    if (status) params.append("status", status);
+    if (gravidade) params.append("gravidade", gravidade);
+    if (categoria) params.append("categoria", categoria);
+
+    try {
+      const resp = await fetch(`/ocorrencias?${params.toString()}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      if (resp.ok) {
+        ocorrenciasLista = await resp.json();
+        atualizarMetricas();
+        renderizarOcorrencias();
+      }
+    } catch (err) {
+      console.warn("Aviso ao carregar ocorrências:", err);
+    }
+  }
+
+  async function carregarRestricoes() {
+    try {
+      const resp = await fetch("/restricoes", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        restricoesLista = await resp.json();
+        document.getElementById("statAlertas").textContent = restricoesLista.length;
+        renderizarRestricoes();
+      }
+    } catch (err) {
+      console.warn("Aviso ao carregar restrições:", err);
+    }
+  }
+
+  function atualizarMetricas() {
+    document.getElementById("statTotal").textContent = ocorrenciasLista.length;
+    document.getElementById("statAbertas").textContent = ocorrenciasLista.filter(o => o.status !== "resolvida").length;
+    document.getElementById("statResolvidas").textContent = ocorrenciasLista.filter(o => o.status === "resolvida").length;
+  }
+
+  function filtrarOcorrenciasLocal() {
+    renderizarOcorrencias();
+  }
+
+  function renderizarOcorrencias() {
+    const busca = document.getElementById("buscaOcorrencia").value.toLowerCase().trim();
+    const filtradas = ocorrenciasLista.filter(o => {
+      if (!busca) return true;
+      return (
+        o.titulo.toLowerCase().includes(busca) ||
+        o.descricao.toLowerCase().includes(busca) ||
+        (o.morador_envolvido || '').toLowerCase().includes(busca) ||
+        (o.bloco || '').toLowerCase().includes(busca) ||
+        (o.apartamento || '').toLowerCase().includes(busca) ||
+        (o.acao_tomada || '').toLowerCase().includes(busca)
+      );
+    });
+
+    const tbody = document.getElementById("tabelaOcorrencias");
+    if (filtradas.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma ocorrência registrada com os filtros selecionados.</td></tr>';
+      return;
+    }
+
+    const gravidadeBadge = {
+      baixa: '<span class="badge-grav-baixa"><i class="bi bi-info-circle me-1"></i>Baixa</span>',
+      media: '<span class="badge-grav-media"><i class="bi bi-exclamation-circle me-1"></i>Média</span>',
+      alta: '<span class="badge-grav-alta"><i class="bi bi-exclamation-triangle me-1"></i>Alta</span>',
+      critica: '<span class="badge-grav-critica"><i class="bi bi-shield-fill-x me-1"></i>Crítica</span>'
+    };
+
+    const statusBadge = {
+      aberta: '<span class="badge-status-aberta"><i class="bi bi-hourglass-split me-1"></i>Aberta</span>',
+      em_analise: '<span class="badge-status-analise"><i class="bi bi-search me-1"></i>Em Análise</span>',
+      resolvida: '<span class="badge-status-resolvida"><i class="bi bi-check2-circle me-1"></i>Resolvida</span>'
+    };
+
+    const categoriaNome = {
+      barulho: 'Barulho / Som',
+      estacionamento: 'Garagem / Vaga',
+      mudanca: 'Mudança',
+      animal: 'Animais',
+      patrimonio: 'Patrimônio',
+      seguranca: 'Segurança',
+      outros: 'Outros'
+    };
+
+    tbody.innerHTML = filtradas.map(o => {
+      const d = new Date(o.data_hora);
+      const dataFmt = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+      const localStr = (o.bloco || o.apartamento) 
+        ? `<div><strong>Bl ${o.bloco || '—'} / ${o.apartamento || '—'}</strong></div><div class="text-muted small">${o.morador_envolvido || 'Morador'}</div>`
+        : '<span class="text-muted">Área Comum</span>';
+
+      const resolverBtn = o.status !== "resolvida"
+        ? `<button class="btn btn-sm btn-outline-success" onclick="resolverOcorrencia(${o.id})" title="Marcar como Resolvida"><i class="bi bi-check-lg"></i></button>`
+        : '';
+
+      return `
+        <tr>
+          <td>
+            <div class="fw-semibold">${dataFmt}</div>
+            <div class="text-muted small"><i class="bi bi-person me-1"></i>${o.registrado_por}</div>
+          </td>
+          <td>
+            <div class="fw-bold text-dark">${o.titulo}</div>
+            <div class="text-muted small mt-1 text-truncate" style="max-width: 320px;" title="${o.descricao}">${o.descricao}</div>
+            ${o.acao_tomada ? `<div class="mt-1 small text-success"><i class="bi bi-arrow-return-right me-1"></i>${o.acao_tomada}</div>` : ''}
+          </td>
+          <td><span class="badge bg-light text-dark border">${categoriaNome[o.categoria] || o.categoria}</span></td>
+          <td>${gravidadeBadge[o.gravidade] || o.gravidade}</td>
+          <td>${localStr}</td>
+          <td>${statusBadge[o.status] || o.status}</td>
+          <td class="text-end">
+            <div class="btn-group">
+              ${resolverBtn}
+              <button class="btn btn-sm btn-light border" onclick="editarOcorrencia(${o.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+              <button class="btn btn-sm btn-light border text-danger" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderizarRestricoes() {
+    const tbody = document.getElementById("tabelaRestricoes");
+    if (restricoesLista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Nenhuma restrição de segurança cadastrada. O condomínio está seguro.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = restricoesLista.map(r => {
+      const tipoBadge = r.tipo_identificador === "placa"
+        ? '<span class="badge bg-dark"><i class="bi bi-car-front me-1"></i>Placa</span>'
+        : `<span class="badge bg-secondary"><i class="bi bi-person-vcard me-1"></i>${r.tipo_identificador.toUpperCase()}</span>`;
+
+      const severidadeBadge = r.bloqueio_total
+        ? '<span class="badge bg-danger"><i class="bi bi-slash-circle-fill me-1"></i>Bloqueio Total</span>'
+        : '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i>Alerta / Atenção</span>';
+
+      return `
+        <tr>
+          <td>
+            ${tipoBadge}
+            <div class="fw-bold font-monospace mt-1">${r.valor_identificador}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">${r.nome_pessoa || 'Não informado'}</div>
+            <div class="text-muted small">Registrado por: ${r.criado_por}</div>
+          </td>
+          <td><div class="text-dark small" style="max-width:280px">${r.motivo}</div></td>
+          <td>
+            <div class="p-2 rounded bg-light border border-danger border-opacity-50 small fw-semibold text-danger">
+              <i class="bi bi-megaphone-fill me-1"></i>${r.instrucao_portaria}
+            </div>
+          </td>
+          <td>${severidadeBadge}</td>
+          <td class="text-end">
+            <button class="btn btn-sm btn-outline-danger" onclick="removerRestricao(${r.id})" title="Revogar Restrição"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function checarRadar() {
+    const termo = document.getElementById("radarInput").value.trim();
+    const resDiv = document.getElementById("radarResultado");
+    if (!termo) {
+      resDiv.innerHTML = '<span class="text-muted">Informe um documento ou placa.</span>';
+      return;
+    }
+
+    resDiv.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verificando...';
+
+    try {
+      const resp = await fetch(`/restricoes/verificar?termo=${encodeURIComponent(termo)}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.alerta) {
+          const item = data.restricoes[0];
+          const isBloqueio = data.bloqueio_total;
+          resDiv.innerHTML = `
+            <div class="p-2 rounded ${isBloqueio ? 'bg-danger text-white' : 'bg-warning text-dark'}">
+              <div><strong><i class="bi bi-exclamation-octagon-fill me-1"></i>${isBloqueio ? 'ACESSO BLOQUEADO!' : 'ALERTA DE ATENÇÃO'}</strong></div>
+              <div class="small">${item.instrucao_portaria}</div>
+            </div>
+          `;
+        } else {
+          resDiv.innerHTML = `
+            <div class="p-2 rounded bg-success text-white">
+              <i class="bi bi-check-circle-fill me-1"></i> Nenhuma restrição encontrada para "${termo}".
+            </div>
+          `;
+        }
+      }
+    } catch (err) {
+      resDiv.innerHTML = '<span class="text-danger">Erro na verificação.</span>';
+    }
+  }
+
+  function abrirModalOcorrencia() {
+    document.getElementById("modalOcorrenciaTitulo").innerHTML = '<i class="bi bi-journal-plus text-primary me-2"></i>Registrar Ocorrência na Portaria';
+    document.getElementById("ocorrenciaId").value = "";
+    document.getElementById("formOcorrencia").reset();
+    modalOcorrenciaBs.show();
+  }
+
+  function editarOcorrencia(id) {
+    const o = ocorrenciasLista.find(item => item.id === id);
+    if (!o) return;
+
+    document.getElementById("modalOcorrenciaTitulo").innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i>Editar Ocorrência';
+    document.getElementById("ocorrenciaId").value = o.id;
+    document.getElementById("ocoTitulo").value = o.titulo;
+    document.getElementById("ocoCategoria").value = o.categoria;
+    document.getElementById("ocoGravidade").value = o.gravidade;
+    document.getElementById("ocoBloco").value = o.bloco || "";
+    document.getElementById("ocoApto").value = o.apartamento || "";
+    document.getElementById("ocoMorador").value = o.morador_envolvido || "";
+    document.getElementById("ocoDescricao").value = o.descricao;
+    document.getElementById("ocoAcao").value = o.acao_tomada || "";
+    document.getElementById("ocoPorteiro").value = o.registrado_por;
+    document.getElementById("ocoStatus").value = o.status;
+
+    modalOcorrenciaBs.show();
+  }
+
+  async function salvarOcorrencia(e) {
+    e.preventDefault();
+    const id = document.getElementById("ocorrenciaId").value;
+    const payload = {
+      titulo: document.getElementById("ocoTitulo").value.trim(),
+      categoria: document.getElementById("ocoCategoria").value,
+      gravidade: document.getElementById("ocoGravidade").value,
+      bloco: document.getElementById("ocoBloco").value.trim() || null,
+      apartamento: document.getElementById("ocoApto").value.trim() || null,
+      morador_envolvido: document.getElementById("ocoMorador").value.trim() || null,
+      descricao: document.getElementById("ocoDescricao").value.trim(),
+      acao_tomada: document.getElementById("ocoAcao").value.trim() || null,
+      registrado_por: document.getElementById("ocoPorteiro").value.trim() || "Portaria",
+      status: document.getElementById("ocoStatus").value,
+    };
+
+    const url = id ? `/ocorrencias/${id}` : "/ocorrencias";
+    const method = id ? "PUT" : "POST";
+
+    try {
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        modalOcorrenciaBs.hide();
+        carregarOcorrencias();
+      }
+    } catch (err) {
+      console.warn("Erro ao salvar ocorrência:", err);
+    }
+  }
+
+  async function resolverOcorrencia(id) {
+    const acao = prompt("Informe a providência tomada para encerramento da ocorrência:", "Resolvido e advertido em conformidade com as regras do condomínio.");
+    if (acao === null) return;
+
+    try {
+      const resp = await fetch(`/ocorrencias/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: "resolvida", acao_tomada: acao })
+      });
+      if (resp.ok) {
+        carregarOcorrencias();
+      }
+    } catch (err) {
+      console.warn("Erro ao resolver ocorrência:", err);
+    }
+  }
+
+  async function excluirOcorrencia(id) {
+    if (!confirm("Deseja realmente excluir este registro de ocorrência?")) return;
+    try {
+      const resp = await fetch(`/ocorrencias/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarOcorrencias();
+      }
+    } catch (err) {
+      console.warn("Erro ao excluir ocorrência:", err);
+    }
+  }
+
+  function abrirModalRestricao() {
+    document.getElementById("formRestricao").reset();
+    modalRestricaoBs.show();
+  }
+
+  async function salvarRestricao(e) {
+    e.preventDefault();
+    const payload = {
+      tipo_identificador: document.getElementById("resTipo").value,
+      valor_identificador: document.getElementById("resValor").value.trim().toUpperCase(),
+      nome_pessoa: document.getElementById("resNome").value.trim() || null,
+      motivo: document.getElementById("resMotivo").value.trim(),
+      instrucao_portaria: document.getElementById("resInstrucao").value.trim(),
+      bloqueio_total: document.getElementById("resBloqueioTotal").checked,
+    };
+
+    try {
+      const resp = await fetch("/restricoes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        modalRestricaoBs.hide();
+        carregarRestricoes();
+      }
+    } catch (err) {
+      console.warn("Erro ao cadastrar restrição:", err);
+    }
+  }
+
+  async function removerRestricao(id) {
+    if (!confirm("Revogar este alerta/bloqueio de acesso?")) return;
+    try {
+      const resp = await fetch(`/restricoes/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarRestricoes();
+      }
+    } catch (err) {
+      console.warn("Erro ao revogar restrição:", err);
+    }
+  }
+</script>
+</body>
+</html>
