@@ -1,7 +1,8 @@
 # AMBROS — Sistema de Controle de Acesso
 
 > Sistema de gestão de condomínio residencial com backend em **TypeScript + Express**,
-> autenticação JWT e CRUD completo para moradores, veículos, visitantes, acessos e encomendas.
+> autenticação JWT e 12 routers cobrindo controle de acesso, visitantes, prestadores,
+> ocorrências, restrições de portaria, reservas de áreas comuns e portal do morador.
 
 ## 📂 Estrutura do Projeto
 
@@ -9,19 +10,35 @@
 AMBROS/
 ├── server.ts                    # Entry point — app Express (PORT 3000)
 ├── src/
-│   ├── auth.ts                  # JWT middleware, createToken, authMiddleware
+│   ├── auth.ts                  # JWT: createToken, authMiddleware
 │   ├── db.ts                    # InMemoryDB persistindo em data/database.json
-│   ├── types.ts                 # Interfaces: Morador, Veiculo, Visitante, Acesso, Encomenda
-│   └── routes/                  # 7 routers: auth, dashboard, moradores, veiculos, visitantes, acessos, encomendas
-├── public/                      # Frontend estático (HTML + Bootstrap 5 + Chart.js)
+│   ├── types.ts                 # Types do domínio (13 interfaces + unions)
+│   └── routes/                  # 11 arquivos → 12 routers montados
+│       ├── auth.ts              # /auth
+│       ├── dashboard.ts         # /dashboard
+│       ├── moradores.ts          # /moradores
+│       ├── veiculos.ts           # /veiculos
+│       ├── visitantes.ts         # /visitantes
+│       ├── acessos.ts            # /acessos
+│       ├── encomendas.ts         # /encomendas
+│       ├── prestadores.ts         # /prestadores
+│       ├── ocorrencias.ts         # /ocorrencias + /restricoes (2 routers, 1 arquivo)
+│       ├── reservas.ts            # /reservas
+│       └── portal.ts              # /portal
+├── public/                      # Frontend estático (13 páginas HTML + Bootstrap 5 + Chart.js)
 │   ├── login.html
 │   ├── index.html
 │   ├── ambros-dashboard.html
+│   ├── auditoria.html           # Consulta GET /acessos (sem router próprio)
 │   ├── moradores.html
 │   ├── veiculos.html
 │   ├── visitantes.html
+│   ├── prestadores.html
+│   ├── ocorrencias.html
+│   ├── reservas.html
 │   ├── encomendas.html
-│   └── portaria-entrada.html
+│   ├── portaria-entrada.html
+│   └── portal-morador.html
 ├── data/
 │   └── database.json             # Persistência em JSON (gerenciada pelo InMemoryDB)
 ├── .env.example                 # Configurações: SECRET_KEY, PORT, etc.
@@ -67,6 +84,7 @@ Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/
 ### Veículos
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
+| GET | `/veiculos/stats` | Estatísticas: `total`, `com_morador`, `vagas_ocupadas`, `visitantes_com_carro` |
 | GET | `/veiculos` | Lista com busca por placa/modelo/morador |
 | GET | `/veiculos/:id` | Busca por ID |
 | POST | `/veiculos` | Cadastro (valida placa duplicada) |
@@ -76,17 +94,20 @@ Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/
 ### Visitantes
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/visitantes` | Lista com filtros |
-| GET | `/visitantes/stats` | Estatísticas |
-| POST | `/visitantes` | Cadastro (opcional entrada imediata) |
+| GET | `/visitantes/stats` | Estatísticas: total, presentes, agendados hoje |
+| GET | `/visitantes` | Lista com filtros `busca`, `presentes`, `skip`, `limit` |
+| GET | `/visitantes/:id` | Busca por ID (inclui dados do morador visitado) |
+| POST | `/visitantes` | Cadastro (`entrada_imediata` já gera o acesso de entrada) |
 | PUT | `/visitantes/:id` | Atualização |
+| POST | `/visitantes/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
+| POST | `/visitantes/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` |
 | DELETE | `/visitantes/:id` | Exclusão |
 
 ### Acessos
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/acessos` | Lista com filtros por tipo/pessoa/sentido/data |
-| POST | `/acessos` | Registro de entrada/saída (atualiza presença do visitante) |
+| GET | `/acessos` | Lista com filtros `tipo_pessoa`, `sentido`, `inicio`, `fim`, `busca`, `skip`, `limit` |
+| POST | `/acessos` | Registro manual de entrada/saída (atualiza `presente` de visitante/prestador) |
 
 ### Encomendas
 | Método | Endpoint | Descrição |
@@ -99,22 +120,89 @@ Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/
 | POST | `/encomendas/:id/notificar` | Marca notificação enviada (whatsapp/telegram) |
 | DELETE | `/encomendas/:id` | Exclusão |
 
+### Prestadores
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/prestadores` | Lista com filtros `presentes`, `busca`, `bloco`, `apartamento` (presentes primeiro) |
+| GET | `/prestadores/:id` | Busca por ID |
+| POST | `/prestadores` | Cadastro (exige `nome`, `documento`, `funcao`, `data_inicio`, `data_fim`) |
+| PUT | `/prestadores/:id` | Atualização |
+| POST | `/prestadores/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
+| POST | `/prestadores/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` |
+| DELETE | `/prestadores/:id` | Exclusão |
+
+### Ocorrências
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/ocorrencias` | Lista com filtros `status`, `categoria`, `gravidade`, `busca` (mais recentes primeiro) |
+| GET | `/ocorrencias/:id` | Busca por ID |
+| POST | `/ocorrencias` | Cadastro (exige `titulo`, `categoria`, `gravidade`, `descricao`; status inicia como `aberta`) |
+| PUT | `/ocorrencias/:id` | Atualização; ao mudar para `resolvida` preenche `resolvido_em` |
+| DELETE | `/ocorrencias/:id` | Exclusão |
+
+### Restrições de acesso
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/restricoes` | Lista apenas as restrições ativas |
+| POST | `/restricoes` | Cadastro (exige `tipo_identificador`, `valor_identificador`, `motivo`, `instrucao_portaria`) |
+| GET | `/restricoes/verificar` | Checagem rápida por `termo`/`documento`/`placa`; normaliza pontuação e retorna `{ alerta, bloqueio_total, restricoes }` |
+| DELETE | `/restricoes/:id` | Soft delete — define `ativo = false` |
+
+### Reservas
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/reservas/espacos` | Catálogo de áreas comuns (capacidade, regras, taxa) |
+| GET | `/reservas` | Lista com filtros `espaco`, `status`, `morador_id`, `data` |
+| POST | `/reservas` | Cadastro; retorna `409` em conflito de período e notifica o morador |
+| PUT | `/reservas/:id` | Atualização de `status` e `observacoes` |
+| DELETE | `/reservas/:id` | Exclusão |
+
+### Portal do morador
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/portal/morador` | Visão consolidada (morador, veículos, encomendas, pré-autorizações, reservas, prestadores, comunicados, notificações) |
+| POST | `/portal/preautorizacao` | Pré-autoriza visitante: gera `codigo_acesso_qr` (`QR-XXXX`), registra o visitante na portaria e notifica o morador |
+| DELETE | `/portal/preautorizacao/:id` | Exclusão |
+| GET | `/portal/comunicados` | Mural: comunicados ativos (mais recentes primeiro) |
+| POST | `/portal/comunicados` | Publica comunicado e notifica todos os moradores |
+| DELETE | `/portal/comunicados/:id` | Soft delete — define `ativo = false` |
+| POST | `/portal/notificacoes/disparar` | Simula o envio de uma notificação a um morador |
+
+## 🔄 Fluxo de visitantes
+
+```
+POST /visitantes            → cria o registro (com entrada_imediata já gera o acesso)
+POST /visitantes/:id/entrada → Accesso(sentido="entrada") + visitante.presente = true
+POST /visitantes/:id/saida   → Acesso(sentido="saida")   + visitante.presente = false
+```
+
+**Tempo de permanência:** não é armazenado nem calculado. Cada evento de acesso guarda
+apenas `registrado_em` (timestamp ISO). A duração poderia ser derivada emparelhando os
+eventos de `entrada` e `saida` do mesmo `pessoa_id`, mas não existe endpoint nem campo
+que faça esse cálculo. Idem para prestadores (`POST /prestadores/:id/entrada|saida`).
+
 ## 🔐 Autenticação
 
-- Token **JWT** com expiração de **8h**
+- Token **JWT** com expiração de **8h** (`sub` = e-mail do usuário)
 - Credenciais padrão de desenvolvimento: `adm@adm.com` / `123` (perfil: admin)
-- Middleware `authMiddleware` protege todas as rotas exceto `/auth/login`
+- `authMiddleware` protege todas as rotas de negócio; públicas: `POST /auth/login` e `GET /api/health`
 - Uso: `Authorization: Bearer <token>`
 
 ## 💾 Persistência
 
 - **InMemoryDB** (singleton `db`) mantém dados em memória e persiste em `data/database.json`
 - Salvamento atômico via tmp + rename
-- Seed automático na inicialização (3 moradores, 2 veículos, 2 visitantes, 4 acessos, 2 encomendas)
+- 13 coleções: `usuarios`, `moradores`, `veiculos`, `visitantes`, `acessos`, `encomendas`,
+  `prestadores`, `ocorrencias`, `restricoes`, `reservas`, `comunicados`, `notificacoes`,
+  `preautorizacoes`
+- Seed automático na inicialização para todas as coleções
 
 ## ⚠️ Notas Técnicas
 
 - Frontend em HTML estático + Bootstrap 5 + Chart.js (sem SPA framework)
+- `public/auditoria.html` não possui router dedicado — consome `GET /acessos`
 - Sem testes automatizados
 - Senha em texto plano em desenvolvimento (`123`) — substituir por hash em produção
 - `SECRET_KEY` padrão: `troque-esta-chave-em-producao` — deve ser sobrescrito via `.env`
+- `GET /restricoes/verificar` faz normalização de pontuação para comparar CPF/placa
+- Rotas de API retornam JSON; erros não tratados retornam JSON (não HTML)
