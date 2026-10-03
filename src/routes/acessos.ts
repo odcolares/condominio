@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
 import { Acesso, TipoPessoa, SentidoAcesso } from "../types.js";
+import { emparelharAcessos } from "../lib/duracao.js";
 
 export const acessosRouter = Router();
 
@@ -96,8 +97,11 @@ acessosRouter.get("", authMiddleware, (req, res) => {
     return true;
   });
 
-  resultado.sort((a, b) => new Date(b.registrado_em).getTime() - new Date(a.registrado_em).getTime());
-  resultado = resultado.slice(skip, skip + limit);
+  // Pareamento e duração calculada no conjunto completo filtrado antes de aplicar skip/limit
+  let enriquecidos = emparelharAcessos(resultado);
 
-  return res.json(resultado);
+  enriquecidos.sort((a, b) => new Date(b.registrado_em).getTime() - new Date(a.registrado_em).getTime());
+  enriquecidos = enriquecidos.slice(skip, skip + limit);
+
+  return res.json(enriquecidos);
 });

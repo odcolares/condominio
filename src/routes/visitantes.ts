@@ -5,6 +5,26 @@ import { Visitante, Acesso } from "../types.js";
 
 export const visitantesRouter = Router();
 
+function isVisitanteExpirado(v: Visitante): boolean {
+  const entradas = db.acessos
+    .filter(a => a.tipo_pessoa === "visitante" && a.pessoa_id === v.id && a.sentido === "entrada")
+    .sort((a, b) => new Date(b.registrado_em).getTime() - new Date(a.registrado_em).getTime());
+  
+  if (entradas.length > 0) {
+    const ultimaEntrada = new Date(entradas[0].registrado_em).getTime();
+    const now = Date.now();
+    return now > ultimaEntrada + 24 * 3600 * 1000;
+  }
+  if (v.agendado_para && !v.presente) {
+    const agendadoTime = new Date(v.agendado_para).getTime();
+    const now = Date.now();
+    if (!isNaN(agendadoTime) && now > agendadoTime + 24 * 3600 * 1000) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // GET /visitantes/stats
 visitantesRouter.get("/stats", authMiddleware, (_req, res) => {
   const now = new Date();
@@ -45,6 +65,7 @@ visitantesRouter.get("", authMiddleware, (req, res) => {
         : v.bloco || v.apartamento
         ? `Bloco ${v.bloco || "0"} - Apto ${v.apartamento || "0"}`
         : null,
+      expirado: isVisitanteExpirado(v),
     };
   });
 
@@ -94,6 +115,7 @@ visitantesRouter.get("/:id", authMiddleware, (req, res) => {
     morador_unidade: morador
       ? `Bloco ${morador.bloco || "0"} - Apto ${morador.apartamento || "0"}`
       : null,
+    expirado: isVisitanteExpirado(visitante),
   });
 });
 

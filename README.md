@@ -95,18 +95,18 @@ Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
 | GET | `/visitantes/stats` | Estatísticas: total, presentes, agendados hoje |
-| GET | `/visitantes` | Lista com filtros `busca`, `presentes`, `skip`, `limit` |
-| GET | `/visitantes/:id` | Busca por ID (inclui dados do morador visitado) |
+| GET | `/visitantes` | Lista com filtros `busca`, `presentes`, `skip`, `limit` (inclui flag `expirado`) |
+| GET | `/visitantes/:id` | Busca por ID (inclui dados do morador visitado e `expirado`) |
 | POST | `/visitantes` | Cadastro (`entrada_imediata` já gera o acesso de entrada) |
 | PUT | `/visitantes/:id` | Atualização |
 | POST | `/visitantes/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
-| POST | `/visitantes/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` |
+| POST | `/visitantes/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` (visitantes possuem auto-saída em 24h) |
 | DELETE | `/visitantes/:id` | Exclusão |
 
 ### Acessos
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/acessos` | Lista com filtros `tipo_pessoa`, `sentido`, `inicio`, `fim`, `busca`, `skip`, `limit` |
+| GET | `/acessos` | Lista com filtros `tipo_pessoa`, `sentido`, `inicio`, `fim`, `busca`, `skip`, `limit` (inclui `duracao_minutos` e `em_aberto` derivados) |
 | POST | `/acessos` | Registro manual de entrada/saída (atualiza `presente` de visitante/prestador) |
 
 ### Encomendas
@@ -123,10 +123,10 @@ Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/
 ### Prestadores
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| GET | `/prestadores` | Lista com filtros `presentes`, `busca`, `bloco`, `apartamento` (presentes primeiro) |
-| GET | `/prestadores/:id` | Busca por ID |
-| POST | `/prestadores` | Cadastro (exige `nome`, `documento`, `funcao`, `data_inicio`, `data_fim`) |
-| PUT | `/prestadores/:id` | Atualização |
+| GET | `/prestadores` | Lista com filtros `presentes`, `busca`, `bloco`, `apartamento` (inclui `expirado`) |
+| GET | `/prestadores/:id` | Busca por ID (inclui `expirado`) |
+| POST | `/prestadores` | Cadastro (exige `nome`, `documento`, `funcao`, `data_inicio`, e `data_fim` ou `prazo_dias`) |
+| PUT | `/prestadores/:id` | Atualização (aceita `prazo_dias` para recalcular `data_fim`) |
 | POST | `/prestadores/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
 | POST | `/prestadores/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` |
 | DELETE | `/prestadores/:id` | Exclusão |

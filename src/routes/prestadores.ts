@@ -5,6 +5,19 @@ import { Prestador, Acesso } from "../types.js";
 
 export const prestadoresRouter = Router();
 
+function addDaysUTC(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const utcMs = Date.UTC(y, m - 1, d + days);
+  const dt = new Date(utcMs);
+  return dt.toISOString().split("T")[0];
+}
+
+function isExpirado(dataFim: string): boolean {
+  if (!dataFim) return false;
+  const todayUTC = new Date().toISOString().split("T")[0];
+  return todayUTC > dataFim;
+}
+
 prestadoresRouter.get(["", "/"], authMiddleware, (req, res) => {
   const presentesOnly = req.query.presentes === "true";
   const busca = (req.query.busca as string | undefined)?.toLowerCase().trim();
@@ -37,7 +50,12 @@ prestadoresRouter.get(["", "/"], authMiddleware, (req, res) => {
     return a.nome.localeCompare(b.nome);
   });
 
-  return res.json(resultado);
+  const enriquecidos = resultado.map((p) => ({
+    ...p,
+    expirado: isExpirado(p.data_fim),
+  }));
+
+  return res.json(enriquecidos);
 });
 
 prestadoresRouter.get("/:id", authMiddleware, (req, res) => {
@@ -46,7 +64,10 @@ prestadoresRouter.get("/:id", authMiddleware, (req, res) => {
   if (!p) {
     return res.status(404).json({ detail: "Prestador não encontrado" });
   }
-  return res.json(p);
+  return res.json({
+    ...p,
+    expirado: isExpirado(p.data_fim),
+  });
 });
 
 prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
@@ -66,13 +87,28 @@ prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
     morador_autorizador_id,
     data_inicio,
     data_fim,
+    prazo_dias,
     horario_permitido,
     observacao,
   } = req.body;
 
-  if (!nome || !documento || !funcao || !data_inicio || !data_fim) {
+  if (!nome || !documento || !funcao || !data_inicio || (!data_fim && prazo_dias === undefined)) {
     return res.status(422).json({
-      detail: "Nome, documento, função, data de início e data final de autorização são obrigatórios",
+      detail: "Nome, documento, função, data de início e data final de autorização (ou prazo_dias) são obrigatórios",
+    });
+  }
+
+  let finalDataFim = data_fim ? String(data_fim).trim() : "";
+  if (!finalDataFim && prazo_dias !== undefined) {
+    const dias = parseInt(prazo_dias, 10);
+    if (!isNaN(dias) && dias > 0) {
+      finalDataFim = addDaysUTC(String(data_inicio).trim(), dias);
+    }
+  }
+
+  if (!finalDataFim) {
+    return res.status(422).json({
+      detail: "Data final de autorização inválida ou prazo_dias inválido",
     });
   }
 
@@ -101,7 +137,7 @@ prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
     morador_autorizador_id: morador_autorizador_id ? Number(morador_autorizador_id) : null,
     morador_autorizador_nome: moradorAutorizadorNome,
     data_inicio: String(data_inicio).trim(),
-    data_fim: String(data_fim).trim(),
+    data_fim: finalDataFim,
     horario_permitido: horario_permitido ? String(horario_permitido).trim() : "08:00 às 17:00",
     observacao: observacao ? String(observacao).trim() : null,
     presente: false,
@@ -111,7 +147,10 @@ prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
 
   db.prestadores.push(novoPrestador);
   db.save();
-  return res.status(201).json(novoPrestador);
+  return res.status(201).json({
+    ...novoPrestador,
+    expirado: isExpirado(novoPrestador.data_fim),
+  });
 });
 
 prestadoresRouter.put("/:id", authMiddleware, (req, res) => {
@@ -137,6 +176,7 @@ prestadoresRouter.put("/:id", authMiddleware, (req, res) => {
     morador_autorizador_id,
     data_inicio,
     data_fim,
+    prazo_dias,
     horario_permitido,
     observacao,
     ativo,
@@ -160,13 +200,23 @@ prestadoresRouter.put("/:id", authMiddleware, (req, res) => {
     p.morador_autorizador_nome = m ? m.nome_completo : null;
   }
   if (data_inicio !== undefined) p.data_inicio = String(data_inicio).trim();
-  if (data_fim !== undefined) p.data_fim = String(data_fim).trim();
+  if (data_fim !== undefined) {
+    p.data_fim = String(data_fim).trim();
+  } else if (prazo_dias !== undefined) {
+    const dias = parseInt(prazo_dias, 10);
+    if (!isNaN(dias) && dias > 0) {
+      p.data_fim = addDaysUTC(p.data_inicio, dias);
+    }
+  }
   if (horario_permitido !== undefined) p.horario_permitido = horario_permitido;
   if (observacao !== undefined) p.observacao = observacao;
   if (ativo !== undefined) p.ativo = Boolean(ativo);
 
   db.save();
-  return res.json(p);
+  return res.json({
+    ...p,
+    expirado: isExpirado(p.data_fim),
+  });
 });
 
 prestadoresRouter.delete("/:id", authMiddleware, (req, res) => {

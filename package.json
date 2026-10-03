@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "tsx server.ts",
     "build": "tsc",
-    "start": "tsx server.ts"
+    "start": "tsx server.ts",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

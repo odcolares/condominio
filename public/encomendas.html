@@ -374,6 +374,7 @@
               <li><a class="dropdown-item" href="#" onclick="preencherExemplo('BR839210492AA');return false">Correios (BR839210492AA)</a></li>
               <li><a class="dropdown-item" href="#" onclick="preencherExemplo('MELI-998241');return false">Mercado Livre (MELI-998241)</a></li>
               <li><a class="dropdown-item" href="#" onclick="preencherExemplo('AMZ-771239');return false">Amazon (AMZ-771239)</a></li>
+              <li><a class="dropdown-item" href="#" onclick="preencherExemplo('SHOPEE-554192');return false">Shopee (SHOPEE-554192)</a></li>
             </ul>
           </div>
         </div>
@@ -710,6 +711,7 @@
               <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('BR839210492AA')">Correios</button>
               <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('MELI-998241')">Mercado Livre</button>
               <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('AMZ-771239')">Amazon</button>
+              <button class="btn btn-sm btn-outline-light" onclick="usarCodigoExemplo('SHOPEE-554192')">Shopee</button>
             </div>
           </div>
         </div>
@@ -1023,6 +1025,8 @@
         document.getElementById("cadTransportadora").value = "Mercado Livre";
       } else if (codigoPreenchido.startsWith("AMZ")) {
         document.getElementById("cadTransportadora").value = "Amazon";
+      } else if (codigoPreenchido.includes("SHOPEE") || codigoPreenchido.startsWith("SP")) {
+        document.getElementById("cadTransportadora").value = "Shopee";
       }
     }
 
