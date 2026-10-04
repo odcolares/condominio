@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: condominio-ambros
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
+      - key: PORT
+        value: "3000"
