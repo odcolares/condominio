@@ -1,7 +1,0 @@
-{
-  "name": "AMBROS - Controle de Acesso",
-  "description": "Sistema de controle de acesso para condomínio residencial, gerenciando moradores, veículos, visitantes e acessos de portaria.",
-  "capabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
