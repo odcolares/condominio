@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const app = express();
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || "3000", 10);
 const HOST = "0.0.0.0";
 
 app.use(cors());
