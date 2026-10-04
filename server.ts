@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { authRouter } from "./src/routes/auth.js";
 import { dashboardRouter } from "./src/routes/dashboard.js";
 import { moradoresRouter } from "./src/routes/moradores.js";
@@ -17,7 +17,7 @@ import { portalRouter } from "./src/routes/portal.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+export const app = express();
 const PORT = 3000;
 const HOST = "0.0.0.0";
 
@@ -100,6 +100,8 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(err.status || 500).json({ detail: err.message || "Erro interno do servidor" });
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`[AMBROS] Servidor rodando em http://${HOST}:${PORT}`);
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  app.listen(PORT, HOST, () => {
+    console.log(`[AMBROS] Servidor rodando em http://${HOST}:${PORT}`);
+  });
+}

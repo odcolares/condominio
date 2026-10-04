@@ -723,6 +723,39 @@ class InMemoryDB {
   getNextPreAutorizacaoId() {
     return this.nextPreAutorizacaoId++;
   }
+
+  __resetDb() {
+    this.usuarios = [];
+    this.moradores = [];
+    this.veiculos = [];
+    this.visitantes = [];
+    this.acessos = [];
+    this.encomendas = [];
+    this.prestadores = [];
+    this.ocorrencias = [];
+    this.restricoes = [];
+    this.reservas = [];
+    this.comunicados = [];
+    this.notificacoes = [];
+    this.preautorizacoes = [];
+    this.nextUserId = 1;
+    this.nextMoradorId = 1;
+    this.nextVeiculoId = 1;
+    this.nextVisitanteId = 1;
+    this.nextAcessoId = 1;
+    this.nextEncomendaId = 1;
+    this.nextPrestadorId = 1;
+    this.nextOcorrenciaId = 1;
+    this.nextRestricaoId = 1;
+    this.nextReservaId = 1;
+    this.nextComunicadoId = 1;
+    this.nextNotificacaoId = 1;
+    this.nextPreAutorizacaoId = 1;
+    this.seed();
+  }
 }
 
 export const db = new InMemoryDB();
+export function __resetDb() {
+  db.__resetDb();
+}
