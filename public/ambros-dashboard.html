@@ -323,7 +323,10 @@
     <!-- ChatGPT-style Bottom User Card & Popover -->
     <div class="sidebar-user-container">
       <div class="user-card" onclick="toggleUserPopover(event)" title="Opções de Conta">
-        <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+        <div style="position:relative; display:inline-block;">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar" id="sidebarAvatarImg">
+          <span class="notification-badge" id="sidebarNotifBadge" style="position:absolute; top:0; right:0; width:10px; height:10px; border-radius:50%; background:#ef4444; border:2px solid #141c29; display:block;"></span>
+        </div>
         <div class="user-info">
           <div class="uname" id="sidebarUserName">Administrador</div>
           <div class="ustatus"><span class="dot"></span>Online</div>
@@ -332,9 +335,8 @@
       </div>
 
       <div class="user-popover" id="userPopover">
-        <a href="#" onclick="openEditProfile(); event.stopPropagation();"><i class="bi bi-person"></i> Perfil</a>
-        <a href="#" onclick="openSettingsModal(); event.stopPropagation();"><i class="bi bi-gear"></i> Configurações</a>
-        <a href="#" onclick="openHelpModal(); event.stopPropagation();"><i class="bi bi-question-circle"></i> Ajuda</a>
+        <a href="#" onclick="openEditProfile(); event.stopPropagation();"><i class="bi bi-person-gear"></i> Perfil & Configurações</a>
+        <a href="#" onclick="openHelpModal(); event.stopPropagation();"><i class="bi bi-headset"></i> Ajuda & Suporte</a>
         <div class="divider"></div>
         <a href="#" class="danger" onclick="logout(); event.stopPropagation();"><i class="bi bi-box-arrow-right"></i> Sair</a>
       </div>
@@ -346,12 +348,8 @@
   <!-- ===================== MAIN ===================== -->
   <div class="main">
     <header class="topbar">
-      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
       <div class="title">Dashboard</div>
-
-      <div class="right">
-        <div class="bell"><i class="bi bi-bell"></i><span class="badge">3</span></div>
-      </div>
+      <div class="right" style="display:none;"></div>
     </header>
 
     <main class="content">
@@ -781,6 +779,9 @@
       document.getElementById("profileEmail").value = u.email || "";
       document.getElementById("profilePerfil").value = u.perfil ? (u.perfil.charAt(0).toUpperCase() + u.perfil.slice(1)) : "Usuário";
       document.getElementById("profileSenha").value = "";
+      const avUrl = localStorage.getItem("ambros_avatar_url") || "https://i.pravatar.cc/80?img=12";
+      document.getElementById("profileAvatarUrl").value = avUrl;
+      document.getElementById("profileAvatarPreview").src = avUrl;
       document.getElementById("profileError").style.display = "none";
       document.getElementById("profileSuccess").style.display = "none";
       
@@ -792,6 +793,13 @@
     }
   }
 
+  function openHelpModal() {
+    document.getElementById("userPopover").style.display = "none";
+    var modalEl = document.getElementById('helpModal');
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+
   const editProfileFormEl = document.getElementById("editProfileForm");
   if (editProfileFormEl) {
     editProfileFormEl.addEventListener("submit", async function(e) {
@@ -799,6 +807,7 @@
       const nome = document.getElementById("profileNome").value;
       const email = document.getElementById("profileEmail").value;
       const senha = document.getElementById("profileSenha").value;
+      const avUrl = document.getElementById("profileAvatarUrl").value;
       const errEl = document.getElementById("profileError");
       const succEl = document.getElementById("profileSuccess");
       
@@ -829,8 +838,12 @@
           sessionStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
         }
 
-        const tn = document.getElementById("topUserName");
-        if (tn) tn.textContent = data.usuario.nome;
+        if (avUrl) {
+          localStorage.setItem("ambros_avatar_url", avUrl);
+          const avatarImg = document.getElementById("sidebarAvatarImg");
+          if (avatarImg) avatarImg.src = avUrl;
+        }
+
         const sn = document.getElementById("sidebarUserName");
         if (sn) sn.textContent = data.usuario.nome;
 
@@ -849,39 +862,94 @@
   }
 </script>
 
-<!-- Modal Editar Perfil -->
+<!-- Modal Editar Perfil & Configurações -->
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Editar Meu Perfil</h5>
+        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Perfil, Dados Pessoais & Configurações</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
         <form id="editProfileForm">
-          <div class="mb-3">
-            <label class="form-label">Nome Completo</label>
-            <input type="text" class="form-control" id="profileNome" required>
+          <div class="row">
+            <div class="col-md-4 text-center border-end mb-3 mb-md-0">
+              <div class="mb-3">
+                <img id="profileAvatarPreview" src="https://i.pravatar.cc/80?img=12" alt="Avatar" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover;">
+              </div>
+              <div class="mb-3">
+                <label class="form-label small fw-bold">URL da Foto / Avatar</label>
+                <input type="text" class="form-control form-control-sm" id="profileAvatarUrl" placeholder="https://..." oninput="document.getElementById('profileAvatarPreview').src = this.value || 'https://i.pravatar.cc/80?img=12'">
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" class="form-control" id="profileNome" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="profileEmail" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+                <input type="password" class="form-control" id="profileSenha" placeholder="••••••••">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Perfil / Função</label>
+                <input type="text" class="form-control" id="profilePerfil" disabled style="background:#e9ecef;">
+              </div>
+              <hr>
+              <h6 class="text-muted fw-bold small text-uppercase mb-2">Configurações Gerais do Sistema</h6>
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="form-label small">Tema da Interface</label>
+                  <select class="form-select form-select-sm" id="prefTema">
+                    <option value="dark">Escuro (Sidebar) / Claro (Conteúdo)</option>
+                    <option value="light">Claro Padrão</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small">Notificações Sonoras</label>
+                  <select class="form-select form-select-sm" id="prefNotif">
+                    <option value="ativadas">Ativadas</option>
+                    <option value="silenciosas">Silenciosas</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">E-mail</label>
-            <input type="email" class="form-control" id="profileEmail" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
-            <input type="password" class="form-control" id="profileSenha" placeholder="••••••••">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Perfil / Função</label>
-            <input type="text" class="form-control" id="profilePerfil" disabled style="background:#e9ecef;">
-          </div>
-          <div class="text-danger small mb-2" id="profileError" style="display:none;"></div>
-          <div class="text-success small mb-2" id="profileSuccess" style="display:none;">Perfil atualizado com sucesso!</div>
-          <div class="d-flex justify-content-end gap-2">
+
+          <div class="text-danger small mb-2 mt-3" id="profileError" style="display:none;"></div>
+          <div class="text-success small mb-2 mt-3" id="profileSuccess" style="display:none;">Perfil e configurações atualizados com sucesso!</div>
+          <div class="d-flex justify-content-end gap-2 mt-3">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
             <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajuda & Suporte -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-headset me-2 text-primary"></i>Suporte Técnico AMBROS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">Precisa de auxílio com o sistema de controle de acesso? Nossa equipe de suporte está à disposição:</p>
+        <div class="p-3 bg-light rounded mb-3 border">
+          <div class="mb-2"><i class="bi bi-whatsapp text-success fs-5 me-2 align-middle"></i><strong>WhatsApp / Celular:</strong> <span class="text-dark">(11) 99888-7766</span></div>
+          <div><i class="bi bi-envelope-at text-primary fs-5 me-2 align-middle"></i><strong>E-mail de Suporte:</strong> <span class="text-dark">suporte@ambros-sistemas.com.br</span></div>
+        </div>
+        <div class="small text-muted">Horário de atendimento: Segunda a Sexta, das 08h às 18h (Plantão 24h para emergências de portaria).</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
