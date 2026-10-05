@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Login</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<style>
+  :root{--brand-blue:#2f6bff;--sidebar-bg:#1b2434;--sidebar-bg2:#141c29}
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    background:linear-gradient(135deg,#1b2434,#0e1420);
+  }
+  .card-login{
+    width:100%;max-width:400px;background:#fff;border-radius:16px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden;
+  }
+  .card-head{
+    background:linear-gradient(135deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#fff;text-align:center;padding:32px 24px 26px;
+  }
+  .card-head .logo{
+    width:64px;height:64px;border-radius:14px;margin:0 auto 14px;
+    background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;
+    font-size:30px;box-shadow:0 6px 16px rgba(0,0,0,.4);
+  }
+  .card-head .name{font-size:28px;font-weight:800;letter-spacing:3px;line-height:1}
+  .card-head .sub{font-size:10px;letter-spacing:2px;color:#8a93a6;margin-top:5px}
+  .card-body{padding:28px 28px 30px}
+  .card-body h5{font-size:18px;color:#3b4453;font-weight:600;margin:0 0 4px}
+  .card-body .lead-txt{font-size:13.5px;color:#9aa2b1;margin-bottom:22px}
+  .form-label{font-size:13px;font-weight:600;color:#54607a;margin-bottom:5px}
+  .input-group-text{background:#f4f6f9;border-right:0;color:#9aa2b1}
+  .form-control{border-left:0}
+  .form-control:focus{box-shadow:none;border-color:#dde2ea}
+  .input-group:focus-within{outline:2px solid #dbe6ff;border-radius:8px}
+  .btn-entrar{background:var(--brand-blue);border-color:var(--brand-blue);padding:11px;font-weight:600;font-size:15px}
+  .hint{background:#eef4ff;border:1px solid #dbe6ff;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#3b5bdb;margin-top:18px}
+  .hint code{background:#fff;padding:1px 6px;border-radius:4px;color:#1e40af}
+  .alert-erro{display:none;font-size:13.5px;padding:10px 12px;border-radius:8px;background:#fdeaea;color:#dc2626;margin-bottom:16px}
+  .foot{text-align:center;font-size:11.5px;color:#aab1bd;margin-top:20px}
+</style>
+</head>
+<body>
+  <div class="card-login">
+    <div class="card-head">
+      <div class="logo"><i class="fa-solid fa-shield-halved" style="color:#fff"></i></div>
+      <div class="name">AMBROS</div>
+      <div class="sub">CONTROLE DE ACESSO</div>
+    </div>
+    <div class="card-body">
+      <h5>Bem-vindo de volta</h5>
+      <div class="lead-txt">Entre com suas credenciais para acessar o painel.</div>
+
+      <div class="alert-erro" id="erro"></div>
+
+      <div class="mb-3">
+        <label class="form-label">E-mail</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          <input type="email" class="form-control" id="email" placeholder="seu@email.com" value="adm@adm.com" autocomplete="username">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Senha</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input type="password" class="form-control" id="senha" value="123" placeholder="••••••" autocomplete="current-password">
+          <span class="input-group-text" style="cursor:pointer;border-left:0" id="toggle"><i class="bi bi-eye" id="eye"></i></span>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="lembrar" checked>
+          <label class="form-check-label" for="lembrar" style="font-size:13px;color:#54607a">Lembrar-me</label>
+        </div>
+        <a href="#" onclick="mostrarErro('Credenciais de teste: adm@adm.com / senha: 123'); return false;" style="font-size:13px;color:var(--brand-blue);text-decoration:none">Esqueci a senha</a>
+      </div>
+
+      <button class="btn btn-primary btn-entrar w-100" id="btnEntrar">
+        <i class="bi bi-box-arrow-in-right"></i> Entrar
+      </button>
+
+      <div class="hint">
+        <i class="bi bi-info-circle"></i> Acesso padrão: <code>adm@adm.com</code> / <code>123</code>
+      </div>
+
+      <div class="foot">© 2025 AMBROS · Sistema de Controle de Acesso</div>
+    </div>
+  </div>
+
+<script>
+  const API_BASE = "";
+
+  const $ = id => document.getElementById(id);
+  const erro = $("erro");
+
+  function mostrarErro(msg){ erro.textContent = msg; erro.style.display = "block"; }
+  function limparErro(){ erro.style.display = "none"; }
+
+  // Mostrar/ocultar senha
+  $("toggle").addEventListener("click", () => {
+    const s = $("senha"), e = $("eye");
+    const show = s.type === "password";
+    s.type = show ? "text" : "password";
+    e.className = show ? "bi bi-eye-slash" : "bi bi-eye";
+  });
+
+  async function entrar(){
+    limparErro();
+    const email = $("email").value.trim();
+    const senha = $("senha").value;
+    if(!email || !senha){ mostrarErro("Informe e-mail e senha."); return; }
+
+    const btn = $("btnEntrar");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Entrando...';
+
+    try{
+      const resp = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ email, senha })
+      });
+      if(!resp.ok){
+        const d = await resp.json().catch(() => ({}));
+        mostrarErro(d.detail || "E-mail ou senha inválidos.");
+        return;
+      }
+      const data = await resp.json();
+      try{
+        const store = $("lembrar").checked ? localStorage : sessionStorage;
+        store.setItem("ambros_token", data.access_token);
+        store.setItem("ambros_usuario", JSON.stringify(data.usuario));
+      }catch(_){ }
+
+      window.location.href = "ambros-dashboard.html";
+    }catch(_){
+      mostrarErro("Não foi possível conectar ao servidor.");
+    }finally{
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Entrar';
+    }
+  }
+
+  $("btnEntrar").addEventListener("click", entrar);
+  $("senha").addEventListener("keydown", e => { if(e.key === "Enter") entrar(); });
+</script>
+</body>
+</html>

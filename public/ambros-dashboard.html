@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Dashboard</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="/vendor/chart.umd.min.js"></script>
+<script>
+  if (typeof Chart === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"><\/script>');
+  }
+</script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--content-bg);
+    color:#333;
+  }
+  a{text-decoration:none}
+
+  /* ===== Layout ===== */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+
+  /* ===== Sidebar brand ===== */
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{
+    width:42px;height:42px;border-radius:9px;
+    background:linear-gradient(135deg,#3a7bd5,#1e3a8a);
+    display:grid;place-items:center;color:#fff;font-size:20px;
+    box-shadow:0 3px 8px rgba(0,0,0,.35);
+  }
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{
+    flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px;
+  }
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{
+    background:var(--brand-blue);color:#fff;border-radius:8px;
+    margin:2px 10px;padding:10px 14px;font-weight:600;
+  }
+  
+  /* Subcategorias Organizadas */
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+
+  /* ===== Topbar ===== */
+  .topbar{
+    background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020;
+  }
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:400}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:20px}
+  .bell{position:relative;font-size:19px;color:#6b7280;cursor:pointer}
+  .bell .badge{position:absolute;top:-8px;right:-8px;background:#ef4444;color:#fff;font-size:10px;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+  .topuser .dot{width:9px;height:9px;border-radius:50%;background:#38d39f;border:2px solid #fff;position:relative;left:-16px;top:12px}
+
+  /* ===== Content ===== */
+  .content{padding:24px}
+  .cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .stat{background:#fff;border-radius:var(--card-radius);padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;flex-direction:column}
+  .stat .row1{display:flex;align-items:center;gap:16px}
+  .stat .ico{width:64px;height:64px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:26px;flex-shrink:0}
+  .stat .label{font-size:14px;color:#8a93a6}
+  .stat .num{font-size:30px;font-weight:700;color:#3b4453;line-height:1.1}
+  .stat .desc{font-size:12.5px;color:#aab1bd}
+  .stat .foot{margin-top:14px;padding-top:12px;border-top:1px solid #f0f2f5}
+  .stat .foot a{font-size:13px;color:var(--brand-blue);font-weight:500;display:inline-flex;align-items:center;gap:6px}
+
+  .ico.blue{background:#3b82f6}
+  .ico.green{background:#22c55e}
+  .ico.amber{background:#f5c518}
+  .ico.purple{background:#7c5cff}
+  .ico.teal{background:#14b8a6}
+  .ico.orange{background:#f97316}
+  .ico.red{background:#ef4444}
+  .ico.sky{background:#3b9df6}
+
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .panel .ph h6{margin:0;font-size:16px;font-weight:600;color:#3b4453}
+  .panel .ph .dots{color:#c2c8d2;cursor:pointer}
+  .chart-wrap{height:260px;position:relative}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:13px;color:#9aa2b1;font-weight:600;text-align:left;padding:10px 8px;border-bottom:1px solid #eef0f3}
+  tbody td{padding:12px 8px;font-size:14px;color:#4b5563;border-bottom:1px solid #f4f6f8}
+  tbody tr:last-child td{border-bottom:none}
+  .avatar-i{width:26px;height:26px;border-radius:50%;background:#eef2ff;color:#4f6ef7;display:inline-grid;place-items:center;font-size:12px;margin-right:8px}
+  .avatar-i.g{background:#e8f8ef;color:#22c55e}
+  .badge-in{background:#e6f7ed;color:#16a34a;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+  .badge-out{background:#fde8e8;color:#dc2626;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px}
+  .btn-eye{width:30px;height:30px;border-radius:7px;background:var(--brand-blue);color:#fff;border:none;display:inline-grid;place-items:center;cursor:pointer;font-size:13px}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .footer .heart{color:#ef4444}
+
+  /* ===== Responsive ===== */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+  @media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr)}.panels{grid-template-columns:1fr}}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .cards-grid{grid-template-columns:1fr}
+    .overlay.show{display:block}
+    .topuser .tn,.topuser .th{display:none}
+    .footer{flex-direction:column;gap:6px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <!-- Dashboard Top Level -->
+      <a class="nav-item active" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Subcategoria: Portaria & Segurança -->
+      <div class="nav-group" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Cadastros do Condomínio -->
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Convivência & Morador -->
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Gestão & Auditoria -->
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Versão 1.0.0 · Ambiente Ativo</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Dashboard</div>
+
+      <div class="right">
+        <div class="bell"><i class="bi bi-bell"></i><span class="badge">3</span></div>
+        <div class="topuser" onclick="openEditProfile()" title="Clique para editar seu perfil">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div class="dot"></div>
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Portaria Principal</div>
+          </div>
+          <i class="bi bi-pencil-square text-muted ms-2" title="Editar Perfil"></i>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- ===== ROW 1 DE CARDS ===== -->
+      <div class="cards-grid">
+        <div class="stat">
+          <div class="row1">
+            <div class="ico blue"><i class="fa-solid fa-users"></i></div>
+            <div>
+              <div class="label">Moradores Ativos</div>
+              <div class="num" id="cardMoradores">0</div>
+              <div class="desc">Cadastros válidos</div>
+            </div>
+          </div>
+          <div class="foot"><a href="moradores.html">Ver detalhes <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico green"><i class="fa-solid fa-user-clock"></i></div>
+            <div>
+              <div class="label">Visitantes Hoje</div>
+              <div class="num" id="cardVisitantes">0</div>
+              <div class="desc">Registros hoje</div>
+            </div>
+          </div>
+          <div class="foot"><a href="portaria-entrada.html">Ver lista <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico amber"><i class="fa-solid fa-car-side"></i></div>
+            <div>
+              <div class="label">Veículos Cadastrados</div>
+              <div class="num" id="cardVeiculos">0</div>
+              <div class="desc">Moradores e fixos</div>
+            </div>
+          </div>
+          <div class="foot"><a href="moradores.html">Consultar <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico purple"><i class="fa-solid fa-right-to-bracket"></i></div>
+            <div>
+              <div class="label">Entradas Hoje</div>
+              <div class="num" id="cardEntradas">0</div>
+              <div class="desc">Fluxo de portaria</div>
+            </div>
+          </div>
+          <div class="foot"><a href="portaria-entrada.html">Histórico <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+      </div>
+
+      <!-- ===== ROW 2 DE CARDS ===== -->
+      <div class="cards-grid" style="margin-top:20px">
+        <div class="stat">
+          <div class="row1">
+            <div class="ico red"><i class="fa-solid fa-right-from-bracket"></i></div>
+            <div>
+              <div class="label">Saídas Hoje</div>
+              <div class="num" id="cardSaidas">0</div>
+              <div class="desc">Fluxo de saída</div>
+            </div>
+          </div>
+          <div class="foot"><a href="portaria-entrada.html">Histórico <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico teal"><i class="fa-solid fa-building-user"></i></div>
+            <div>
+              <div class="label">No Condomínio</div>
+              <div class="num" id="cardDentro">0</div>
+              <div class="desc">Visitantes presentes</div>
+            </div>
+          </div>
+          <div class="foot"><a href="#tabVisitantes">Ver quem está <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico orange"><i class="fa-solid fa-calendar-check"></i></div>
+            <div>
+              <div class="label">Visitas Agendadas</div>
+              <div class="num" id="cardAgendadas">0</div>
+              <div class="desc">Previstas para hoje</div>
+            </div>
+          </div>
+          <div class="foot"><a href="portaria-entrada.html">Agenda <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+
+        <div class="stat">
+          <div class="row1">
+            <div class="ico sky"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div>
+              <div class="label">Último Acesso</div>
+              <div class="num" style="font-size:20px;padding-top:6px" id="cardUltimoHora">--:--</div>
+              <div class="desc" id="cardUltimoNome">Nenhum registro</div>
+            </div>
+          </div>
+          <div class="foot"><a href="portaria-entrada.html">Portaria ao vivo <i class="bi bi-arrow-right"></i></a></div>
+        </div>
+      </div>
+
+      <!-- ===== GRÁFICOS ===== -->
+      <div class="panels">
+        <div class="panel">
+          <div class="ph">
+            <h6>Movimentação de Hoje (Entradas vs Saídas)</h6>
+            <span class="dots"><i class="bi bi-three-dots-vertical"></i></span>
+          </div>
+          <div class="chart-wrap"><canvas id="movChart"></canvas></div>
+        </div>
+
+        <div class="panel">
+          <div class="ph">
+            <h6>Visitantes nos Últimos 7 Dias</h6>
+            <span class="dots"><i class="bi bi-three-dots-vertical"></i></span>
+          </div>
+          <div class="chart-wrap"><canvas id="visChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ===== TABELAS ===== -->
+      <div class="panels">
+        <div class="panel">
+          <div class="ph"><h6>Últimos Acessos</h6><span class="dots"><i class="bi bi-three-dots-vertical"></i></span></div>
+          <table>
+            <thead><tr><th>Nome</th><th>Tipo</th><th>Placa</th><th>Hora</th><th>Sentido</th></tr></thead>
+            <tbody id="tabUltimosAcessos">
+              <tr><td colspan="5" class="text-center py-3 text-muted">Carregando dados...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel" id="tabVisitantes">
+          <div class="ph"><h6>Visitantes no Condomínio</h6><span class="dots"><i class="bi bi-three-dots-vertical"></i></span></div>
+          <table>
+            <thead><tr><th>Nome</th><th>Documento</th><th>Bloco/Apt</th><th>Entrada</th><th>Veículo</th><th>Ações</th></tr></thead>
+            <tbody id="tabVisitantesCondominio">
+              <tr><td colspan="6" class="text-center py-3 text-muted">Carregando visitantes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 Ambros - Sistema de Controle de Acesso. Todos os direitos reservados.</span>
+      <span>Desenvolvido com <i class="bi bi-heart-fill heart"></i> para seu condomínio</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.replace("login.html");
+  }
+
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.replace("login.html");
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){
+    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click',function(){
+    sidebar.classList.remove('show'); overlay.classList.remove('show');
+  });
+
+  let movChartInstance = null;
+  let visChartInstance = null;
+
+  async function carregarDashboard() {
+    if (!token) return;
+
+    try {
+      const resp = await fetch("/dashboard", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      if (!resp.ok) {
+        console.warn("Aviso ao carregar dashboard: status", resp.status);
+        return;
+      }
+
+      const contentType = resp.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        console.warn("Resposta do dashboard não é JSON:", contentType);
+        return;
+      }
+
+      let data;
+      try {
+        data = await resp.json();
+      } catch (jsonErr) {
+        console.warn("Falha ao interpretar JSON do dashboard:", jsonErr);
+        return;
+      }
+
+      if (!data || !data.cards) return;
+
+      // Cards
+      document.getElementById("cardMoradores").textContent = data.cards.moradores_ativos;
+      document.getElementById("cardVisitantes").textContent = data.cards.visitantes_hoje;
+      document.getElementById("cardVeiculos").textContent = data.cards.veiculos_cadastrados;
+      document.getElementById("cardEntradas").textContent = data.cards.entradas_hoje;
+      document.getElementById("cardSaidas").textContent = data.cards.saidas_hoje;
+      document.getElementById("cardDentro").textContent = data.cards.dentro_condominio;
+      document.getElementById("cardAgendadas").textContent = data.cards.visitas_agendadas;
+
+      if (data.cards.ultimo_acesso) {
+        const u = data.cards.ultimo_acesso;
+        const d = new Date(u.registrado_em);
+        document.getElementById("cardUltimoHora").textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        document.getElementById("cardUltimoNome").textContent = `${u.nome} (${u.sentido === 'entrada' ? 'Entrada' : 'Saída'})`;
+      }
+
+      // Gráficos (com verificação de disponibilidade do Chart.js)
+      if (typeof Chart !== "undefined") {
+        // Chart 1: Movimentação
+        const movLabels = data.movimentacao_hoje.entradas.map(p => p.label);
+        const movEntradas = data.movimentacao_hoje.entradas.map(p => p.valor);
+        const movSaidas = data.movimentacao_hoje.saidas.map(p => p.valor);
+
+        if (movChartInstance) movChartInstance.destroy();
+        movChartInstance = new Chart(document.getElementById('movChart'), {
+          type: 'line',
+          data: {
+            labels: movLabels,
+            datasets: [
+              {
+                label: 'Entradas',
+                data: movEntradas,
+                borderColor: '#2f6bff',
+                backgroundColor: 'rgba(47,107,255,.12)',
+                fill: true,
+                tension: .4,
+                pointRadius: 4,
+                pointBackgroundColor: '#2f6bff'
+              },
+              {
+                label: 'Saídas',
+                data: movSaidas,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239,68,68,.10)',
+                fill: true,
+                tension: .4,
+                pointRadius: 4,
+                pointBackgroundColor: '#ef4444'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, font: { size: 12 } } }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 2 }, grid: { color: '#eef0f3' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+
+        // Chart 2: Visitantes 7 dias
+        const visLabels = data.visitantes_7dias.map(p => p.label);
+        const visValores = data.visitantes_7dias.map(p => p.valor);
+
+        if (visChartInstance) visChartInstance.destroy();
+        visChartInstance = new Chart(document.getElementById('visChart'), {
+          type: 'bar',
+          data: {
+            labels: visLabels,
+            datasets: [{ data: visValores, backgroundColor: '#6ea3f5', borderRadius: 4, barPercentage: .55 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#eef0f3' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      } else {
+        console.warn("Chart.js ainda não está disponível.");
+      }
+
+      // Tabela Últimos Acessos
+      const tbodyAcessos = document.getElementById("tabUltimosAcessos");
+      if (data.ultimos_acessos && data.ultimos_acessos.length > 0) {
+        tbodyAcessos.innerHTML = data.ultimos_acessos.map(a => {
+          const d = new Date(a.registrado_em);
+          const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          const isMorador = a.tipo_pessoa === 'morador';
+          const badgeClass = a.sentido === 'entrada' ? 'badge-in' : 'badge-out';
+          const sentidoTxt = a.sentido === 'entrada' ? 'Entrada' : 'Saída';
+          return `
+            <tr>
+              <td>
+                <span class="avatar-i ${isMorador ? 'g' : ''}"><i class="bi bi-person"></i></span>
+                ${a.nome}
+              </td>
+              <td>${isMorador ? 'Morador' : 'Visitante'}</td>
+              <td>${a.placa_veiculo || '—'}</td>
+              <td>${hora}</td>
+              <td><span class="${badgeClass}">${sentidoTxt}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tbodyAcessos.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Nenhum acesso registrado hoje.</td></tr>';
+      }
+
+      // Tabela Visitantes no Condomínio
+      const respVis = await fetch("/visitantes?presentes=true", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (respVis.ok) {
+        const ctVis = respVis.headers.get("content-type") || "";
+        if (ctVis.includes("application/json")) {
+          let visitantes = [];
+          try {
+            visitantes = await respVis.json();
+          } catch (_) {}
+
+          const tbodyVis = document.getElementById("tabVisitantesCondominio");
+          if (Array.isArray(visitantes) && visitantes.length > 0) {
+            tbodyVis.innerHTML = visitantes.map(v => {
+              const d = new Date(v.criado_em);
+              const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+              const local = (v.bloco || v.apartamento) ? `Bloco ${v.bloco || '—'} / ${v.apartamento || '—'}` : 'Geral';
+              return `
+                <tr>
+                  <td><strong>${v.nome}</strong></td>
+                  <td>${v.documento || '—'}</td>
+                  <td>${local}</td>
+                  <td>${hora}</td>
+                  <td>${v.placa_veiculo || 'Não'}</td>
+                  <td>
+                    <button class="btn-eye" title="Detalhes"><i class="bi bi-search"></i></button>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            tbodyVis.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Nenhum visitante presente no momento.</td></tr>';
+          }
+        }
+      }
+
+    } catch (err) {
+      console.warn("Aviso ao carregar dashboard:", err);
+    }
+  }
+
+  carregarDashboard();
+
+  function openEditProfile() {
+    try {
+      const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+      document.getElementById("profileNome").value = u.nome || "";
+      document.getElementById("profileEmail").value = u.email || "";
+      document.getElementById("profilePerfil").value = u.perfil ? (u.perfil.charAt(0).toUpperCase() + u.perfil.slice(1)) : "Usuário";
+      document.getElementById("profileSenha").value = "";
+      document.getElementById("profileError").style.display = "none";
+      document.getElementById("profileSuccess").style.display = "none";
+      
+      var modalEl = document.getElementById('editProfileModal');
+      var modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  const editProfileFormEl = document.getElementById("editProfileForm");
+  if (editProfileFormEl) {
+    editProfileFormEl.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("profileNome").value;
+      const email = document.getElementById("profileEmail").value;
+      const senha = document.getElementById("profileSenha").value;
+      const errEl = document.getElementById("profileError");
+      const succEl = document.getElementById("profileSuccess");
+      
+      errEl.style.display = "none";
+      succEl.style.display = "none";
+
+      try {
+        const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+        const res = await fetch("/auth/me", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ nome, email, senha: senha ? senha : undefined })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || "Erro ao atualizar perfil");
+        }
+
+        if (localStorage.getItem("ambros_token")) {
+          localStorage.setItem("ambros_token", data.access_token);
+          localStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        } else {
+          sessionStorage.setItem("ambros_token", data.access_token);
+          sessionStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        }
+
+        const tn = document.getElementById("topUserName");
+        if (tn) tn.textContent = data.usuario.nome;
+        const sn = document.getElementById("sidebarUserName");
+        if (sn) sn.textContent = data.usuario.nome;
+
+        succEl.style.display = "block";
+        setTimeout(() => {
+          var modalEl = document.getElementById('editProfileModal');
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }, 1200);
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = "block";
+      }
+    });
+  }
+</script>
+
+<!-- Modal Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Editar Meu Perfil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editProfileForm">
+          <div class="mb-3">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="profileNome" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="profileEmail" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+            <input type="password" class="form-control" id="profileSenha" placeholder="••••••••">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Perfil / Função</label>
+            <input type="text" class="form-control" id="profilePerfil" disabled style="background:#e9ecef;">
+          </div>
+          <div class="text-danger small mb-2" id="profileError" style="display:none;"></div>
+          <div class="text-success small mb-2" id="profileSuccess" style="display:none;">Perfil atualizado com sucesso!</div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

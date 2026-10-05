@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Gestão de Veículos</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{
+    flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px;
+  }
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{
+    background:var(--brand-blue);color:#fff;border-radius:8px;
+    margin:2px 10px;padding:10px 14px;font-weight:600;
+  }
+
+  /* Subcategorias Organizadas */
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+  
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+  .stat-card{background:#fff;border-radius:var(--card-radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;align-items:center;gap:16px}
+  .stat-icon{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px}
+  .stat-icon.car{background:#eff6ff;color:#2563eb}
+  .stat-icon.morador{background:#f0fdf4;color:#16a34a}
+  .stat-icon.vaga{background:#fef3c7;color:#d97706}
+  .stat-icon.visitante{background:#f3e8ff;color:#7e22ce}
+  .stat-val{font-size:26px;font-weight:700;color:#0f172a;line-height:1}
+  .stat-lbl{font-size:13px;color:#64748b;margin-top:4px}
+
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;justify-content:space-between}
+  
+  .filter-tabs{display:inline-flex;background:#f1f5f9;padding:4px;border-radius:8px;gap:4px}
+  .filter-tab{border:none;background:none;padding:6px 14px;font-size:13.5px;font-weight:500;color:#64748b;border-radius:6px;cursor:pointer;transition:all .15s}
+  .filter-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  .table-custom{margin:0}
+  .table-custom th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#64748b;font-weight:600;padding:12px 14px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
+  .table-custom td{padding:14px;vertical-align:middle;font-size:13.5px;border-bottom:1px solid #f1f5f9}
+  .table-custom tr:hover td{background:#fafafa}
+
+  /* Mercosul Plate Style */
+  .placa-badge{
+    display:inline-flex;
+    flex-direction:column;
+    border:2px solid #000;
+    border-radius:6px;
+    background:#fff;
+    min-width:92px;
+    text-align:center;
+    box-shadow:0 1px 3px rgba(0,0,0,.15);
+    overflow:hidden;
+    line-height:1;
+  }
+  .placa-badge .topo{background:#003399;color:#fff;font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 4px}
+  .placa-badge .num{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,monospace;font-size:14px;font-weight:900;letter-spacing:1px;padding:3px 6px;color:#111}
+
+  .vaga-tag{font-family:ui-monospace,SFMono-Regular,monospace;font-weight:700;color:#1e293b;background:#f1f5f9;padding:3px 8px;border-radius:6px;border:1px solid #e2e8f0}
+
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+    .topuser .tn,.topuser .th{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
+      <div>
+        <div class="pname" id="sidebarUserName">Portaria Central</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <!-- Dashboard Top Level -->
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- Subcategoria: Portaria & Segurança -->
+      <div class="nav-group" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Cadastros do Condomínio (Ativo aqui) -->
+      <div class="nav-group open" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem active" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Convivência & Morador -->
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Subcategoria: Gestão & Auditoria -->
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Versão 1.0.0 · Módulo Veículos</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="title">Gestão de Veículos</div>
+
+      <div class="right">
+        <button class="btn btn-outline-primary btn-sm d-none d-md-inline-flex align-items-center gap-2" onclick="abrirConsultaRapidaPlaca()">
+          <i class="bi bi-search"></i> Consultar Placa
+        </button>
+        <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" onclick="abrirModalCadastroVeiculo()">
+          <i class="bi bi-plus-lg"></i> Novo Veículo
+        </button>
+        <div class="topuser" onclick="logout()" title="Clique para sair">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Portaria Principal</div>
+          </div>
+          <i class="bi bi-box-arrow-right text-muted ms-1"></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <h4>Controle de Frota & Vagas de Garagem</h4>
+          <div class="breadcrumb-mini">
+            <a href="ambros-dashboard.html">Início</a> · Veículos · Garagem & Vagas
+          </div>
+        </div>
+      </div>
+
+      <!-- Métricas Resumo -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon car"><i class="bi bi-car-front-fill"></i></div>
+          <div>
+            <div class="stat-val" id="statTotal">-</div>
+            <div class="stat-lbl">Veículos Cadastrados</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon morador"><i class="bi bi-people-fill"></i></div>
+          <div>
+            <div class="stat-val" id="statMorador">-</div>
+            <div class="stat-lbl">De Moradores</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon vaga"><i class="bi bi-p-square-fill"></i></div>
+          <div>
+            <div class="stat-val" id="statVagas">-</div>
+            <div class="stat-lbl">Vagas Ocupadas</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon visitante"><i class="bi bi-person-badge"></i></div>
+          <div>
+            <div class="stat-val" id="statVisitantes">-</div>
+            <div class="stat-lbl">Visitantes com Carro</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel e Tabela -->
+      <div class="panel">
+        <div class="toolbar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filtro="todos" onclick="mudarFiltro('todos', this)">Todos</button>
+            <button class="filter-tab" data-filtro="com_vaga" onclick="mudarFiltro('com_vaga', this)">Com Vaga</button>
+            <button class="filter-tab" data-filtro="sem_vaga" onclick="mudarFiltro('sem_vaga', this)">Sem Vaga</button>
+            <button class="filter-tab" data-filtro="moradores" onclick="mudarFiltro('moradores', this)">Moradores</button>
+          </div>
+
+          <div class="d-flex gap-2 align-items-center" style="min-width:300px">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control" id="buscaInput" placeholder="Buscar por placa, modelo, morador, vaga..." oninput="filtrarVeiculos()">
+            </div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="carregarDados()" title="Atualizar dados">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-custom">
+            <thead>
+              <tr>
+                <th>Placa</th>
+                <th>Modelo & Cor</th>
+                <th>Vaga Garagem</th>
+                <th>Proprietário / Unidade</th>
+                <th>Data Cadastro</th>
+                <th class="text-end">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabVeiculos">
+              <tr><td colspan="6" class="text-center text-muted py-4">Carregando veículos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div>AMBROS · Sistema Integrado de Controle de Acesso e Portaria</div>
+      <div>Controle de Garagem & Vagas</div>
+    </footer>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CADASTRO / EDIÇÃO VEÍCULO ===================== -->
+<div class="modal fade" id="modalVeiculo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2" id="modalVeiculoTitulo">
+          <i class="bi bi-car-front-fill text-primary"></i> Cadastrar Veículo
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="veiculoEditId">
+
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">Placa do Veículo *</label>
+          <input type="text" class="form-control text-uppercase font-monospace fw-bold" id="formPlaca" placeholder="Ex: ABC1D23 ou ABC-1234" maxlength="10">
+          <div class="form-text" style="font-size:11.5px">Formato Mercosul (ABC1D23) ou padrão nacional antigo (ABC-1234)</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-7">
+            <label class="form-label font-medium text-sm">Modelo / Marca</label>
+            <input type="text" class="form-control" id="formModelo" placeholder="Ex: Toyota Corolla, Honda Civic">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label font-medium text-sm">Cor</label>
+            <input type="text" class="form-control" id="formCor" placeholder="Ex: Prata, Preto, Branco">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">Número da Vaga de Garagem</label>
+          <input type="text" class="form-control text-uppercase font-monospace" id="formVaga" placeholder="Ex: V-045, V-112">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">Morador Proprietário (Opcional)</label>
+          <select class="form-select" id="formMoradorSelect">
+            <option value="">Nenhum / Não vinculado</option>
+          </select>
+          <div class="form-text" style="font-size:11.5px">Vincule o veículo a um morador cadastrado para agilizar a liberação na portaria</div>
+        </div>
+
+        <div id="veiculoErroMsg" class="alert alert-danger d-none py-2 text-sm"></div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2" id="btnSalvarVeiculo" onclick="salvarVeiculo()">
+          <i class="bi bi-check-lg"></i> Salvar Veículo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CONSULTA RÁPIDA DE PLACA ===================== -->
+<div class="modal fade" id="modalConsultaPlaca" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header">
+        <h5 class="modal-title font-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-search text-primary"></i> Consulta Rápida de Placa na Portaria
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label font-medium text-sm">Digite a Placa para Identificar:</label>
+          <div class="input-group">
+            <input type="text" class="form-control text-uppercase font-monospace fw-bold" id="consultaPlacaInput" placeholder="Ex: ABC1D23" onkeypress="if(event.key==='Enter') executarConsultaPlaca()">
+            <button class="btn btn-primary" onclick="executarConsultaPlaca()"><i class="bi bi-search"></i> Consultar</button>
+          </div>
+        </div>
+
+        <div id="resultadoConsultaPlaca" class="d-none"></div>
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  // Preencher nome do usuário
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("topUserName").textContent = u.nome;
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.href = "login.html";
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){
+    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click',function(){
+    sidebar.classList.remove('show'); overlay.classList.remove('show');
+  });
+
+  let listaVeiculos = [];
+  let listaMoradores = [];
+  let filtroAtual = "todos";
+
+  async function carregarDados() {
+    await Promise.all([carregarStats(), carregarVeiculos(), carregarMoradores()]);
+  }
+
+  async function carregarStats() {
+    try {
+      const resp = await fetch("/veiculos/stats", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401) { logout(); return; }
+      if (resp.ok) {
+        const stats = await resp.json();
+        document.getElementById("statTotal").textContent = stats.total;
+        document.getElementById("statMorador").textContent = stats.com_morador;
+        document.getElementById("statVagas").textContent = stats.vagas_ocupadas;
+        document.getElementById("statVisitantes").textContent = stats.visitantes_com_carro;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function carregarMoradores() {
+    try {
+      const resp = await fetch("/moradores?limit=200", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaMoradores = await resp.json();
+        const select = document.getElementById("formMoradorSelect");
+        select.innerHTML = '<option value="">Nenhum / Não vinculado</option>' + 
+          listaMoradores.map(m => `
+            <option value="${m.id}" data-vaga="${m.numero_vaga || ''}">
+              ${m.nome_completo} (Bl ${m.bloco||'0'} - Apto ${m.apartamento||'0'})
+            </option>
+          `).join('');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Preenche automaticamente a vaga quando seleciona o morador
+  document.getElementById("formMoradorSelect").addEventListener("change", function() {
+    const opt = this.options[this.selectedIndex];
+    if (opt && opt.dataset.vaga && !document.getElementById("formVaga").value) {
+      document.getElementById("formVaga").value = opt.dataset.vaga;
+    }
+  });
+
+  async function carregarVeiculos() {
+    try {
+      const resp = await fetch("/veiculos", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        listaVeiculos = await resp.json();
+        renderizarTabela();
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("tabVeiculos").innerHTML = `
+        <tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar veículos.</td></tr>
+      `;
+    }
+  }
+
+  function renderizarTabela() {
+    const tbody = document.getElementById("tabVeiculos");
+    const busca = document.getElementById("buscaInput").value.toLowerCase().trim();
+
+    const filtrados = listaVeiculos.filter(v => {
+      if (filtroAtual === "com_vaga" && (!v.vaga || v.vaga.trim() === "")) return false;
+      if (filtroAtual === "sem_vaga" && (v.vaga && v.vaga.trim() !== "")) return false;
+      if (filtroAtual === "moradores" && !v.morador_id) return false;
+
+      if (busca) {
+        const mPlaca = v.placa.toLowerCase().includes(busca);
+        const mModelo = v.modelo ? v.modelo.toLowerCase().includes(busca) : false;
+        const mCor = v.cor ? v.cor.toLowerCase().includes(busca) : false;
+        const mVaga = v.vaga ? v.vaga.toLowerCase().includes(busca) : false;
+        const mNome = v.morador_nome ? v.morador_nome.toLowerCase().includes(busca) : false;
+        const mUnid = v.morador_unidade ? v.morador_unidade.toLowerCase().includes(busca) : false;
+        if (!mPlaca && !mModelo && !mCor && !mVaga && !mNome && !mUnid) return false;
+      }
+      return true;
+    });
+
+    if (filtrados.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <i class="bi bi-car-front fs-2 d-block mb-2 text-secondary"></i>
+            Nenhum veículo encontrado com os filtros atuais.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(v => {
+      const dataCriado = v.criado_em ? new Date(v.criado_em) : new Date();
+      const dataStr = `${String(dataCriado.getDate()).padStart(2,'0')}/${String(dataCriado.getMonth()+1).padStart(2,'0')}/${dataCriado.getFullYear()}`;
+
+      return `
+        <tr>
+          <td>
+            <div class="placa-badge">
+              <span class="topo">BRASIL</span>
+              <span class="num">${v.placa}</span>
+            </div>
+          </td>
+          <td>
+            <div class="fw-bold text-dark">${v.modelo || "Não especificado"}</div>
+            <div style="font-size:12px;color:#64748b">${v.cor ? `Cor: ${v.cor}` : "Cor não informada"}</div>
+          </td>
+          <td>
+            ${v.vaga ? `<span class="vaga-tag"><i class="bi bi-p-square"></i> ${v.vaga}</span>` : '<span class="text-muted" style="font-size:12px">Sem vaga fixa</span>'}
+          </td>
+          <td>
+            ${v.morador_nome ? `
+              <div class="fw-semibold text-dark">${v.morador_nome}</div>
+              <div style="font-size:12px;color:#64748b">${v.morador_unidade || ''}</div>
+            ` : '<span class="badge bg-light text-secondary border">Avulso / Portaria</span>'}
+          </td>
+          <td>${dataStr}</td>
+          <td class="text-end">
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-light btn-sm border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Ações
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="portaria-entrada.html"><i class="bi bi-door-open text-primary"></i> Registrar Entrada / Saída</a></li>
+                <li><a class="dropdown-item" href="#" onclick="abrirModalEdicaoVeiculo(${v.id});return false"><i class="bi bi-pencil"></i> Editar</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="excluirVeiculo(${v.id});return false"><i class="bi bi-trash"></i> Excluir</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function mudarFiltro(filtro, btn) {
+    filtroAtual = filtro;
+    document.querySelectorAll(".filter-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderizarTabela();
+  }
+
+  function filtrarVeiculos() {
+    renderizarTabela();
+  }
+
+  function abrirModalCadastroVeiculo() {
+    document.getElementById("veiculoEditId").value = "";
+    document.getElementById("modalVeiculoTitulo").innerHTML = '<i class="bi bi-car-front-fill text-primary"></i> Cadastrar Veículo';
+    document.getElementById("formPlaca").value = "";
+    document.getElementById("formModelo").value = "";
+    document.getElementById("formCor").value = "";
+    document.getElementById("formVaga").value = "";
+    document.getElementById("formMoradorSelect").value = "";
+    document.getElementById("veiculoErroMsg").classList.add("d-none");
+
+    const modal = new bootstrap.Modal(document.getElementById("modalVeiculo"));
+    modal.show();
+  }
+
+  function abrirModalEdicaoVeiculo(id) {
+    const v = listaVeiculos.find(item => item.id === id);
+    if (!v) return;
+
+    document.getElementById("veiculoEditId").value = v.id;
+    document.getElementById("modalVeiculoTitulo").innerHTML = '<i class="bi bi-pencil-square text-primary"></i> Editar Veículo';
+    document.getElementById("formPlaca").value = v.placa;
+    document.getElementById("formModelo").value = v.modelo || "";
+    document.getElementById("formCor").value = v.cor || "";
+    document.getElementById("formVaga").value = v.vaga || "";
+    document.getElementById("formMoradorSelect").value = v.morador_id || "";
+    document.getElementById("veiculoErroMsg").classList.add("d-none");
+
+    const modal = new bootstrap.Modal(document.getElementById("modalVeiculo"));
+    modal.show();
+  }
+
+  async function salvarVeiculo() {
+    const id = document.getElementById("veiculoEditId").value;
+    const placa = document.getElementById("formPlaca").value.trim().toUpperCase();
+    const modelo = document.getElementById("formModelo").value.trim();
+    const cor = document.getElementById("formCor").value.trim();
+    const vaga = document.getElementById("formVaga").value.trim().toUpperCase();
+    const morador_id = document.getElementById("formMoradorSelect").value;
+    const errDiv = document.getElementById("veiculoErroMsg");
+
+    if (!placa) {
+      errDiv.textContent = "Informe a placa do veículo!";
+      errDiv.classList.remove("d-none");
+      return;
+    }
+
+    const btn = document.getElementById("btnSalvarVeiculo");
+    btn.disabled = true;
+
+    try {
+      const url = id ? `/veiculos/${id}` : "/veiculos";
+      const method = id ? "PUT" : "POST";
+
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ placa, modelo, cor, vaga, morador_id: morador_id || null })
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok) {
+        errDiv.textContent = resData.detail || "Erro ao salvar veículo.";
+        errDiv.classList.remove("d-none");
+        return;
+      }
+
+      bootstrap.Modal.getInstance(document.getElementById("modalVeiculo")).hide();
+      carregarDados();
+    } catch (err) {
+      console.error(err);
+      errDiv.textContent = "Erro ao conectar com o servidor.";
+      errDiv.classList.remove("d-none");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function excluirVeiculo(id) {
+    if (!confirm("Tem certeza que deseja remover este veículo?")) return;
+    try {
+      const resp = await fetch(`/veiculos/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Consulta rápida de placa
+  function abrirConsultaRapidaPlaca() {
+    document.getElementById("consultaPlacaInput").value = "";
+    document.getElementById("resultadoConsultaPlaca").classList.add("d-none");
+    const modal = new bootstrap.Modal(document.getElementById("modalConsultaPlaca"));
+    modal.show();
+    setTimeout(() => {
+      document.getElementById("consultaPlacaInput").focus();
+    }, 400);
+  }
+
+  function executarConsultaPlaca() {
+    const input = document.getElementById("consultaPlacaInput");
+    const placa = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const box = document.getElementById("resultadoConsultaPlaca");
+
+    if (!placa) return;
+
+    box.classList.remove("d-none");
+
+    const veiculo = listaVeiculos.find(v => v.placa.toUpperCase().replace(/[^A-Z0-9]/g, "") === placa);
+
+    if (veiculo) {
+      box.innerHTML = `
+        <div class="p-3 rounded bg-success bg-opacity-10 border border-success">
+          <div class="d-flex align-items-center gap-2 mb-2 text-success fw-bold">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <span>Veículo Localizado no Condomínio</span>
+          </div>
+          <div class="mb-1"><strong>Placa:</strong> <span class="font-monospace fw-bold">${veiculo.placa}</span></div>
+          <div class="mb-1"><strong>Modelo / Cor:</strong> ${veiculo.modelo || '-'} (${veiculo.cor || '-'})</div>
+          <div class="mb-1"><strong>Vaga:</strong> ${veiculo.vaga || 'Sem vaga fixa cadastrada'}</div>
+          <div><strong>Proprietário:</strong> ${veiculo.morador_nome ? `${veiculo.morador_nome} (${veiculo.morador_unidade})` : 'Sem morador vinculado'}</div>
+          <div class="mt-3">
+            <a href="portaria-entrada.html" class="btn btn-sm btn-success"><i class="bi bi-box-arrow-in-right"></i> Registrar Entrada Agora</a>
+          </div>
+        </div>
+      `;
+    } else {
+      box.innerHTML = `
+        <div class="p-3 rounded bg-warning bg-opacity-10 border border-warning">
+          <div class="d-flex align-items-center gap-2 mb-2 text-warning fw-bold">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <span>Placa Não Cadastrada</span>
+          </div>
+          <p class="text-sm mb-2 text-dark">A placa <strong>${input.value.trim().toUpperCase()}</strong> não está registrada como veículo fixo de moradores.</p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-primary" onclick="bootstrap.Modal.getInstance(document.getElementById('modalConsultaPlaca')).hide();abrirModalCadastroVeiculo();document.getElementById('formPlaca').value='${input.value.trim().toUpperCase()}';">
+              <i class="bi bi-plus-lg"></i> Cadastrar como Morador
+            </button>
+            <a href="portaria-entrada.html" class="btn btn-sm btn-outline-secondary">
+              Registrar como Visitante
+            </a>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Inicialização
+  carregarDados();
+</script>
+</body>
+</html>
