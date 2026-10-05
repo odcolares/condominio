@@ -52,6 +52,10 @@ class InMemoryDB {
     this.init();
   }
 
+  getNextUserId() {
+    return this.nextUserId++;
+  }
+
   private init() {
     try {
       if (!fs.existsSync(DATA_DIR)) {

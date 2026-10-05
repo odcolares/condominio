@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMBROS · Usuários do Sistema</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<style>
+  :root{
+    --sidebar-bg:#1b2434;
+    --sidebar-bg2:#141c29;
+    --sidebar-hover:#243044;
+    --brand-blue:#2f6bff;
+    --text-muted:#8a93a6;
+    --content-bg:#f4f6f9;
+    --card-radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+  a{text-decoration:none}
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:260px;flex-shrink:0;
+    background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+    color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;
+    display:flex;flex-direction:column;overflow:hidden;
+    transition:transform .25s ease;z-index:1040;
+    box-shadow:2px 0 12px rgba(0,0,0,0.15);
+  }
+  .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .brand{
+    display:flex;align-items:center;gap:12px;padding:18px 18px;
+    border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+  }
+  .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+  .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+  .profile{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+  .profile img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .profile .pname{font-weight:600;color:#fff;font-size:14.5px;line-height:1.2}
+  .profile .pstatus{font-size:12px;color:#38d39f}
+  .profile .pstatus .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#38d39f;margin-right:5px}
+  .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+  .sidebar-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px}
+  .sidebar-nav::-webkit-scrollbar{width:5px}
+  .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:10px 18px;
+    color:#c1c9d6;font-size:13.5px;cursor:pointer;user-select:none;text-decoration:none;transition:background .15s;
+    margin:2px 10px;border-radius:6px;
+  }
+  .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:2px 10px;padding:10px 14px;font-weight:600}
+  .nav-group{margin-bottom:2px}
+  .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+  .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+  .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+  .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+  .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+  .nav-group.open .nav-group-btn{color:#fff}
+  .nav-subitems{display:none;padding:2px 0 6px}
+  .nav-group.open .nav-subitems{display:block}
+  .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+  .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+  .nav-subitem i{font-size:14px;width:16px;text-align:center}
+  .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+  .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+  .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+  .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+  .topbar .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px}
+  .topbar .title{font-size:20px;color:#3b4453;font-weight:600}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .topuser{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .topuser img{width:38px;height:38px;border-radius:50%;object-fit:cover}
+  .topuser .tn{font-size:14px;font-weight:600;color:#3b4453;line-height:1.2}
+  .topuser .th{font-size:12px;color:#9aa2b1}
+  .content{padding:24px;flex:1}
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+  .page-head h4{margin:0;color:#1e293b;font-weight:700;font-size:22px}
+  .breadcrumb-mini{font-size:13px;color:#94a3b8}
+  .breadcrumb-mini a{color:var(--brand-blue)}
+  .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:13px;color:#9aa2b1;font-weight:600;text-align:left;padding:12px 10px;border-bottom:1px solid #eef0f3;background:#f8fafc}
+  tbody td{padding:14px 10px;font-size:14px;color:#4b5563;border-bottom:1px solid #f4f6f8;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .badge-perfil-admin{background:#e0f2fe;color:#0369a1;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .badge-perfil-portaria{background:#f3e8ff;color:#6b21a8;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .badge-perfil-morador{background:#ecfdf5;color:#047857;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:600}
+  .badge-ativo{background:#dcfce7;color:#15803d;padding:3px 8px;border-radius:10px;font-size:11.5px;font-weight:600}
+  .badge-inativo{background:#fee2e2;color:#b91c1c;padding:3px 8px;border-radius:10px;font-size:11.5px;font-weight:600}
+  .action-btn{width:32px;height:32px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;display:inline-grid;place-items:center;color:#64748b;cursor:pointer;margin-right:4px}
+  .action-btn:hover{background:#f8fafc;color:#1e293b}
+  .action-btn.del:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+  .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+  @media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.show{transform:translateX(0)}
+    .main{margin-left:0}
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+    </div>
+
+    <div class="profile">
+      <img src="https://i.pravatar.cc/80?img=12" alt="Perfil">
+      <div>
+        <div class="pname" id="sidebarUserName">Usuário</div>
+        <div class="pstatus"><span class="dot"></span>Online</div>
+      </div>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <div class="nav-group" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group open" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+          <a class="nav-subitem active admin-only" href="usuarios.html">
+            <i class="bi bi-people-fill"></i>
+            <span>Usuários do Sistema</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
+        <i class="bi bi-box-arrow-left lead"></i>
+        <span>Sair do Sistema</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="t">Condomínio Residencial</div>
+      <div class="s">Ambros v2.0 · Admin Ativo</div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger"><i class="bi bi-list"></i></button>
+      <div class="title">Gestão de Usuários do Sistema</div>
+      <div class="right">
+        <div class="topuser" onclick="openEditProfile()" title="Clique para editar seu perfil">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+          <div>
+            <div class="tn" id="topUserName">Administrador</div>
+            <div class="th">Editar Perfil</div>
+          </div>
+          <i class="bi bi-pencil-square text-muted ms-2"></i>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div id="adminGuardWarning" class="alert alert-danger" style="display:none;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Acesso Restrito:</strong> Esta seção é exclusiva para administradores do sistema.
+      </div>
+
+      <div id="adminContent">
+        <div class="page-head">
+          <div>
+            <h4>Usuários, Acessos e Permissões</h4>
+            <div class="breadcrumb-mini">
+              <a href="ambros-dashboard.html">Início</a> · Gestão · Usuários do Sistema
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" onclick="abrirModalUsuario()">
+              <i class="bi bi-person-plus-fill"></i> Novo Usuário
+            </button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>E-mail</th>
+                  <th>Perfil / Acesso</th>
+                  <th>Status</th>
+                  <th class="text-end">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabUsuarios">
+                <tr><td colspan="5" class="text-center py-4 text-muted">Carregando usuários...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>AMBROS · Sistema Integrado de Controle de Acesso e Portaria</span>
+      <span>Gestão de Usuários & Controle de Permissões</span>
+    </footer>
+  </div>
+</div>
+
+<!-- Modal Novo/Editar Usuário -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalUsuarioTitulo">Novo Usuário do Sistema</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formUsuario">
+          <input type="hidden" id="usuarioId">
+          <div class="mb-3">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="formNome" required placeholder="Ex: João da Silva">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail (Login)</label>
+            <input type="email" class="form-control" id="formEmail" required placeholder="joao@condominio.com">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" id="labelSenha">Senha</label>
+            <input type="password" class="form-control" id="formSenha" placeholder="••••••••">
+            <div class="form-text" id="helpSenha" style="display:none;">Deixe em branco para manter a senha atual.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Perfil / Nível de Acesso</label>
+            <select class="form-select" id="formPerfil" required>
+              <option value="administrador">Administrador (Acesso Completo)</option>
+              <option value="portaria">Portaria (Operação de Acessos)</option>
+              <option value="morador">Morador (Portal do Condômino)</option>
+            </select>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="formAtivo" checked>
+            <label class="form-check-label" for="formAtivo">Usuário Ativo (Pode acessar o sistema)</label>
+          </div>
+          <div class="text-danger small mb-2" id="formError" style="display:none;"></div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Salvar Usuário</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Editar Meu Perfil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editProfileForm">
+          <div class="mb-3">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="profileNome" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="profileEmail" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+            <input type="password" class="form-control" id="profileSenha" placeholder="••••••••">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Perfil / Função</label>
+            <input type="text" class="form-control" id="profilePerfil" disabled style="background:#e9ecef;">
+          </div>
+          <div class="text-danger small mb-2" id="profileError" style="display:none;"></div>
+          <div class="text-success small mb-2" id="profileSuccess" style="display:none;">Perfil atualizado com sucesso!</div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.replace("login.html");
+  }
+
+  let currentUser = {};
+  try {
+    currentUser = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (currentUser.nome) {
+      document.getElementById("topUserName").textContent = currentUser.nome;
+      document.getElementById("sidebarUserName").textContent = currentUser.nome;
+    }
+    if (currentUser.perfil !== "administrador") {
+      document.getElementById("adminGuardWarning").style.display = "block";
+      document.getElementById("adminContent").style.display = "none";
+    }
+  } catch(_) {}
+
+  // Hide admin-only items if not admin
+  if (currentUser.perfil !== "administrador") {
+    document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
+  }
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.replace("login.html");
+  }
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  // Mobile sidebar
+  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
+  document.getElementById('burger').addEventListener('click',function(){
+    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click',function(){
+    sidebar.classList.remove('show'); overlay.classList.remove('show');
+  });
+
+  let usuariosCache = [];
+
+  async function carregarUsuarios() {
+    if (currentUser.perfil !== "administrador") return;
+    try {
+      const res = await fetch("/auth/usuarios", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Erro ao carregar usuários");
+      usuariosCache = await res.json();
+      renderizarUsuarios(usuariosCache);
+    } catch (err) {
+      console.error(err);
+      document.getElementById("tabUsuarios").innerHTML = '<tr><td colspan="5" class="text-center py-4 text-danger">Erro ao carregar lista de usuários.</td></tr>';
+    }
+  }
+
+  function renderizarUsuarios(lista) {
+    const tbody = document.getElementById("tabUsuarios");
+    if (!lista || lista.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Nenhum usuário cadastrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = lista.map(u => {
+      let badgePerfil = '';
+      if (u.perfil === 'administrador') badgePerfil = '<span class="badge-perfil-admin">Administrador</span>';
+      else if (u.perfil === 'portaria') badgePerfil = '<span class="badge-perfil-portaria">Portaria</span>';
+      else badgePerfil = '<span class="badge-perfil-morador">Morador</span>';
+
+      const badgeAtivo = u.ativo !== false ? '<span class="badge-ativo">Ativo</span>' : '<span class="badge-inativo">Inativo</span>';
+
+      return `
+        <tr>
+          <td><strong>${u.nome}</strong></td>
+          <td>${u.email}</td>
+          <td>${badgePerfil}</td>
+          <td>${badgeAtivo}</td>
+          <td class="text-end">
+            <button class="action-btn" title="Editar" onclick="editarUsuario(${u.id})"><i class="bi bi-pencil"></i></button>
+            <button class="action-btn del" title="Excluir" onclick="excluirUsuario(${u.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function abrirModalUsuario() {
+    document.getElementById("modalUsuarioTitulo").textContent = "Novo Usuário do Sistema";
+    document.getElementById("usuarioId").value = "";
+    document.getElementById("formNome").value = "";
+    document.getElementById("formEmail").value = "";
+    document.getElementById("formSenha").value = "";
+    document.getElementById("formSenha").required = true;
+    document.getElementById("labelSenha").textContent = "Senha";
+    document.getElementById("helpSenha").style.display = "none";
+    document.getElementById("formPerfil").value = "portaria";
+    document.getElementById("formAtivo").checked = true;
+    document.getElementById("formError").style.display = "none";
+
+    var m = new bootstrap.Modal(document.getElementById("modalUsuario"));
+    m.show();
+  }
+
+  function editarUsuario(id) {
+    const u = usuariosCache.find(x => x.id === id);
+    if (!u) return;
+
+    document.getElementById("modalUsuarioTitulo").textContent = "Editar Usuário: " + u.nome;
+    document.getElementById("usuarioId").value = u.id;
+    document.getElementById("formNome").value = u.nome;
+    document.getElementById("formEmail").value = u.email;
+    document.getElementById("formSenha").value = "";
+    document.getElementById("formSenha").required = false;
+    document.getElementById("labelSenha").textContent = "Nova Senha (Opcional)";
+    document.getElementById("helpSenha").style.display = "block";
+    document.getElementById("formPerfil").value = u.perfil;
+    document.getElementById("formAtivo").checked = u.ativo !== false;
+    document.getElementById("formError").style.display = "none";
+
+    var m = new bootstrap.Modal(document.getElementById("modalUsuario"));
+    m.show();
+  }
+
+  document.getElementById("formUsuario").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const id = document.getElementById("usuarioId").value;
+    const nome = document.getElementById("formNome").value;
+    const email = document.getElementById("formEmail").value;
+    const senha = document.getElementById("formSenha").value;
+    const perfil = document.getElementById("formPerfil").value;
+    const ativo = document.getElementById("formAtivo").checked;
+    const errEl = document.getElementById("formError");
+    errEl.style.display = "none";
+
+    const payload = { nome, email, perfil, ativo };
+    if (senha) payload.senha = senha;
+    if (!id && !senha) {
+      errEl.textContent = "A senha é obrigatória para novos usuários.";
+      errEl.style.display = "block";
+      return;
+    }
+
+    try {
+      const url = id ? `/auth/usuarios/${id}` : "/auth/usuarios";
+      const method = id ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Erro ao salvar usuário");
+
+      var mEl = document.getElementById("modalUsuario");
+      var m = bootstrap.Modal.getInstance(mEl);
+      if (m) m.hide();
+
+      carregarUsuarios();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = "block";
+    }
+  });
+
+  async function excluirUsuario(id) {
+    if (!confirm("Tem certeza que deseja excluir este usuário do sistema?")) return;
+    try {
+      const res = await fetch(`/auth/usuarios/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Erro ao excluir usuário");
+      carregarUsuarios();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function openEditProfile() {
+    try {
+      document.getElementById("profileNome").value = currentUser.nome || "";
+      document.getElementById("profileEmail").value = currentUser.email || "";
+      document.getElementById("profilePerfil").value = currentUser.perfil ? (currentUser.perfil.charAt(0).toUpperCase() + currentUser.perfil.slice(1)) : "Usuário";
+      document.getElementById("profileSenha").value = "";
+      document.getElementById("profileError").style.display = "none";
+      document.getElementById("profileSuccess").style.display = "none";
+      
+      var modalEl = document.getElementById('editProfileModal');
+      var modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  const editProfileFormEl = document.getElementById("editProfileForm");
+  if (editProfileFormEl) {
+    editProfileFormEl.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("profileNome").value;
+      const email = document.getElementById("profileEmail").value;
+      const senha = document.getElementById("profileSenha").value;
+      const errEl = document.getElementById("profileError");
+      const succEl = document.getElementById("profileSuccess");
+      
+      errEl.style.display = "none";
+      succEl.style.display = "none";
+
+      try {
+        const res = await fetch("/auth/me", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ nome, email, senha: senha ? senha : undefined })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Erro ao atualizar perfil");
+
+        if (localStorage.getItem("ambros_token")) {
+          localStorage.setItem("ambros_token", data.access_token);
+          localStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        } else {
+          sessionStorage.setItem("ambros_token", data.access_token);
+          sessionStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        }
+
+        currentUser = data.usuario;
+        document.getElementById("topUserName").textContent = currentUser.nome;
+        document.getElementById("sidebarUserName").textContent = currentUser.nome;
+
+        succEl.style.display = "block";
+        setTimeout(() => {
+          var modalEl = document.getElementById('editProfileModal');
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }, 1200);
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = "block";
+      }
+    });
+  }
+
+  carregarUsuarios();
+</script>
+</body>
+</html>
