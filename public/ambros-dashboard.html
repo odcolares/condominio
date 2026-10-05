@@ -162,6 +162,42 @@
 
   /* ===== Responsive ===== */
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+
+  /* ChatGPT style sidebar bottom user card & popover */
+  .sidebar-user-container{position:relative;margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;background:rgba(0,0,0,0.15);flex-shrink:0}
+  .user-card{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;border-radius:8px;transition:background .15s}
+  .user-card:hover{background:rgba(255,255,255,.06)}
+  .user-card img{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0}
+  .user-card .user-info{overflow:hidden;flex:1;min-width:0}
+  .user-card .uname{font-weight:600;font-size:13.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .user-card .ustatus{font-size:11.5px;color:#38d39f;display:flex;align-items:center;gap:4px;margin-top:2px}
+  .user-card .ustatus .dot{width:6px;height:6px;border-radius:50%;background:#38d39f;display:inline-block}
+
+  .user-popover{display:none;position:absolute;bottom:calc(100% + 8px);left:14px;right:14px;background:#243044;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:6px;z-index:1050}
+  .user-popover a{display:flex;align-items:center;gap:10px;padding:10px 12px;color:#e2e8f0;font-size:13.5px;border-radius:8px;text-decoration:none;transition:background .15s}
+  .user-popover a:hover{background:rgba(255,255,255,.08);color:#fff}
+  .user-popover a.danger{color:#ef4444}
+  .user-popover a.danger:hover{background:rgba(239,68,68,.15)}
+  .user-popover .divider{height:1px;background:rgba(255,255,255,.08);margin:4px 0}
+
+  /* Sidebar Collapsed State */
+  .sidebar{transition:width .25s ease}
+  .main{transition:margin-left .25s ease}
+  .sidebar.collapsed{width:72px}
+  .sidebar.collapsed .brand .name,
+  .sidebar.collapsed .brand .sub,
+  .sidebar.collapsed .menu-label,
+  .sidebar.collapsed .nav-item span,
+  .sidebar.collapsed .nav-group-btn span,
+  .sidebar.collapsed .nav-group-btn .chev,
+  .sidebar.collapsed .nav-subitems,
+  .sidebar.collapsed .user-info,
+  .sidebar.collapsed .user-card i.bi-three-dots{display:none !important}
+  .sidebar.collapsed .brand{justify-content:center;padding:18px 0}
+  .sidebar.collapsed .user-card{justify-content:center;padding:6px}
+  .sidebar.collapsed .sidebar-user-container{padding:12px 8px}
+  .main.collapsed{margin-left:72px}
+
   @media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr)}.panels{grid-template-columns:1fr}}
   @media(max-width:768px){
     .sidebar{transform:translateX(-100%)}
@@ -169,7 +205,6 @@
     .main{margin-left:0}
     .cards-grid{grid-template-columns:1fr}
     .overlay.show{display:block}
-    .topuser .tn,.topuser .th{display:none}
     .footer{flex-direction:column;gap:6px}
   }
 </style>
@@ -185,14 +220,7 @@
         <div class="name">AMBROS</div>
         <div class="sub">CONTROLE DE ACESSO</div>
       </div>
-    </div>
-
-    <div class="profile">
-      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
-      <div>
-        <div class="pname" id="sidebarUserName">Portaria</div>
-        <div class="pstatus"><span class="dot"></span>Online</div>
-      </div>
+      <button class="collapse-btn" onclick="toggleSidebarCollapse()" title="Recolher / Expandir menu" style="background:none;border:none;color:#8a93a6;cursor:pointer;margin-left:auto;font-size:18px;"><i class="bi bi-layout-sidebar"></i></button>
     </div>
 
     <div class="menu-label">MENU PRINCIPAL</div>
@@ -290,16 +318,26 @@
           </a>
         </div>
       </div>
-
-      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
-        <i class="bi bi-box-arrow-left lead"></i>
-        <span>Sair do Sistema</span>
-      </div>
     </nav>
 
-    <div class="sidebar-foot">
-      <div class="t">Condomínio Residencial</div>
-      <div class="s">Versão 1.0.0 · Ambiente Ativo</div>
+    <!-- ChatGPT-style Bottom User Card & Popover -->
+    <div class="sidebar-user-container">
+      <div class="user-card" onclick="toggleUserPopover(event)" title="Opções de Conta">
+        <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
+        <div class="user-info">
+          <div class="uname" id="sidebarUserName">Administrador</div>
+          <div class="ustatus"><span class="dot"></span>Online</div>
+        </div>
+        <i class="bi bi-three-dots text-muted"></i>
+      </div>
+
+      <div class="user-popover" id="userPopover">
+        <a href="#" onclick="openEditProfile(); event.stopPropagation();"><i class="bi bi-person"></i> Perfil</a>
+        <a href="#" onclick="openSettingsModal(); event.stopPropagation();"><i class="bi bi-gear"></i> Configurações</a>
+        <a href="#" onclick="openHelpModal(); event.stopPropagation();"><i class="bi bi-question-circle"></i> Ajuda</a>
+        <div class="divider"></div>
+        <a href="#" class="danger" onclick="logout(); event.stopPropagation();"><i class="bi bi-box-arrow-right"></i> Sair</a>
+      </div>
     </div>
   </aside>
 
@@ -313,15 +351,6 @@
 
       <div class="right">
         <div class="bell"><i class="bi bi-bell"></i><span class="badge">3</span></div>
-        <div class="topuser" onclick="openEditProfile()" title="Clique para editar seu perfil">
-          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
-          <div class="dot"></div>
-          <div>
-            <div class="tn" id="topUserName">Administrador</div>
-            <div class="th">Portaria Principal</div>
-          </div>
-          <i class="bi bi-pencil-square text-muted ms-2" title="Editar Perfil"></i>
-        </div>
       </div>
     </header>
 
@@ -487,13 +516,46 @@
   try {
     const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
     if (u.nome) {
-      document.getElementById("topUserName").textContent = u.nome;
-      document.getElementById("sidebarUserName").textContent = u.nome;
+      const su = document.getElementById("sidebarUserName");
+      if (su) su.textContent = u.nome;
     }
     if (u.perfil !== "administrador" && u.perfil !== "admin") {
       document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
     }
   } catch(_) {}
+
+  function toggleSidebarCollapse() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main");
+    sidebar.classList.toggle("collapsed");
+    main.classList.toggle("collapsed");
+  }
+
+  function toggleUserPopover(e) {
+    e.stopPropagation();
+    const pop = document.getElementById("userPopover");
+    if (pop) {
+      pop.style.display = pop.style.display === "block" ? "none" : "block";
+    }
+  }
+
+  document.addEventListener("click", function(e) {
+    const pop = document.getElementById("userPopover");
+    const container = document.querySelector(".sidebar-user-container");
+    if (pop && container && !container.contains(e.target)) {
+      pop.style.display = "none";
+    }
+  });
+
+  function openSettingsModal() {
+    document.getElementById("userPopover").style.display = "none";
+    alert("Configurações do Sistema:\n- Tema: Escuro (Sidebar) / Claro (Conteúdo)\n- Notificações em Tempo Real: Ativadas\n- Idioma: Português (Brasil)");
+  }
+
+  function openHelpModal() {
+    document.getElementById("userPopover").style.display = "none";
+    alert("AMBROS · Central de Ajuda\nConsulte os Manuais de Funcionalidades e Operação na pasta /docs/ do sistema.");
+  }
 
   function logout() {
     localStorage.removeItem("ambros_token");
