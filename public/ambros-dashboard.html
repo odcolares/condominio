@@ -478,7 +478,6 @@
         <div class="panel">
           <div class="ph">
             <h6>Movimentação de Hoje (Entradas vs Saídas)</h6>
-            <span class="dots"><i class="bi bi-three-dots-vertical"></i></span>
           </div>
           <div class="chart-wrap"><canvas id="movChart"></canvas></div>
         </div>
@@ -486,7 +485,6 @@
         <div class="panel">
           <div class="ph">
             <h6>Visitantes nos Últimos 7 Dias</h6>
-            <span class="dots"><i class="bi bi-three-dots-vertical"></i></span>
           </div>
           <div class="chart-wrap"><canvas id="visChart"></canvas></div>
         </div>
@@ -495,7 +493,7 @@
       <!-- ===== TABELAS ===== -->
       <div class="panels">
         <div class="panel">
-          <div class="ph"><h6>Últimos Acessos</h6><span class="dots"><i class="bi bi-three-dots-vertical"></i></span></div>
+          <div class="ph"><h6>Últimos Acessos</h6></div>
           <table>
             <thead><tr><th>Nome</th><th>Tipo</th><th>Placa</th><th>Hora</th><th>Sentido</th></tr></thead>
             <tbody id="tabUltimosAcessos">
@@ -505,7 +503,7 @@
         </div>
 
         <div class="panel" id="tabVisitantes">
-          <div class="ph"><h6>Visitantes no Condomínio</h6><span class="dots"><i class="bi bi-three-dots-vertical"></i></span></div>
+          <div class="ph"><h6>Visitantes no Condomínio</h6></div>
           <table>
             <thead><tr><th>Nome</th><th>Documento</th><th>Bloco/Apt</th><th>Entrada</th><th>Veículo</th><th>Ações</th></tr></thead>
             <tbody id="tabVisitantesCondominio">
@@ -772,7 +770,7 @@
                   <td>${hora}</td>
                   <td>${v.placa_veiculo || 'Não'}</td>
                   <td>
-                    <button class="btn-eye" title="Detalhes"><i class="bi bi-search"></i></button>
+                    <button class="btn-eye" title="Ver Detalhes do Visitante" onclick="abrirDetalhesVisitante(${v.id})"><i class="bi bi-search"></i></button>
                   </td>
                 </tr>
               `;
@@ -878,6 +876,162 @@
       }
     });
   }
+
+  // ===== Detalhes e Histórico Expandido do Visitante =====
+  let visitanteSelecionadoId = null;
+
+  async function abrirDetalhesVisitante(id) {
+    visitanteSelecionadoId = id;
+    const modalEl = document.getElementById("modalDetalhesVisitante");
+    if (!modalEl) return;
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+    const loading = document.getElementById("detalheLoading");
+    const conteudo = document.getElementById("detalheConteudo");
+    if (loading) {
+      loading.style.display = "block";
+      loading.innerHTML = '<div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-2 mb-0">Buscando dados completos do visitante...</p>';
+    }
+    if (conteudo) conteudo.style.display = "none";
+
+    try {
+      const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+      const resp = await fetch(`/visitantes/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!resp.ok) throw new Error("Erro ao carregar visitante");
+      const v = await resp.json();
+
+      document.getElementById("detalheVisitanteNome").textContent = v.nome || "Visitante";
+      document.getElementById("detalheDocumento").textContent = v.documento || "Não informado";
+      document.getElementById("detalheTelefone").textContent = v.telefone || "Não informado";
+      document.getElementById("detalheTipo").textContent = v.tipo ? (v.tipo.charAt(0).toUpperCase() + v.tipo.slice(1)) : "Visitante";
+
+      const moradorTxt = v.morador_nome || "Não vinculado";
+      const unidadeTxt = v.morador_unidade || ((v.bloco || v.apartamento) ? `Bloco ${v.bloco || '—'} / Apto ${v.apartamento || '—'}` : "Área comum");
+      document.getElementById("detalheMoradorNome").textContent = moradorTxt;
+      document.getElementById("detalheMoradorUnidade").textContent = unidadeTxt;
+
+      const veicTxt = v.placa_veiculo ? `${v.placa_veiculo} ${v.modelo_veiculo ? '· ' + v.modelo_veiculo : ''} ${v.cor_veiculo ? '(' + v.cor_veiculo + ')' : ''}` : "Sem veículo";
+      document.getElementById("detalheVeiculo").textContent = veicTxt;
+
+      // Status badge
+      const badgeEl = document.getElementById("detalheStatusBadge");
+      const btnSaida = document.getElementById("detalheBtnRegistrarSaida");
+      if (v.presente) {
+        badgeEl.innerHTML = '<span class="badge bg-success"><i class="bi bi-geo-alt-fill me-1"></i> Presente no Condomínio</span>';
+        if (btnSaida) btnSaida.style.display = "inline-flex";
+      } else {
+        badgeEl.innerHTML = '<span class="badge bg-secondary"><i class="bi bi-check-circle me-1"></i> Saída Registrada</span>';
+        if (btnSaida) btnSaida.style.display = "none";
+      }
+
+      // Entrada & Tempo de permanência
+      const dataRef = v.entrada_em || v.criado_em;
+      if (dataRef) {
+        const dt = new Date(dataRef);
+        document.getElementById("detalheHoraEntrada").textContent = dt.toLocaleString("pt-BR");
+        
+        if (v.presente) {
+          const diffMs = Math.max(0, new Date().getTime() - dt.getTime());
+          const diffMins = Math.floor(diffMs / 60000);
+          const hrs = Math.floor(diffMins / 60);
+          const mins = diffMins % 60;
+          document.getElementById("detalheTempoPermanencia").textContent = `${hrs}h ${mins}min`;
+        } else {
+          document.getElementById("detalheTempoPermanencia").textContent = "Visita concluída";
+        }
+      } else {
+        document.getElementById("detalheHoraEntrada").textContent = "—";
+        document.getElementById("detalheTempoPermanencia").textContent = "—";
+      }
+
+      // Observações / Motivo
+      const obsCont = document.getElementById("detalheObsContainer");
+      const obsTxt = document.getElementById("detalheObservacao");
+      if (v.observacao || v.motivo) {
+        obsCont.style.display = "block";
+        obsTxt.textContent = v.observacao || v.motivo;
+      } else {
+        obsCont.style.display = "none";
+      }
+
+      // Link para tela de visitantes com busca
+      const btnIr = document.getElementById("detalheBtnIrVisitantes");
+      if (btnIr) {
+        btnIr.href = `visitantes.html?busca=${encodeURIComponent(v.nome)}`;
+      }
+
+      // Buscar histórico de acessos para este visitante
+      try {
+        const respAc = await fetch(`/acessos?tipo_pessoa=visitante&busca=${encodeURIComponent(v.nome)}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (respAc.ok) {
+          const acessos = await respAc.json();
+          const tbodyAc = document.getElementById("detalheTabAcessos");
+          const qtdAc = document.getElementById("detalheQtdAcessos");
+          if (qtdAc) qtdAc.textContent = `${acessos.length} registro(s)`;
+          if (Array.isArray(acessos) && acessos.length > 0) {
+            tbodyAc.innerHTML = acessos.slice(0, 10).map(a => {
+              const dtA = new Date(a.registrado_em);
+              const isEnt = a.sentido === "entrada";
+              const badgeClass = isEnt ? "bg-success" : "bg-danger";
+              const sentidoTxt = isEnt ? "Entrada" : "Saída";
+              return `
+                <tr>
+                  <td>${dtA.toLocaleString('pt-BR')}</td>
+                  <td><span class="badge ${badgeClass}">${sentidoTxt}</span></td>
+                  <td>${a.placa_veiculo || '—'}</td>
+                  <td class="text-muted">${a.observacao || '—'}</td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            tbodyAc.innerHTML = '<tr><td colspan="4" class="text-center py-2 text-muted">Nenhum acesso anterior encontrado.</td></tr>';
+          }
+        }
+      } catch (_) {}
+
+      if (loading) loading.style.display = "none";
+      if (conteudo) conteudo.style.display = "block";
+    } catch (err) {
+      if (loading) {
+        loading.innerHTML = `<div class="text-danger py-3"><i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>Erro ao carregar detalhes do visitante.</div>`;
+      }
+    }
+  }
+
+  async function registrarSaidaVisitanteModal() {
+    if (!visitanteSelecionadoId) return;
+    if (!confirm("Deseja registrar a saída deste visitante agora?")) return;
+    try {
+      const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+      const resp = await fetch(`/visitantes/${visitanteSelecionadoId}/saida`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (resp.ok) {
+        alert("Saída registrada com sucesso!");
+        const modalEl = document.getElementById("modalDetalhesVisitante");
+        if (modalEl) {
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }
+        carregarDashboard();
+      } else {
+        const data = await resp.json().catch(() => ({}));
+        alert(data.detail || "Erro ao registrar saída.");
+      }
+    } catch (e) {
+      alert("Erro na requisição de saída.");
+    }
+  }
 </script>
 
 <!-- Modal Editar Perfil & Configurações -->
@@ -968,6 +1122,110 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhes do Visitante e Histórico Expandido -->
+<div class="modal fade" id="modalDetalhesVisitante" tabindex="-1" aria-labelledby="modalDetalhesVisitanteTitulo" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <div class="d-flex align-items-center gap-2">
+          <div class="rounded-circle bg-white bg-opacity-25 p-2 d-flex align-items-center justify-content-center" style="width:38px;height:38px;">
+            <i class="bi bi-person-badge fs-5 text-white"></i>
+          </div>
+          <div>
+            <h5 class="modal-title font-semibold mb-0" id="detalheVisitanteNome">Carregando visitante...</h5>
+            <small class="text-white-50" id="detalheVisitanteSub">Detalhes cadastrais e histórico de acessos</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body p-4" id="modalDetalhesCorpo">
+        <!-- Spinner enquanto carrega -->
+        <div id="detalheLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2 mb-0">Buscando dados completos do visitante...</p>
+        </div>
+        <div id="detalheConteudo" style="display:none;">
+          <!-- Badge status & permanência -->
+          <div class="d-flex flex-wrap align-items-center justify-content-between p-3 rounded mb-3 bg-light border">
+            <div>
+              <span class="text-muted small">Status Atual:</span>
+              <div id="detalheStatusBadge" class="mt-1"></div>
+            </div>
+            <div>
+              <span class="text-muted small">Horário de Entrada:</span>
+              <div class="fw-bold text-dark" id="detalheHoraEntrada">—</div>
+            </div>
+            <div>
+              <span class="text-muted small">Tempo no Condomínio:</span>
+              <div class="fw-bold text-primary" id="detalheTempoPermanencia">—</div>
+            </div>
+          </div>
+
+          <!-- Cards de informações -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2"><i class="bi bi-person me-1 text-primary"></i> Informações Pessoais</h6>
+                <div class="mb-1"><span class="text-muted small">Documento:</span> <strong id="detalheDocumento">—</strong></div>
+                <div class="mb-1"><span class="text-muted small">Telefone / WhatsApp:</span> <strong id="detalheTelefone">—</strong></div>
+                <div class="mb-1"><span class="text-muted small">Tipo:</span> <span class="badge bg-secondary" id="detalheTipo">Visitante</span></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2"><i class="bi bi-geo-alt me-1 text-primary"></i> Destino & Morador</h6>
+                <div class="mb-1"><span class="text-muted small">Morador Visitado:</span> <strong id="detalheMoradorNome">—</strong></div>
+                <div class="mb-1"><span class="text-muted small">Unidade:</span> <strong id="detalheMoradorUnidade">—</strong></div>
+                <div class="mb-1"><span class="text-muted small">Veículo / Placa:</span> <span class="badge bg-dark" id="detalheVeiculo">—</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observações / Motivo se houver -->
+          <div id="detalheObsContainer" class="p-3 bg-light rounded border mb-4" style="display:none;">
+            <h6 class="fw-bold text-muted small text-uppercase mb-1"><i class="bi bi-chat-left-text me-1 text-primary"></i> Observações / Motivo</h6>
+            <div id="detalheObservacao" class="small text-dark"></div>
+          </div>
+
+          <!-- Histórico Expandido de Acessos -->
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history me-1 text-primary"></i> Histórico Recente de Acessos</h6>
+              <span class="badge bg-light text-muted border" id="detalheQtdAcessos">0 registros</span>
+            </div>
+            <div class="table-responsive border rounded">
+              <table class="table table-sm table-hover mb-0" style="font-size:13px;">
+                <thead class="table-light">
+                  <tr>
+                    <th>Data / Hora</th>
+                    <th>Sentido</th>
+                    <th>Veículo / Placa</th>
+                    <th>Observação</th>
+                  </tr>
+                </thead>
+                <tbody id="detalheTabAcessos">
+                  <tr><td colspan="4" class="text-center py-2 text-muted">Nenhum acesso anterior encontrado.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer bg-light d-flex justify-content-between">
+        <a href="#" id="detalheBtnIrVisitantes" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+          <i class="bi bi-box-arrow-up-right"></i> Ver na Tela de Visitantes / Busca Avançada
+        </a>
+        <div class="d-flex gap-2">
+          <button type="button" id="detalheBtnRegistrarSaida" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" style="display:none;" onclick="registrarSaidaVisitanteModal()">
+            <i class="bi bi-box-arrow-right"></i> Registrar Saída
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+        </div>
       </div>
     </div>
   </div>

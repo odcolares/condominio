@@ -512,6 +512,12 @@
   let filtroAtual = "todos";
 
   async function carregarDados() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const buscaParam = urlParams.get("busca");
+    if (buscaParam) {
+      const input = document.getElementById("buscaInput");
+      if (input) input.value = buscaParam;
+    }
     await Promise.all([carregarStats(), carregarVisitantes(), carregarMoradores()]);
   }
 
