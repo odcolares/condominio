@@ -41,6 +41,11 @@ describe("Auth Integration Tests", () => {
     expect(res.body).toHaveProperty("email", "adm@adm.com");
   });
 
+  it("GET /auth/me - fails without token", async () => {
+    const res = await request(app).get("/auth/me");
+    expect(res.status).toBe(401);
+  });
+
   it("PUT /auth/me - successfully updates profile", async () => {
     const loginRes = await request(app)
       .post("/auth/login")
