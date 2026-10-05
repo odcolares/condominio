@@ -52,6 +52,10 @@ class InMemoryDB {
     this.init();
   }
 
+  getNextUserId() {
+    return this.nextUserId++;
+  }
+
   private init() {
     try {
       if (!fs.existsSync(DATA_DIR)) {
@@ -160,7 +164,7 @@ class InMemoryDB {
         nome: "Administrador",
         email: "adm@adm.com",
         senha_hash: "123",
-        perfil: "admin",
+        perfil: "administrador",
         ativo: true,
         criado_em: now.toISOString(),
       },

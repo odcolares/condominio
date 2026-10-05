@@ -240,3 +240,20 @@ portalRouter.post("/notificacoes/disparar", authMiddleware, (req, res) => {
     notificacao: notif,
   });
 });
+
+portalRouter.get("/notificacoes-sistema", authMiddleware, (_req, res) => {
+  const todas = [...db.notificacoes].reverse().slice(0, 15);
+  const pendentes = db.notificacoes.filter((n) => !n.lida).length;
+  return res.json({
+    total_pendentes: pendentes,
+    notificacoes: todas,
+  });
+});
+
+portalRouter.post("/notificacoes-sistema/marcar-lidas", authMiddleware, (_req, res) => {
+  db.notificacoes.forEach((n) => {
+    n.lida = true;
+  });
+  db.save();
+  return res.json({ sucesso: true, total_pendentes: 0 });
+});

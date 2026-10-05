@@ -7,7 +7,9 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="ambros-layout.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="ambros-layout.js"></script>
 <style>
   :root{
     --sidebar-bg:#1b2434;
@@ -142,19 +144,14 @@
   <!-- ===================== SIDEBAR ===================== -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
-      <div>
+      <div class="logo" onclick="toggleSidebarCollapse()" title="AMBROS"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="brand-text">
         <div class="name">AMBROS</div>
         <div class="sub">CONTROLE DE ACESSO</div>
       </div>
-    </div>
-
-    <div class="profile">
-      <img src="https://i.pravatar.cc/80?img=12" alt="Portaria">
-      <div>
-        <div class="pname" id="sidebarUserName">Portaria Central</div>
-        <div class="pstatus"><span class="dot"></span>Online</div>
-      </div>
+      <button class="collapse-btn" onclick="toggleSidebarCollapse()" title="Recolher / Expandir menu">
+        <i class="bi bi-layout-sidebar"></i>
+      </button>
     </div>
 
     <div class="menu-label">MENU PRINCIPAL</div>
@@ -246,18 +243,48 @@
             <i class="bi bi-file-earmark-text"></i>
             <span>Auditoria de Acessos</span>
           </a>
+          <a class="nav-subitem admin-only" href="usuarios.html">
+            <i class="bi bi-people-fill"></i>
+            <span>Usuários do Sistema</span>
+          </a>
         </div>
-      </div>
-
-      <div class="nav-item text-danger mt-2 border-top border-secondary border-opacity-25 pt-2" onclick="logout()" style="cursor: pointer;">
-        <i class="bi bi-box-arrow-left lead"></i>
-        <span>Sair do Sistema</span>
       </div>
     </nav>
 
-    <div class="sidebar-foot">
-      <div class="t">Condomínio Residencial</div>
-      <div class="s">Versão 1.0.0 · Módulo Visitantes</div>
+    <!-- ChatGPT-style Bottom User Card & Popover -->
+    <div class="sidebar-user-container">
+      <div class="user-card" onclick="toggleUserPopover(event)" title="Minha Conta & Notificações">
+        <div class="avatar-wrapper" onclick="handleAvatarClick(event)" title="Notificações">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar" id="sidebarAvatarImg">
+          <span class="avatar-badge-dot" id="sidebarAvatarDot" title="Notificações pendentes"></span>
+        </div>
+        <div class="user-info">
+          <div class="uname" id="sidebarUserName">Administrador</div>
+          <div class="ustatus"><span class="dot"></span>Online</div>
+        </div>
+        <i class="bi bi-three-dots text-muted"></i>
+      </div>
+
+      <div class="user-popover" id="userPopover">
+        <button type="button" onclick="openNotifModal(); event.stopPropagation();">
+          <i class="bi bi-bell"></i>
+          <span>Notificações</span>
+          <span class="badge-unread" id="popoverNotifBadge" style="display:none;">0</span>
+        </button>
+        <button type="button" onclick="openEditProfile(); event.stopPropagation();">
+          <i class="bi bi-person-gear"></i>
+          <span>Perfil</span>
+        </button>
+        <button type="button" onclick="openHelpModal(); event.stopPropagation();">
+          <i class="bi bi-headset"></i>
+          <span>Ajuda</span>
+        </button>
+        <div class="divider"></div>
+        <button type="button" class="danger" onclick="logout(); event.stopPropagation();">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Sair</span>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -266,7 +293,6 @@
   <!-- ===================== MAIN CONTENT ===================== -->
   <div class="main">
     <header class="topbar">
-      <button class="burger" id="burger" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
       <div class="title">Gestão de Visitantes</div>
 
       <div class="right">
@@ -276,14 +302,6 @@
         <button class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2" onclick="abrirModalCadastroVisitante()">
           <i class="bi bi-person-plus-fill"></i> Novo Visitante
         </button>
-        <div class="topuser" onclick="logout()" title="Clique para sair">
-          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar">
-          <div>
-            <div class="tn" id="topUserName">Administrador</div>
-            <div class="th">Portaria Principal</div>
-          </div>
-          <i class="bi bi-box-arrow-right text-muted ms-1"></i>
-        </div>
       </div>
     </header>
 
@@ -482,10 +500,10 @@
 
   // Mobile sidebar
   var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
-  document.getElementById('burger').addEventListener('click',function(){
+  document.getElementById('burger')?.addEventListener('click',function(){
     sidebar.classList.toggle('show'); overlay.classList.toggle('show');
   });
-  overlay.addEventListener('click',function(){
+  overlay?.addEventListener('click',function(){
     sidebar.classList.remove('show'); overlay.classList.remove('show');
   });
 
@@ -494,6 +512,12 @@
   let filtroAtual = "todos";
 
   async function carregarDados() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const buscaParam = urlParams.get("busca");
+    if (buscaParam) {
+      const input = document.getElementById("buscaInput");
+      if (input) input.value = buscaParam;
+    }
     await Promise.all([carregarStats(), carregarVisitantes(), carregarMoradores()]);
   }
 
@@ -826,6 +850,118 @@
 
   // Inicialização
   carregarDados();
+
+  function openEditProfile() {
+    try {
+      const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+      document.getElementById("profileNome").value = u.nome || "";
+      document.getElementById("profileEmail").value = u.email || "";
+      document.getElementById("profilePerfil").value = u.perfil ? (u.perfil.charAt(0).toUpperCase() + u.perfil.slice(1)) : "Usuário";
+      document.getElementById("profileSenha").value = "";
+      document.getElementById("profileError").style.display = "none";
+      document.getElementById("profileSuccess").style.display = "none";
+      
+      var modalEl = document.getElementById('editProfileModal');
+      var modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  const editProfileFormEl = document.getElementById("editProfileForm");
+  if (editProfileFormEl) {
+    editProfileFormEl.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const nome = document.getElementById("profileNome").value;
+      const email = document.getElementById("profileEmail").value;
+      const senha = document.getElementById("profileSenha").value;
+      const errEl = document.getElementById("profileError");
+      const succEl = document.getElementById("profileSuccess");
+      
+      errEl.style.display = "none";
+      succEl.style.display = "none";
+
+      try {
+        const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+        const res = await fetch("/auth/me", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ nome, email, senha: senha ? senha : undefined })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || "Erro ao atualizar perfil");
+        }
+
+        if (localStorage.getItem("ambros_token")) {
+          localStorage.setItem("ambros_token", data.access_token);
+          localStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        } else {
+          sessionStorage.setItem("ambros_token", data.access_token);
+          sessionStorage.setItem("ambros_usuario", JSON.stringify(data.usuario));
+        }
+
+        const tn = document.getElementById("topUserName");
+        if (tn) tn.textContent = data.usuario.nome;
+        const sn = document.getElementById("sidebarUserName");
+        if (sn) sn.textContent = data.usuario.nome;
+
+        succEl.style.display = "block";
+        setTimeout(() => {
+          var modalEl = document.getElementById('editProfileModal');
+          var modal = bootstrap.Modal.getInstance(modalEl);
+          if (modal) modal.hide();
+        }, 1200);
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = "block";
+      }
+    });
+  }
 </script>
+
+<!-- Modal Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>Editar Meu Perfil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editProfileForm">
+          <div class="mb-3">
+            <label class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="profileNome" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-control" id="profileEmail" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+            <input type="password" class="form-control" id="profileSenha" placeholder="••••••••">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Perfil / Função</label>
+            <input type="text" class="form-control" id="profilePerfil" disabled style="background:#e9ecef;">
+          </div>
+          <div class="text-danger small mb-2" id="profileError" style="display:none;"></div>
+          <div class="text-success small mb-2" id="profileSuccess" style="display:none;">Perfil atualizado com sucesso!</div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
