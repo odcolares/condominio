@@ -7,7 +7,9 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="ambros-layout.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="ambros-layout.js"></script>
 <script src="/vendor/chart.umd.min.js"></script>
 <script>
   if (typeof Chart === 'undefined') {
@@ -215,12 +217,14 @@
   <!-- ===================== SIDEBAR ===================== -->
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="logo"><i class="fa-solid fa-shield-halved"></i></div>
-      <div>
+      <div class="logo" onclick="toggleSidebarCollapse()" title="AMBROS"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="brand-text">
         <div class="name">AMBROS</div>
         <div class="sub">CONTROLE DE ACESSO</div>
       </div>
-      <button class="collapse-btn" onclick="toggleSidebarCollapse()" title="Recolher / Expandir menu" style="background:none;border:none;color:#8a93a6;cursor:pointer;margin-left:auto;font-size:18px;"><i class="bi bi-layout-sidebar"></i></button>
+      <button class="collapse-btn" onclick="toggleSidebarCollapse()" title="Recolher / Expandir menu">
+        <i class="bi bi-layout-sidebar"></i>
+      </button>
     </div>
 
     <div class="menu-label">MENU PRINCIPAL</div>
@@ -322,10 +326,10 @@
 
     <!-- ChatGPT-style Bottom User Card & Popover -->
     <div class="sidebar-user-container">
-      <div class="user-card" onclick="toggleUserPopover(event)" title="Opções de Conta">
-        <div style="position:relative; display:inline-block;">
+      <div class="user-card" onclick="toggleUserPopover(event)" title="Minha Conta & Notificações">
+        <div class="avatar-wrapper" onclick="handleAvatarClick(event)" title="Notificações">
           <img src="https://i.pravatar.cc/80?img=12" alt="Avatar" id="sidebarAvatarImg">
-          <span class="notification-badge" id="sidebarNotifBadge" style="position:absolute; top:0; right:0; width:10px; height:10px; border-radius:50%; background:#ef4444; border:2px solid #141c29; display:block;"></span>
+          <span class="avatar-badge-dot" id="sidebarAvatarDot" title="Notificações pendentes"></span>
         </div>
         <div class="user-info">
           <div class="uname" id="sidebarUserName">Administrador</div>
@@ -335,10 +339,24 @@
       </div>
 
       <div class="user-popover" id="userPopover">
-        <a href="#" onclick="openEditProfile(); event.stopPropagation();"><i class="bi bi-person-gear"></i> Perfil & Configurações</a>
-        <a href="#" onclick="openHelpModal(); event.stopPropagation();"><i class="bi bi-headset"></i> Ajuda & Suporte</a>
+        <button type="button" onclick="openNotifModal(); event.stopPropagation();">
+          <i class="bi bi-bell"></i>
+          <span>Notificações</span>
+          <span class="badge-unread" id="popoverNotifBadge" style="display:none;">0</span>
+        </button>
+        <button type="button" onclick="openEditProfile(); event.stopPropagation();">
+          <i class="bi bi-person-gear"></i>
+          <span>Perfil</span>
+        </button>
+        <button type="button" onclick="openHelpModal(); event.stopPropagation();">
+          <i class="bi bi-headset"></i>
+          <span>Ajuda</span>
+        </button>
         <div class="divider"></div>
-        <a href="#" class="danger" onclick="logout(); event.stopPropagation();"><i class="bi bi-box-arrow-right"></i> Sair</a>
+        <button type="button" class="danger" onclick="logout(); event.stopPropagation();">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Sair</span>
+        </button>
       </div>
     </div>
   </aside>
@@ -571,10 +589,10 @@
 
   // Mobile sidebar
   var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
-  document.getElementById('burger').addEventListener('click',function(){
+  document.getElementById('burger')?.addEventListener('click',function(){
     sidebar.classList.toggle('show'); overlay.classList.toggle('show');
   });
-  overlay.addEventListener('click',function(){
+  overlay?.addEventListener('click',function(){
     sidebar.classList.remove('show'); overlay.classList.remove('show');
   });
 

@@ -41,8 +41,42 @@ describe("Auth Integration Tests", () => {
     expect(res.body).toHaveProperty("email", "adm@adm.com");
   });
 
-  it("GET /auth/me - fails without token", async () => {
-    const res = await request(app).get("/auth/me");
-    expect(res.status).toBe(401);
+  it("PUT /auth/me - successfully updates profile", async () => {
+    const loginRes = await request(app)
+      .post("/auth/login")
+      .send({ email: "adm@adm.com", senha: "123" });
+
+    const token = loginRes.body.access_token;
+
+    const res = await request(app)
+      .put("/auth/me")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ nome: "Administrador Atualizado", email: "adm@adm.com" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.usuario).toHaveProperty("nome", "Administrador Atualizado");
+  });
+
+  it("GET /portal/notificacoes-sistema and POST /portal/notificacoes-sistema/marcar-lidas", async () => {
+    const loginRes = await request(app)
+      .post("/auth/login")
+      .send({ email: "adm@adm.com", senha: "123" });
+
+    const token = loginRes.body.access_token;
+
+    const notifRes = await request(app)
+      .get("/portal/notificacoes-sistema")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(notifRes.status).toBe(200);
+    expect(notifRes.body).toHaveProperty("total_pendentes");
+
+    const marcarRes = await request(app)
+      .post("/portal/notificacoes-sistema/marcar-lidas")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(marcarRes.status).toBe(200);
+    expect(marcarRes.body).toHaveProperty("sucesso", true);
+    expect(marcarRes.body.total_pendentes).toBe(0);
   });
 });
