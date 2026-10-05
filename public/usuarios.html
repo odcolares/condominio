@@ -396,14 +396,14 @@
       document.getElementById("topUserName").textContent = currentUser.nome;
       document.getElementById("sidebarUserName").textContent = currentUser.nome;
     }
-    if (currentUser.perfil !== "administrador") {
+    if (currentUser.perfil !== "administrador" && currentUser.perfil !== "admin") {
       document.getElementById("adminGuardWarning").style.display = "block";
       document.getElementById("adminContent").style.display = "none";
     }
   } catch(_) {}
 
   // Hide admin-only items if not admin
-  if (currentUser.perfil !== "administrador") {
+  if (currentUser.perfil !== "administrador" && currentUser.perfil !== "admin") {
     document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
   }
 
@@ -433,7 +433,7 @@
   let usuariosCache = [];
 
   async function carregarUsuarios() {
-    if (currentUser.perfil !== "administrador") return;
+    if (currentUser.perfil !== "administrador" && currentUser.perfil !== "admin") return;
     try {
       const res = await fetch("/auth/usuarios", {
         headers: { "Authorization": `Bearer ${token}` }

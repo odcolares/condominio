@@ -490,7 +490,7 @@
       document.getElementById("topUserName").textContent = u.nome;
       document.getElementById("sidebarUserName").textContent = u.nome;
     }
-    if (u.perfil !== "administrador") {
+    if (u.perfil !== "administrador" && u.perfil !== "admin") {
       document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
     }
   } catch(_) {}

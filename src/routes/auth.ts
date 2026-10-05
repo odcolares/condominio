@@ -81,7 +81,7 @@ authRouter.put("/me", authMiddleware, (req: AuthenticatedRequest, res: Response)
 });
 
 function adminMiddleware(req: AuthenticatedRequest, res: Response, next: Function) {
-  if (!req.user || req.user.perfil !== "administrador") {
+  if (!req.user || (req.user.perfil !== "administrador" && req.user.perfil !== "admin")) {
     return res.status(403).json({ detail: "Acesso restrito a administradores" });
   }
   next();
