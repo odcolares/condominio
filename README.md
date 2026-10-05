@@ -176,10 +176,11 @@ POST /visitantes/:id/entrada → Accesso(sentido="entrada") + visitante.presente
 POST /visitantes/:id/saida   → Acesso(sentido="saida")   + visitante.presente = false
 ```
 
-**Tempo de permanência:** não é armazenado nem calculado. Cada evento de acesso guarda
-apenas `registrado_em` (timestamp ISO). A duração poderia ser derivada emparelhando os
-eventos de `entrada` e `saida` do mesmo `pessoa_id`, mas não existe endpoint nem campo
-que faça esse cálculo. Idem para prestadores (`POST /prestadores/:id/entrada|saida`).
+**Tempo de permanência:** derivado em leitura via `src/lib/duracao.ts`. Cada registro de
+acesso expõe `duracao_minutos` (tempo entre `entrada` e `saida`) e `em_aberto` (pessoa ainda
+dentro no momento). Para visitantes, a janela considera o limite de 24h.
+Prestador: `prazo_dias` (ou `data_fim` explícito) e `expirado` derivado.
+Nenhum destes campos é persistido — são calculados a cada leitura.
 
 ## 🔐 Autenticação
 
@@ -201,8 +202,27 @@ que faça esse cálculo. Idem para prestadores (`POST /prestadores/:id/entrada|s
 
 - Frontend em HTML estático + Bootstrap 5 + Chart.js (sem SPA framework)
 - `public/auditoria.html` não possui router dedicado — consome `GET /acessos`
-- Sem testes automatizados
+- Testes automatizados com **vitest** + **supertest** (19 testes, 5 ficheiros) — rode `npm test`
+- CI com **GitHub Actions** (`.github/workflows/ci.yml`): build + teste em push e PR (Node 22)
+- Deploy configurado via **`render.yaml`** (Blueprint) — ver secção "Deploy" abaixo
 - Senha em texto plano em desenvolvimento (`123`) — substituir por hash em produção
 - `SECRET_KEY` padrão: `troque-esta-chave-em-producao` — deve ser sobrescrito via `.env`
 - `GET /restricoes/verificar` faz normalização de pontuação para comparar CPF/placa
 - Rotas de API retornam JSON; erros não tratados retornam JSON (não HTML)
+
+## 🚀 Deploy
+
+O projeto está pronto para deploy no **Render** via Blueprint (`render.yaml`):
+
+- `env`: Node 22, `buildCommand: npm install`, `startCommand: npm start`
+- Env vars: `SECRET_KEY` (gere um valor forte), `ACCESS_TOKEN_EXPIRE_MINUTES=480`
+- `PORT` é injetada pelo Render (o código lê `process.env.PORT`)
+- Tipo: Web Service (Node), plano Free para demo
+
+Para rodar localmente:
+
+```bash
+npm run dev        # http://localhost:3000
+npm test           # testes (vitest)
+npm run build      # tsc
+```
