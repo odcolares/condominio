@@ -747,6 +747,12 @@
           <td class="text-end">
             <div class="btn-group">
               ${actionBtn}
+              <button class="btn btn-sm btn-outline-success" onclick="avisarWhatsAppPrestador(${p.id})" title="Notificar WhatsApp">
+                <i class="bi bi-whatsapp"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-primary" onclick="avisarTelegramPrestador(${p.id})" title="Notificar Telegram">
+                <i class="bi bi-telegram"></i>
+              </button>
               <button class="btn btn-sm btn-light border" onclick="editarPrestador(${p.id})" title="Editar"><i class="bi bi-pencil"></i></button>
               <button class="btn btn-sm btn-light border text-danger" onclick="excluirPrestador(${p.id})" title="Excluir"><i class="bi bi-trash"></i></button>
             </div>
@@ -953,6 +959,40 @@
       }
     } catch (err) {
       console.warn("Erro ao excluir prestador:", err);
+    }
+  }
+
+  async function avisarWhatsAppPrestador(id) {
+    try {
+      const resp = await fetch(`/prestadores/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const p = await resp.json();
+        if (p.whatsappUrl) {
+          window.open(p.whatsappUrl, "_blank");
+        } else {
+          alert("WhatsApp não cadastrado para o morador autorizador.");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
+    }
+  }
+
+  async function avisarTelegramPrestador(id) {
+    try {
+      const resp = await fetch(`/prestadores/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const p = await resp.json();
+        if (p.telegramUrl) {
+          window.open(p.telegramUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
     }
   }
 </script>

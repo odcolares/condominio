@@ -38,6 +38,8 @@ describe("Prestadores Integration Tests", () => {
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("id");
     expect(res.body.nome).toBe("Eletricista Teste");
+    expect(res.body).toHaveProperty("whatsappUrl");
+    expect(res.body).toHaveProperty("telegramUrl");
   });
 
   it("POST /prestadores - fails when data_fim is missing (422)", async () => {
@@ -75,11 +77,14 @@ describe("Prestadores Integration Tests", () => {
       .set("Authorization", `Bearer ${token}`);
     expect(entryRes.status).toBe(200);
     expect(entryRes.body.prestador).toHaveProperty("presente", true);
+    expect(entryRes.body).toHaveProperty("whatsappUrl");
+    expect(entryRes.body).toHaveProperty("telegramUrl");
 
     const exitRes = await request(app)
       .post(`/prestadores/${id}/saida`)
       .set("Authorization", `Bearer ${token}`);
     expect(exitRes.status).toBe(200);
     expect(exitRes.body.prestador).toHaveProperty("presente", false);
+    expect(exitRes.body).toHaveProperty("telegramUrl");
   });
 });

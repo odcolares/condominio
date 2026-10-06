@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
-import { Prestador, Acesso } from "../types.js";
+import { Prestador, Acesso, Morador } from "../types.js";
+import { gerarLinksNotificacao, tmplPrestador, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const prestadoresRouter = Router();
 
@@ -64,9 +65,19 @@ prestadoresRouter.get("/:id", authMiddleware, (req, res) => {
   if (!p) {
     return res.status(404).json({ detail: "Prestador não encontrado" });
   }
+
+  const morador = p.morador_autorizador_id
+    ? db.moradores.find((m) => m.id === p.morador_autorizador_id)
+    : null;
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplPrestador(morador!, p, "registrado")) : { whatsappUrl: null, telegramUrl: null };
+
   return res.json({
     ...p,
     expirado: isExpirado(p.data_fim),
+    ...links,
   });
 });
 
@@ -146,10 +157,20 @@ prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
   };
 
   db.prestadores.push(novoPrestador);
+
+  const morador = novoPrestador.morador_autorizador_id
+    ? db.moradores.find((m) => m.id === novoPrestador.morador_autorizador_id)
+    : null;
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplPrestador(morador!, novoPrestador, "registrado")) : { whatsappUrl: null, telegramUrl: null };
+
   db.save();
   return res.status(201).json({
     ...novoPrestador,
     expirado: isExpirado(novoPrestador.data_fim),
+    ...links,
   });
 });
 
@@ -264,7 +285,15 @@ prestadoresRouter.post("/:id/entrada", authMiddleware, (req, res) => {
   db.acessos.push(acesso);
   db.save();
 
-  return res.json({ prestador, acesso });
+  const morador = prestador.morador_autorizador_id
+    ? db.moradores.find((m) => m.id === prestador.morador_autorizador_id)
+    : null;
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplPrestador(morador!, prestador, "entrou")) : { whatsappUrl: null, telegramUrl: null };
+
+  return res.json({ prestador, acesso, ...links });
 });
 
 // Registro de SAÍDA do prestador na portaria
@@ -293,5 +322,13 @@ prestadoresRouter.post("/:id/saida", authMiddleware, (req, res) => {
   db.acessos.push(acesso);
   db.save();
 
-  return res.json({ prestador, acesso });
+  const morador = prestador.morador_autorizador_id
+    ? db.moradores.find((m) => m.id === prestador.morador_autorizador_id)
+    : null;
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplPrestador(morador!, prestador, "saiu")) : { whatsappUrl: null, telegramUrl: null };
+
+  return res.json({ prestador, acesso, ...links });
 });

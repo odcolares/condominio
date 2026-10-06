@@ -671,6 +671,9 @@
                 Ações
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item text-success" href="#" onclick="avisarWhatsAppVisitante(${v.id});return false"><i class="bi bi-whatsapp"></i> Avisar no WhatsApp</a></li>
+                <li><a class="dropdown-item text-primary" href="#" onclick="avisarTelegramVisitante(${v.id});return false"><i class="bi bi-telegram"></i> Avisar no Telegram</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#" onclick="abrirModalEdicaoVisitante(${v.id});return false"><i class="bi bi-pencil"></i> Editar Dados</a></li>
                 <li><a class="dropdown-item" href="portaria-entrada.html"><i class="bi bi-door-open text-primary"></i> Abrir na Portaria</a></li>
                 <li><hr class="dropdown-divider"></li>
@@ -842,6 +845,40 @@
       });
       if (resp.ok) {
         carregarDados();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function avisarWhatsAppVisitante(id) {
+    try {
+      const resp = await fetch(`/visitantes/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const v = await resp.json();
+        if (v.whatsappUrl) {
+          window.open(v.whatsappUrl, "_blank");
+        } else {
+          alert("WhatsApp não cadastrado para este morador.");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function avisarTelegramVisitante(id) {
+    try {
+      const resp = await fetch(`/visitantes/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const v = await resp.json();
+        if (v.telegramUrl) {
+          window.open(v.telegramUrl, "_blank");
+        }
       }
     } catch (err) {
       console.error(err);

@@ -1205,18 +1205,24 @@
   }
 
   async function verDetalhesMensagem(id) {
-    const enc = listaEncomendas.find(e => e.id === id);
-    if (!enc) return;
+    try {
+      const resp = await fetch(`/encomendas/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!resp.ok) return;
+      const enc = await resp.json();
+      linkWhatsAppAtual = enc.whatsappUrl || "";
+      linkTelegramAtual = enc.telegramUrl || "";
+      textoMensagemAtual = enc.mensagem_aviso || "";
 
-    linkWhatsAppAtual = enc.morador_whatsapp ? `https://api.whatsapp.com/send?phone=${enc.morador_whatsapp.replace(/\D/g,'')}&text=${encodeURIComponent(enc.mensagem_aviso)}` : "";
-    linkTelegramAtual = `https://t.me/share/url?url=${encodeURIComponent('https://ambros.condominio.app')}&text=${encodeURIComponent(enc.mensagem_aviso)}`;
-    textoMensagemAtual = enc.mensagem_aviso;
+      document.getElementById("sucessoCodigoRetirada").textContent = enc.codigo_retirada;
+      document.getElementById("sucessoMensagemTexto").textContent = enc.mensagem_aviso;
 
-    document.getElementById("sucessoCodigoRetirada").textContent = enc.codigo_retirada;
-    document.getElementById("sucessoMensagemTexto").textContent = enc.mensagem_aviso;
-
-    const modalSucesso = new bootstrap.Modal(document.getElementById("modalSucessoAviso"));
-    modalSucesso.show();
+      const modalSucesso = new bootstrap.Modal(document.getElementById("modalSucessoAviso"));
+      modalSucesso.show();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   // Retirada

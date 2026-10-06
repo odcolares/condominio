@@ -788,6 +788,13 @@
         ? `<button class="btn btn-sm btn-outline-success" onclick="resolverOcorrencia(${o.id})" title="Marcar como Resolvida"><i class="bi bi-check-lg"></i></button>`
         : '';
 
+      const actionButtons = `
+        <button class="btn btn-sm btn-outline-success" onclick="avisarWhatsAppOcorrencia(${o.id})" title="Avisar no WhatsApp"><i class="bi bi-whatsapp"></i></button>
+        <button class="btn btn-sm btn-outline-primary" onclick="avisarTelegramOcorrencia(${o.id})" title="Avisar no Telegram"><i class="bi bi-telegram"></i></button>
+        <button class="btn btn-sm btn-light border" onclick="editarOcorrencia(${o.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-light border text-danger" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="bi bi-trash"></i></button>
+      `;
+
       return `
         <tr>
           <td>
@@ -806,8 +813,7 @@
           <td class="text-end">
             <div class="btn-group">
               ${resolverBtn}
-              <button class="btn btn-sm btn-light border" onclick="editarOcorrencia(${o.id})" title="Editar"><i class="bi bi-pencil"></i></button>
-              <button class="btn btn-sm btn-light border text-danger" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="bi bi-trash"></i></button>
+              ${actionButtons}
             </div>
           </td>
         </tr>
@@ -992,6 +998,40 @@
       }
     } catch (err) {
       console.warn("Erro ao excluir ocorrência:", err);
+    }
+  }
+
+  async function avisarWhatsAppOcorrencia(id) {
+    try {
+      const resp = await fetch(`/ocorrencias/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const o = await resp.json();
+        if (o.whatsappUrl) {
+          window.open(o.whatsappUrl, "_blank");
+        } else {
+          alert("WhatsApp não cadastrado para o morador desta unidade.");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
+    }
+  }
+
+  async function avisarTelegramOcorrencia(id) {
+    try {
+      const resp = await fetch(`/ocorrencias/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const o = await resp.json();
+        if (o.telegramUrl) {
+          window.open(o.telegramUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
     }
   }
 

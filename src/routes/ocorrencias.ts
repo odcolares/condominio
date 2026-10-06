@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
-import { Ocorrencia, RestricaoAcesso } from "../types.js";
+import { Ocorrencia, RestricaoAcesso, Morador } from "../types.js";
+import { gerarLinksNotificacao, tmplOcorrencia, DestinoNotificacao } from "../lib/notificacoes.js";
+
+function moradorPorUnidade(bloco: string | null, apartamento: string | null): Morador | null {
+  if (!bloco || !apartamento) return null;
+  return db.moradores.find((m) => m.bloco === bloco && m.apartamento === apartamento) || null;
+}
 
 export const ocorrenciasRouter = Router();
 
@@ -42,7 +48,13 @@ ocorrenciasRouter.get("/:id", authMiddleware, (req, res) => {
   if (!o) {
     return res.status(404).json({ detail: "Ocorrência não encontrada" });
   }
-  return res.json(o);
+
+  const morador = moradorPorUnidade(o.bloco, o.apartamento);
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplOcorrencia(morador!, o)) : { whatsappUrl: null, telegramUrl: null };
+  return res.json({ ...o, ...links });
 });
 
 ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
@@ -80,7 +92,13 @@ ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
 
   db.ocorrencias.push(nova);
   db.save();
-  return res.status(201).json(nova);
+
+  const morador = moradorPorUnidade(nova.bloco, nova.apartamento);
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplOcorrencia(morador!, nova)) : { whatsappUrl: null, telegramUrl: null };
+  return res.status(201).json({ ...nova, ...links });
 });
 
 ocorrenciasRouter.put("/:id", authMiddleware, (req, res) => {
@@ -121,7 +139,13 @@ ocorrenciasRouter.put("/:id", authMiddleware, (req, res) => {
   }
 
   db.save();
-  return res.json(o);
+
+  const morador = moradorPorUnidade(o.bloco, o.apartamento);
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplOcorrencia(morador!, o)) : { whatsappUrl: null, telegramUrl: null };
+  return res.json({ ...o, ...links });
 });
 
 ocorrenciasRouter.delete("/:id", authMiddleware, (req, res) => {

@@ -18,8 +18,10 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 
 **Cadastrar morador:**
 1. Clique em **"Novo Morador"**
-2. Preencha: nome, CPF, telefone, bloco, apartamento
-3. Salve — o sistema vincula automaticamente aos veículos desse morador
+2. Preencha: nome, CPF, telefone, **WhatsApp**, **Telegram** (username opcional, ex: `@carlos`)
+3. Preencha **bloco** e **apartamento** — campos obrigatórios
+4. Salve — o sistema valida que pelo menos um contato (WhatsApp, Telegram ou telefone) foi informado
+5. O sistema vincula automaticamente aos veículos desse morador
 
 **Editar/Excluir:**
 - Use os botões **Editar** e **Excluir** na linha do morador
@@ -43,6 +45,11 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 - A portaria registra entrada e saída manualmente ou via scanner do QR Code
 - O sistema mostra presença em tempo real e sinaliza se excedeu 24h
 
+**Notificações ao morador visitado:**
+- Ao registrar entrada e saída de um visitante, o sistema gera links de **WhatsApp** e **Telegram**
+- Clique nos ícones de notificação na coluna "Ações" da lista de visitantes
+- O link abre o app do morador com a mensagem do agio (formato `tmplVisita` / `tmplVisitaSaida`)
+
 ---
 
 ## 🛠️ Prestadores
@@ -56,6 +63,10 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 **Controle de entrada/saída:**
 - Registre presença na portaria
 - Acesso bloqueado após expirar (sinalizado como `expirado`)
+
+**Notificações ao morador autorizador:**
+- Na tabela de prestadores, os botões de WhatsApp e Telegram notificam o morador responsável
+- Mensagens diferentes conforme a ação: `registrado`, `entrou`, `saiu`
 
 ---
 
@@ -82,6 +93,12 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 - O morador apresenta o código `RET-XXXX` na portaria
 - Registre a retirada com confirmação do código
 
+**Notificações ao morador:**
+- Ao cadastrar uma encomenda, o sistema gera links de **WhatsApp** e **Telegram**
+- Clique em "Avisar no WhatsApp" ou "Avisar no Telegram" na linha da encomenda
+- O link abre o app correspondente com a mensagem pré-preenchida (inclui código RET-XXXX)
+- O campo `morador_telegram` é propagado automaticamente do cadastro do morador
+
 ---
 
 ## 📅 Reservas
@@ -97,6 +114,10 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 - Mude o status da reserva (confirmada, cancelada, concluída)
 - Notificação automática ao morador
 
+**Notificações ao morador:**
+- Na tabela de reservas, os botões de WhatsApp e Telegram enviam o aviso da reserva
+- A mensagem inclui espaço, data, período e status (confirmada/cancelada)
+
 ---
 
 ## ⚠️ Ocorrências
@@ -106,6 +127,10 @@ Guia passo a passo para usar cada funcionalidade do AMBROS. Acesse o sistema em 
 1. Selecione categoria, gravidade e descreva o incidente
 2. Atribua um status (aberta, em tratamento, resolvida)
 3. Feche com data de resolução
+
+**Notificações ao morador envolvido:**
+- Na tabela de ocorrências, os botões de WhatsApp e Telegram notificam o morador da unidade
+- A mensagem inclui título, gravidade, status e unidade
 
 **Restrições de acesso:**
 - Cadastre CPF ou placa proibida na portaria

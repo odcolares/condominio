@@ -1,9 +1,15 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
-import { Visitante, Acesso } from "../types.js";
+import { Visitante, Acesso, Morador } from "../types.js";
+import { gerarLinksNotificacao, tmplVisita, tmplVisitaSaida, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const visitantesRouter = Router();
+
+function moradorDestino(morador: Morador | null | undefined): DestinoNotificacao | null {
+  if (!morador) return null;
+  return { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram };
+}
 
 function isVisitanteExpirado(v: Visitante): boolean {
   const entradas = db.acessos
@@ -109,6 +115,9 @@ visitantesRouter.get("/:id", authMiddleware, (req, res) => {
     ? db.moradores.find((m) => m.id === visitante.morador_visitado_id)
     : null;
 
+  const destino = moradorDestino(morador);
+  const links = destino ? gerarLinksNotificacao(destino, tmplVisita(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
+
   return res.json({
     ...visitante,
     morador_nome: morador ? morador.nome_completo : null,
@@ -116,6 +125,7 @@ visitantesRouter.get("/:id", authMiddleware, (req, res) => {
       ? `Bloco ${morador.bloco || "0"} - Apto ${morador.apartamento || "0"}`
       : null,
     expirado: isVisitanteExpirado(visitante),
+    ...links,
   });
 });
 
@@ -168,7 +178,7 @@ visitantesRouter.post("", authMiddleware, (req, res) => {
   };
 
   db.visitantes.unshift(visitante);
-
+  
   // Se entrada imediata selecionada, cria registro de acesso de entrada
   if (entrada_imediata) {
     const acesso: Acesso = {
@@ -189,12 +199,16 @@ visitantesRouter.post("", authMiddleware, (req, res) => {
 
   db.save();
 
+  const destino = moradorDestino(morador);
+  const links = destino ? gerarLinksNotificacao(destino, tmplVisita(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
+
   return res.status(201).json({
     ...visitante,
     morador_nome: morador ? morador.nome_completo : null,
     morador_unidade: morador
       ? `Bloco ${morador.bloco || "0"} - Apto ${morador.apartamento || "0"}`
       : null,
+    ...links,
   });
 });
 
@@ -285,10 +299,14 @@ visitantesRouter.post("/:id/entrada", authMiddleware, (req, res) => {
   db.acessos.unshift(novoAcesso);
   db.save();
 
+  const destino = moradorDestino(morador);
+  const links = destino ? gerarLinksNotificacao(destino, tmplVisita(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
+
   return res.json({
     sucesso: true,
     visitante,
     acesso: novoAcesso,
+    ...links,
     mensagem: `Entrada de ${visitante.nome} registrada com sucesso!`,
   });
 });
@@ -321,10 +339,18 @@ visitantesRouter.post("/:id/saida", authMiddleware, (req, res) => {
   db.acessos.unshift(novoAcesso);
   db.save();
 
+  const morador = visitante.morador_visitado_id
+    ? db.moradores.find((m) => m.id === visitante.morador_visitado_id)
+    : null;
+
+  const destino = moradorDestino(morador);
+  const links = destino ? gerarLinksNotificacao(destino, tmplVisitaSaida(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
+
   return res.json({
     sucesso: true,
     visitante,
     acesso: novoAcesso,
+    ...links,
     mensagem: `Saída de ${visitante.nome} registrada com sucesso!`,
   });
 });

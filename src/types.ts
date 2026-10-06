@@ -18,6 +18,7 @@ export interface Morador {
   cpf: string;
   telefone: string | null;
   whatsapp: string | null;
+  telegram: string | null;
   bloco: string | null;
   apartamento: string | null;
   vinculo: VinculoMorador;

@@ -40,10 +40,23 @@ moradoresRouter.get("/:id", authMiddleware, (req, res) => {
 });
 
 moradoresRouter.post("", authMiddleware, (req, res) => {
-  const { nome_completo, cpf, telefone, whatsapp, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
+  const { nome_completo, cpf, telefone, whatsapp, telegram, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
 
   if (!nome_completo || !cpf) {
     return res.status(422).json({ detail: "Nome completo e CPF são obrigatórios" });
+  }
+
+  const hasContato = (whatsapp && String(whatsapp).trim()) || (telegram && String(telegram).trim()) || (telefone && String(telefone).trim());
+  if (!hasContato) {
+    return res.status(422).json({ detail: "É obrigatório informar WhatsApp, Telegram ou telefone de contato do morador" });
+  }
+
+  if (!bloco || !bloco.trim()) {
+    return res.status(422).json({ detail: "Bloco é obrigatório" });
+  }
+
+  if (!apartamento || !apartamento.trim()) {
+    return res.status(422).json({ detail: "Apartamento é obrigatório" });
   }
 
   const existing = db.moradores.find((m) => m.cpf === cpf);
@@ -57,8 +70,9 @@ moradoresRouter.post("", authMiddleware, (req, res) => {
     cpf,
     telefone: telefone ?? null,
     whatsapp: whatsapp ?? null,
-    bloco: bloco ?? null,
-    apartamento: apartamento ?? null,
+    telegram: telegram ?? null,
+    bloco: bloco,
+    apartamento: apartamento,
     vinculo: vinculo ?? "proprietario",
     foto_url: foto_url ?? null,
     numero_vaga: numero_vaga ?? null,
@@ -92,11 +106,26 @@ moradoresRouter.put("/:id", authMiddleware, (req, res) => {
     return res.status(404).json({ detail: "Morador não encontrado" });
   }
 
-  const campos = ["nome_completo", "telefone", "whatsapp", "bloco", "apartamento", "vinculo", "foto_url", "numero_vaga", "ativo"] as const;
+  const { nome_completo, cpf, telefone, whatsapp, telegram, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
+
+  const campos = ["nome_completo", "telefone", "whatsapp", "telegram", "bloco", "apartamento", "vinculo", "foto_url", "numero_vaga", "ativo"] as const;
   for (const campo of campos) {
     if (req.body[campo] !== undefined) {
       (morador as any)[campo] = req.body[campo];
     }
+  }
+
+  const hasContato = (morador.whatsapp && morador.whatsapp.trim()) || (morador.telegram && morador.telegram.trim()) || (morador.telefone && morador.telefone.trim());
+  if (!hasContato) {
+    return res.status(422).json({ detail: "É obrigatório informar WhatsApp, Telegram ou telefone de contato do morador" });
+  }
+
+  if (!morador.bloco || !String(morador.bloco).trim()) {
+    return res.status(422).json({ detail: "Bloco é obrigatório" });
+  }
+
+  if (!morador.apartamento || !String(morador.apartamento).trim()) {
+    return res.status(422).json({ detail: "Apartamento é obrigatório" });
   }
 
   db.save();
