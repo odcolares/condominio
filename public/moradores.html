@@ -281,7 +281,7 @@
           <h4>Gestão de Moradores</h4>
           <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Cadastros / Moradores</div>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMorador">
+        <button class="btn btn-primary" onclick="abrirModalNovoMorador()">
           <i class="bi bi-person-plus me-1"></i> Novo Morador
         </button>
       </div>
@@ -337,12 +337,13 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-person-plus me-2 text-primary"></i>Novo Morador</h5>
+        <h5 class="modal-title" id="modalMoradorTitulo"><i class="bi bi-person-plus me-2 text-primary"></i>Novo Morador</h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-danger d-none" id="modalErro"></div>
         <form id="formMorador">
+          <input type="hidden" id="fMoradorId">
           <div class="row g-3">
             <div class="col-md-8">
               <label class="form-label">Nome completo *</label>
@@ -353,22 +354,29 @@
               <input class="form-control" id="fCpf" required placeholder="000.000.000-00">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Telefone</label>
               <input class="form-control" id="fTelefone" placeholder="(11) 90000-0000">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">WhatsApp</label>
               <input class="form-control" id="fWhatsapp" placeholder="(11) 90000-0000">
             </div>
+            <div class="col-md-4">
+              <label class="form-label">Telegram</label>
+              <input class="form-control" id="fTelegram" placeholder="@usuario">
+            </div>
+            <div class="col-12 mt-1">
+              <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Pelo menos um contato (WhatsApp, Telegram ou Telefone) é obrigatório.</small>
+            </div>
 
             <div class="col-md-4">
-              <label class="form-label">Bloco</label>
-              <input class="form-control" id="fBloco" placeholder="Ex.: 05">
+              <label class="form-label">Bloco *</label>
+              <input class="form-control" id="fBloco" required placeholder="Ex.: 05">
             </div>
             <div class="col-md-4">
-              <label class="form-label">Apartamento</label>
-              <input class="form-control" id="fApartamento" placeholder="Ex.: 502">
+              <label class="form-label">Apartamento *</label>
+              <input class="form-control" id="fApartamento" required placeholder="Ex.: 502">
             </div>
             <div class="col-md-4">
               <label class="form-label">Vínculo</label>
@@ -459,7 +467,13 @@
         const iniciais = m.nome_completo.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         const badgeClass = m.vinculo === 'inquilino' ? 'badge-inquilino' : 'badge-proprietario';
         const vinculoTxt = m.vinculo === 'inquilino' ? 'Inquilino' : 'Proprietário';
-        const contato = m.telefone || m.whatsapp || '—';
+        
+        let contatoHtml = [];
+        if (m.whatsapp) contatoHtml.push(`<span class="text-success"><i class="bi bi-whatsapp me-1"></i>${m.whatsapp}</span>`);
+        else if (m.telefone) contatoHtml.push(`<span><i class="bi bi-telephone me-1"></i>${m.telefone}</span>`);
+        if (m.telegram) contatoHtml.push(`<span class="text-primary"><i class="bi bi-telegram me-1"></i>${m.telegram}</span>`);
+        const contato = contatoHtml.length > 0 ? contatoHtml.join('<br>') : '<span class="text-muted">—</span>';
+
         return `
           <tr>
             <td>
@@ -476,7 +490,7 @@
             <td>${contato}</td>
             <td>${m.numero_vaga || '—'}</td>
             <td>
-              <button class="action-btn" title="Editar"><i class="bi bi-pencil"></i></button>
+              <button class="action-btn" onclick="editarMorador(${m.id})" title="Editar"><i class="bi bi-pencil"></i></button>
               <button class="action-btn del" onclick="excluirMorador(${m.id}, '${m.nome_completo}')" title="Excluir"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
@@ -487,7 +501,50 @@
     }
   }
 
+  function abrirModalNovoMorador() {
+    document.getElementById("formMorador").reset();
+    document.getElementById("fMoradorId").value = "";
+    document.getElementById("fCpf").removeAttribute("disabled");
+    document.getElementById("modalMoradorTitulo").innerHTML = '<i class="bi bi-person-plus me-2 text-primary"></i>Novo Morador';
+    document.getElementById("modalErro").classList.add("d-none");
+    const modalEl = document.getElementById("modalMorador");
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+
+  async function editarMorador(id) {
+    try {
+      const resp = await fetch(`/moradores/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!resp.ok) return;
+      const m = await resp.json();
+
+      document.getElementById("fMoradorId").value = m.id;
+      document.getElementById("fNome").value = m.nome_completo || "";
+      document.getElementById("fCpf").value = m.cpf || "";
+      document.getElementById("fCpf").setAttribute("disabled", "true");
+      document.getElementById("fTelefone").value = m.telefone || "";
+      document.getElementById("fWhatsapp").value = m.whatsapp || "";
+      document.getElementById("fTelegram").value = m.telegram || "";
+      document.getElementById("fBloco").value = m.bloco || "";
+      document.getElementById("fApartamento").value = m.apartamento || "";
+      document.getElementById("fVinculo").value = m.vinculo || "proprietario";
+      document.getElementById("fVaga").value = m.numero_vaga || "";
+      document.getElementById("fPlaca").value = "";
+
+      document.getElementById("modalMoradorTitulo").innerHTML = '<i class="bi bi-pencil-square me-2 text-primary"></i>Editar Morador';
+      document.getElementById("modalErro").classList.add("d-none");
+      const modalEl = document.getElementById("modalMorador");
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   async function excluirMorador(id, nome) {
+    if (!confirm(`Deseja realmente excluir o morador ${nome}?`)) return;
     try {
       const resp = await fetch(`/moradores/${id}`, {
         method: "DELETE",
@@ -502,11 +559,12 @@
   }
 
   document.getElementById("btnSalvarMorador").addEventListener("click", async () => {
+    const moradorId = document.getElementById("fMoradorId").value;
     const nome = document.getElementById("fNome").value.trim();
     const cpf = document.getElementById("fCpf").value.trim();
     const errBox = document.getElementById("modalErro");
 
-    if (!nome || !cpf) {
+    if (!nome || (!moradorId && !cpf)) {
       errBox.textContent = "Nome completo e CPF são obrigatórios.";
       errBox.classList.remove("d-none");
       return;
@@ -514,19 +572,26 @@
 
     const payload = {
       nome_completo: nome,
-      cpf: cpf,
       telefone: document.getElementById("fTelefone").value.trim() || null,
       whatsapp: document.getElementById("fWhatsapp").value.trim() || null,
+      telegram: document.getElementById("fTelegram").value.trim() || null,
       bloco: document.getElementById("fBloco").value.trim() || null,
       apartamento: document.getElementById("fApartamento").value.trim() || null,
       vinculo: document.getElementById("fVinculo").value,
       numero_vaga: document.getElementById("fVaga").value.trim() || null,
-      placa_veiculo: document.getElementById("fPlaca").value.trim() || null
     };
 
+    if (!moradorId) {
+      payload.cpf = cpf;
+      payload.placa_veiculo = document.getElementById("fPlaca").value.trim() || null;
+    }
+
+    const url = moradorId ? `/moradores/${moradorId}` : "/moradores";
+    const method = moradorId ? "PUT" : "POST";
+
     try {
-      const resp = await fetch("/moradores", {
-        method: "POST",
+      const resp = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
