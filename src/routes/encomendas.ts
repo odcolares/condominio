@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
 import { Encomenda } from "../types.js";
+import { gerarLinksNotificacao, tmplEncomenda, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const encomendasRouter = Router();
 
@@ -15,66 +16,6 @@ function gerarCodigoRetirada(): string {
     exists = db.encomendas.some((e) => e.codigo_retirada === code && e.status === "pendente");
   }
   return code;
-}
-
-function formatarDataHora(isoString: string): string {
-  const d = new Date(isoString);
-  const dia = String(d.getDate()).padStart(2, "0");
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const ano = d.getFullYear();
-  const hora = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  return `${dia}/${mes}/${ano} às ${hora}:${min}`;
-}
-
-function gerarMensagemAviso(
-  moradorNome: string,
-  unidade: string,
-  transportadora: string,
-  codigoRastreio: string,
-  tipoVolume: string,
-  localArmazenamento: string,
-  codigoRetirada: string,
-  recebidoEm: string
-): string {
-  const dataFormatada = formatarDataHora(recebidoEm);
-  return (
-    `📦 *AMBROS CONDOMÍNIO - AVISO DE ENCOMENDA* 📦\n\n` +
-    `Olá, *${moradorNome}*!\n` +
-    `Uma nova encomenda foi recebida na portaria para sua unidade (*${unidade}*).\n\n` +
-    `🚚 *Transportadora:* ${transportadora || "Não informada"}\n` +
-    `🏷️ *Código / Rastreio:* ${codigoRastreio || "Sem etiqueta"}\n` +
-    `📦 *Tipo de Volume:* ${tipoVolume || "Volume padrão"}\n` +
-    `📍 *Local na Portaria:* ${localArmazenamento || "Armário de Encomendas"}\n` +
-    `🕒 *Horário de Chegada:* ${dataFormatada}\n\n` +
-    `══════════════════════════\n` +
-    `🔐 *CÓDIGO ÚNICO DE RETIRADA:* 👉 *${codigoRetirada}* 👈\n` +
-    `══════════════════════════\n\n` +
-    `⚠️ *Importante:* Apresente este código na portaria para autorizar a entrega e retirada segura do pacote.\n` +
-    `Condomínio Residencial AMBROS`
-  );
-}
-
-function gerarLinksNotificacao(telefone: string | null, telegram: string | null, mensagem: string) {
-  let whatsappUrl: string | null = null;
-  let telegramUrl: string | null = null;
-
-  if (telefone) {
-    const limpo = telefone.replace(/\D/g, "");
-    const numeroFinal = limpo.startsWith("55") ? limpo : `55${limpo}`;
-    whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroFinal}&text=${encodeURIComponent(mensagem)}`;
-  }
-
-  // Telegram link: share or direct username
-  if (telegram) {
-    const userClean = telegram.replace("@", "").trim();
-    if (userClean) {
-      telegramUrl = `https://t.me/${userClean}`;
-    }
-  }
-  const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent("https://ambros.condominio.app")}&text=${encodeURIComponent(mensagem)}`;
-
-  return { whatsappUrl, telegramUrl: telegramUrl || telegramShareUrl };
 }
 
 // GET /encomendas/stats
@@ -135,11 +76,13 @@ encomendasRouter.get("/:id", authMiddleware, (req, res) => {
     return res.status(404).json({ detail: "Encomenda não encontrada" });
   }
 
-  const links = gerarLinksNotificacao(
-    encomenda.morador_whatsapp || encomenda.morador_telefone,
-    encomenda.morador_telegram,
-    encomenda.mensagem_aviso
-  );
+  const destino: DestinoNotificacao = {
+    whatsapp: encomenda.morador_whatsapp,
+    telefone: encomenda.morador_telefone,
+    telegram: encomenda.morador_telegram,
+  };
+
+  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso);
 
   return res.json({ ...encomenda, ...links });
 });
@@ -174,17 +117,6 @@ encomendasRouter.post("", authMiddleware, (req, res) => {
   const volumeFinal = tipo_volume ? tipo_volume.trim() : "Pacote";
   const localFinal = local_armazenamento ? local_armazenamento.trim() : "Armário de Encomendas";
 
-  const mensagemAviso = gerarMensagemAviso(
-    morador.nome_completo,
-    unidade,
-    transpFinal,
-    rastreioFinal,
-    volumeFinal,
-    localFinal,
-    codigoRetirada,
-    recebidoEm
-  );
-
   const novaEncomenda: Encomenda = {
     id: db.getNextEncomendaId(),
     morador_id: morador.id,
@@ -192,7 +124,7 @@ encomendasRouter.post("", authMiddleware, (req, res) => {
     morador_unidade: unidade,
     morador_telefone: morador.telefone,
     morador_whatsapp: morador.whatsapp || morador.telefone,
-    morador_telegram: null,
+    morador_telegram: morador.telegram,
     codigo_rastreio: rastreioFinal,
     transportadora: transpFinal,
     tipo_volume: volumeFinal,
@@ -206,17 +138,21 @@ encomendasRouter.post("", authMiddleware, (req, res) => {
     retirado_por: null,
     notificacao_enviada_whatsapp: Boolean(notificar_whatsapp),
     notificacao_enviada_telegram: Boolean(notificar_telegram),
-    mensagem_aviso: mensagemAviso,
+    mensagem_aviso: "",
   };
+
+  novaEncomenda.mensagem_aviso = tmplEncomenda(morador, novaEncomenda);
 
   db.encomendas.unshift(novaEncomenda);
   db.save();
 
-  const links = gerarLinksNotificacao(
-    novaEncomenda.morador_whatsapp || novaEncomenda.morador_telefone,
-    novaEncomenda.morador_telegram,
-    novaEncomenda.mensagem_aviso
-  );
+  const destino: DestinoNotificacao = {
+    whatsapp: novaEncomenda.morador_whatsapp,
+    telefone: novaEncomenda.morador_telefone,
+    telegram: novaEncomenda.morador_telegram,
+  };
+
+  const links = gerarLinksNotificacao(destino, novaEncomenda.mensagem_aviso);
 
   return res.status(201).json({
     ...novaEncomenda,
@@ -288,11 +224,13 @@ encomendasRouter.post("/:id/notificar", authMiddleware, (req, res) => {
 
   db.save();
 
-  const links = gerarLinksNotificacao(
-    encomenda.morador_whatsapp || encomenda.morador_telefone,
-    encomenda.morador_telegram,
-    encomenda.mensagem_aviso
-  );
+  const destino: DestinoNotificacao = {
+    whatsapp: encomenda.morador_whatsapp,
+    telefone: encomenda.morador_telefone,
+    telegram: encomenda.morador_telegram,
+  };
+
+  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso);
 
   return res.json({
     sucesso: true,

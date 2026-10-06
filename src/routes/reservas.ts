@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
-import { Reserva, EspacoComum, StatusReserva } from "../types.js";
+import { Reserva, EspacoComum, StatusReserva, Morador } from "../types.js";
+import { gerarLinksNotificacao, tmplReserva, DestinoNotificacao } from "../lib/notificacoes.js";
+
+function moradorDestino(morador: Morador | null | undefined): DestinoNotificacao | null {
+  if (!morador) return null;
+  return { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram };
+}
 
 export const reservasRouter = Router();
 
@@ -66,6 +72,19 @@ reservasRouter.get(["", "/"], authMiddleware, (req, res) => {
 
   resultado.sort((a, b) => new Date(b.data_reserva).getTime() - new Date(a.data_reserva).getTime());
   return res.json(resultado);
+});
+
+reservasRouter.get("/:id", authMiddleware, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const r = db.reservas.find((item) => item.id === id);
+  if (!r) {
+    return res.status(404).json({ detail: "Reserva não encontrada" });
+  }
+
+  const morador = db.moradores.find((m) => m.id === r.morador_id);
+  const destino = moradorDestino(morador);
+  const links = destino ? gerarLinksNotificacao(destino, tmplReserva(morador!, r, r.status === "confirmada")) : { whatsappUrl: null, telegramUrl: null };
+  return res.json({ ...r, ...links });
 });
 
 reservasRouter.post(["", "/"], authMiddleware, (req, res) => {
@@ -143,7 +162,11 @@ reservasRouter.post(["", "/"], authMiddleware, (req, res) => {
   });
 
   db.save();
-  return res.status(201).json(novaReserva);
+  const links = gerarLinksNotificacao(
+    { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram },
+    tmplReserva(morador, novaReserva, true)
+  );
+  return res.status(201).json({ ...novaReserva, ...links });
 });
 
 reservasRouter.put("/:id", authMiddleware, (req, res) => {
@@ -164,7 +187,14 @@ reservasRouter.put("/:id", authMiddleware, (req, res) => {
   if (observacoes !== undefined) r.observacoes = observacoes;
 
   db.save();
-  return res.json(r);
+
+  const morador = db.moradores.find((m) => m.id === r.morador_id);
+  const destino: DestinoNotificacao | null = morador
+    ? { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram }
+    : null;
+  const links = destino ? gerarLinksNotificacao(destino, tmplReserva(morador!, r, r.status === "confirmada")) : { whatsappUrl: null, telegramUrl: null };
+
+  return res.json({ ...r, ...links });
 });
 
 reservasRouter.delete("/:id", authMiddleware, (req, res) => {

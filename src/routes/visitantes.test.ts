@@ -22,7 +22,7 @@ describe("Visitantes Integration Tests", () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it("POST /visitantes - creates a new visitor", async () => {
+  it("POST /visitantes - creates a new visitor with notification links", async () => {
     const res = await request(app)
       .post("/visitantes")
       .set("Authorization", `Bearer ${token}`)
@@ -30,12 +30,14 @@ describe("Visitantes Integration Tests", () => {
         nome: "Visitante Teste",
         documento: "123456789",
         telefone: "11999999999",
-        morador_id: 1,
+        morador_visitado_id: 1,
       });
 
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("id");
     expect(res.body.nome).toBe("Visitante Teste");
+    expect(res.body).toHaveProperty("whatsappUrl");
+    expect(res.body).toHaveProperty("telegramUrl");
   });
 
   it("POST /visitantes/:id/entrada and saida", async () => {
@@ -51,16 +53,19 @@ describe("Visitantes Integration Tests", () => {
 
     const id = createRes.body.id;
 
-    const entryRes = await request(app)
+       const entryRes = await request(app)
       .post(`/visitantes/${id}/entrada`)
       .set("Authorization", `Bearer ${token}`);
     expect(entryRes.status).toBe(200);
     expect(entryRes.body.visitante).toHaveProperty("presente", true);
+    expect(entryRes.body).toHaveProperty("whatsappUrl");
+    expect(entryRes.body).toHaveProperty("telegramUrl");
 
     const exitRes = await request(app)
       .post(`/visitantes/${id}/saida`)
       .set("Authorization", `Bearer ${token}`);
     expect(exitRes.status).toBe(200);
     expect(exitRes.body.visitante).toHaveProperty("presente", false);
+    expect(exitRes.body).toHaveProperty("telegramUrl");
   });
 });

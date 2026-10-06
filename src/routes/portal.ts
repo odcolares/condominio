@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware } from "../auth.js";
 import { PreAutorizacaoVisitante, Comunicado, NotificacaoMorador, Visitante } from "../types.js";
+import { gerarLinksNotificacao, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const portalRouter = Router();
 
@@ -233,11 +234,17 @@ portalRouter.post("/notificacoes/disparar", authMiddleware, (req, res) => {
   db.notificacoes.push(notif);
   db.save();
 
+  const links = gerarLinksNotificacao(
+    { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram },
+    String(mensagem).trim()
+  );
+
   return res.json({
     sucesso: true,
     canal: notif.canal,
     destinatario: morador.whatsapp || morador.telefone || morador.nome_completo,
     notificacao: notif,
+    ...links,
   });
 });
 

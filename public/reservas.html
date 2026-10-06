@@ -578,9 +578,17 @@
           </td>
           <td><div class="small text-muted" style="max-width: 220px;">${r.observacoes || '—'}</div></td>
           <td class="text-end">
-            <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${r.id})" title="Cancelar Reserva">
-              <i class="bi bi-trash"></i>
-            </button>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-danger" onclick="cancelarReserva(${r.id})" title="Cancelar Reserva">
+                <i class="bi bi-trash"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-success" onclick="avisarWhatsAppReserva(${r.id})" title="Avisar no WhatsApp">
+                <i class="bi bi-whatsapp"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-primary" onclick="avisarTelegramReserva(${r.id})" title="Avisar no Telegram">
+                <i class="bi bi-telegram"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -644,6 +652,40 @@
       }
     } catch (err) {
       console.warn("Erro ao cancelar reserva:", err);
+    }
+  }
+
+  async function avisarWhatsAppReserva(id) {
+    try {
+      const resp = await fetch(`/reservas/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const r = await resp.json();
+        if (r.whatsappUrl) {
+          window.open(r.whatsappUrl, "_blank");
+        } else {
+          alert("WhatsApp não cadastrado para este morador.");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
+    }
+  }
+
+  async function avisarTelegramReserva(id) {
+    try {
+      const resp = await fetch(`/reservas/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const r = await resp.json();
+        if (r.telegramUrl) {
+          window.open(r.telegramUrl, "_blank");
+        }
+      }
+    } catch (err) {
+      console.warn("Erro ao obter links de notificação:", err);
     }
   }
 </script>
