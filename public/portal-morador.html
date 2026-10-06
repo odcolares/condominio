@@ -99,12 +99,6 @@
   .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
 
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.show{transform:translateX(0)}
-    .main{margin-left:0}
-    .overlay.show{display:block}
-  }
 </style>
 </head>
 <body>
@@ -271,8 +265,8 @@
     <header class="topbar">
       <div class="title">Espaço do Morador · Autoatendimento</div>
       <div class="right">
-        <a href="reservas.html" class="btn btn-outline-primary btn-sm me-2"><i class="bi bi-calendar-plus me-1"></i> Reservar Espaço</a>
-        <button class="btn btn-primary btn-sm" onclick="abrirModalPreAutorizacao()"><i class="bi bi-qr-code me-1"></i> Liberar Convidado</button>
+        <a href="reservas.html" class="btn btn-outline-primary btn-sm me-2 d-none d-md-inline-flex"><i class="bi bi-calendar-plus me-1"></i> Reservar Espaço</a>
+        <button class="btn btn-primary btn-sm d-md-inline-flex" onclick="abrirModalPreAutorizacao()"><i class="bi bi-qr-code me-1"></i> Liberar Convidado</button>
       </div>
     </header>
 
@@ -450,18 +444,6 @@
     if (!grp) return;
     grp.classList.toggle('open');
   }
-
-  // Mobile sidebar
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  document.getElementById('burger')?.addEventListener('click', () => {
-    sidebar.classList.toggle('show');
-    overlay?.classList.toggle('show');
-  });
-  overlay?.addEventListener('click', () => {
-    sidebar.classList.remove('show');
-    overlay?.classList.remove('show');
-  });
 
   let moradorAtualId = 1; // Padrão Carlos Lima
   let dadosPortal = null;

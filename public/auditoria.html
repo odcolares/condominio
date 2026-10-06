@@ -152,13 +152,6 @@
   .print-header {
     display: none;
   }
-
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.show{transform:translateX(0)}
-    .main{margin-left:0}
-    .overlay.show{display:block}
-  }
 </style>
 </head>
 <body>
@@ -487,18 +480,6 @@
     if (!grp) return;
     grp.classList.toggle('open');
   }
-
-  // Mobile sidebar
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  document.getElementById('burger')?.addEventListener('click', () => {
-    sidebar.classList.toggle('show');
-    overlay?.classList.toggle('show');
-  });
-  overlay?.addEventListener('click', () => {
-    sidebar.classList.remove('show');
-    overlay?.classList.remove('show');
-  });
 
   let acessosLista = [];
 
