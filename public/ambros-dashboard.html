@@ -199,16 +199,6 @@
   .sidebar.collapsed .user-card{justify-content:center;padding:6px}
   .sidebar.collapsed .sidebar-user-container{padding:12px 8px}
   .main.collapsed{margin-left:72px}
-
-  @media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr)}.panels{grid-template-columns:1fr}}
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.show{transform:translateX(0)}
-    .main{margin-left:0}
-    .cards-grid{grid-template-columns:1fr}
-    .overlay.show{display:block}
-    .footer{flex-direction:column;gap:6px}
-  }
 </style>
 </head>
 <body>
@@ -494,22 +484,26 @@
       <div class="panels">
         <div class="panel">
           <div class="ph"><h6>Últimos Acessos</h6></div>
-          <table>
-            <thead><tr><th>Nome</th><th>Tipo</th><th>Placa</th><th>Hora</th><th>Sentido</th></tr></thead>
-            <tbody id="tabUltimosAcessos">
-              <tr><td colspan="5" class="text-center py-3 text-muted">Carregando dados...</td></tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Nome</th><th>Tipo</th><th>Placa</th><th>Hora</th><th>Sentido</th></tr></thead>
+              <tbody id="tabUltimosAcessos">
+                <tr><td colspan="5" class="text-center py-3 text-muted">Carregando dados...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="panel" id="tabVisitantes">
           <div class="ph"><h6>Visitantes no Condomínio</h6></div>
-          <table>
-            <thead><tr><th>Nome</th><th>Documento</th><th>Bloco/Apt</th><th>Entrada</th><th>Veículo</th><th>Ações</th></tr></thead>
-            <tbody id="tabVisitantesCondominio">
-              <tr><td colspan="6" class="text-center py-3 text-muted">Carregando visitantes...</td></tr>
-            </tbody>
-          </table>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Nome</th><th>Documento</th><th>Bloco/Apt</th><th>Entrada</th><th>Veículo</th><th>Ações</th></tr></thead>
+              <tbody id="tabVisitantesCondominio">
+                <tr><td colspan="6" class="text-center py-3 text-muted">Carregando visitantes...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
@@ -584,15 +578,6 @@
     if (!grp) return;
     grp.classList.toggle('open');
   }
-
-  // Mobile sidebar
-  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
-  document.getElementById('burger')?.addEventListener('click',function(){
-    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
-  });
-  overlay?.addEventListener('click',function(){
-    sidebar.classList.remove('show'); overlay.classList.remove('show');
-  });
 
   let movChartInstance = null;
   let visChartInstance = null;

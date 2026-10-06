@@ -475,7 +475,7 @@ html.ambros-pre-collapsed .nav-group-btn {
 }
 
 /* ==========================================================================
-   Clean Header / Topbar - 100% Minimalist (No burger, no user, no bell)
+   Clean Header / Topbar
    ========================================================================== */
 .topbar {
   background: #fff !important;
@@ -494,14 +494,49 @@ html.ambros-pre-collapsed .nav-group-btn {
   color: #3b4453 !important;
   font-weight: 700 !important;
   margin: 0 !important;
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Hide all old clutter from the topbar */
-.topbar .burger,
-.topbar .right,
+/* Hide legacy clutter from the topbar (topuser/bell no longer used; the
+   ChatGPT-style user card lives at the bottom of the sidebar). */
 .topbar .topuser,
 .topbar .bell {
   display: none !important;
+}
+
+/* Mobile burger button: hidden on desktop (>=769px), shown on mobile (<=768px).
+   Injected dynamically by ambros-layout.js so all pages have a consistent
+   slide-in sidebar trigger. */
+.topbar .burger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #555;
+  cursor: pointer;
+  margin-right: 16px;
+  padding: 6px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 768px) {
+  .topbar .burger {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* Keep the primary topbar action button comfortably tappable on mobile */
+  .topbar .right > .btn,
+  .topbar .right > .btn-sm {
+    min-height: 40px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
 }
 
 /* Clean content area */
@@ -516,4 +551,52 @@ html.ambros-pre-collapsed .nav-group-btn {
   inset: 0;
   background: rgba(0,0,0,.4);
   z-index: 1035;
+}
+
+/* ==========================================================================
+   Shared Responsive Breakpoints (Mobile Tablet PC)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Mobile: sidebar becomes off-canvas slide-in (burger opens it).
+     Force full width even if a desktop "collapsed" state was persisted. */
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-w) !important;
+  }
+  .sidebar.collapsed {
+    width: var(--sidebar-w) !important;
+  }
+  .sidebar.show,
+  .sidebar.show.collapsed {
+    transform: translateX(0);
+    width: var(--sidebar-w) !important;
+  }
+  .main {
+    margin-left: 0 !important;
+  }
+  .content {
+    padding: 20px 16px !important;
+  }
+  .overlay.show {
+    display: block;
+  }
+  /* Dashboard cards / panels stack to single column */
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .panels {
+    grid-template-columns: 1fr;
+  }
+  /* Footer stacks vertically */
+  .footer {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 1200px) {
+  /* Dashboard: 4 cards -> 2 cards */
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

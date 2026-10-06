@@ -150,14 +150,6 @@
 
   .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
-
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.show{transform:translateX(0)}
-    .main{margin-left:0}
-    .overlay.show{display:block}
-    .topuser .tn,.topuser .th{display:none}
-  }
 </style>
 </head>
 <body>
@@ -789,15 +781,6 @@
     if (!grp) return;
     grp.classList.toggle('open');
   }
-
-  // Mobile sidebar
-  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
-  document.getElementById('burger')?.addEventListener('click',function(){
-    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
-  });
-  overlay?.addEventListener('click',function(){
-    sidebar.classList.remove('show'); overlay.classList.remove('show');
-  });
 
   // Estado global
   let listaEncomendas = [];

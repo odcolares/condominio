@@ -136,13 +136,6 @@
   .sidebar.collapsed .user-card{justify-content:center;padding:6px}
   .sidebar.collapsed .sidebar-user-container{padding:12px 8px}
   .main.collapsed{margin-left:72px}
-
-  @media(max-width:768px){
-    .sidebar{transform:translateX(-100%)}
-    .sidebar.show{transform:translateX(0)}
-    .main{margin-left:0}
-    .overlay.show{display:block}
-  }
 </style>
 </head>
 <body>
@@ -502,15 +495,6 @@
     if (!grp) return;
     grp.classList.toggle('open');
   }
-
-  // Mobile sidebar
-  var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
-  document.getElementById('burger')?.addEventListener('click',function(){
-    sidebar.classList.toggle('show'); overlay.classList.toggle('show');
-  });
-  overlay?.addEventListener('click',function(){
-    sidebar.classList.remove('show'); overlay.classList.remove('show');
-  });
 
   let usuariosCache = [];
 

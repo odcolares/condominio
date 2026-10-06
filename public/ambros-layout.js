@@ -73,7 +73,7 @@
     window.location.href = "login.html";
   };
 
-  // Toggle Sidebar Collapse
+  // Toggle Sidebar Collapse (desktop icon-only collapse)
   window.toggleSidebarCollapse = function () {
     const sidebar = document.getElementById("sidebar");
     const main = document.querySelector(".main");
@@ -84,6 +84,14 @@
 
     const collapsedNow = sidebar.classList.contains("collapsed");
     localStorage.setItem("ambros_sidebar_collapsed", collapsedNow ? "true" : "false");
+  };
+
+  // Toggle Mobile Sidebar (off-canvas slide-in + overlay)
+  window.toggleMobileSidebar = function () {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (sidebar) sidebar.classList.toggle("show");
+    if (overlay) overlay.classList.toggle("show");
   };
 
   // Toggle User Popover
@@ -577,21 +585,43 @@
       </div>
     `;
 
-    // 7. Clean topbar / header completely (100% minimalist, no burger, no topuser, no bell)
+    // 7. Ensure a mobile burger button exists in the topbar (hidden on desktop via CSS,
+    //    visible on mobile). Replaces any legacy burger so there is exactly one handler.
     const topbars = document.querySelectorAll(".topbar");
     topbars.forEach((tb) => {
-      tb.querySelectorAll(".burger").forEach((b) => b.remove());
       tb.querySelectorAll(".topuser").forEach((u) => u.remove());
       tb.querySelectorAll(".bell").forEach((b) => b.remove());
+
+      if (!tb.querySelector(".burger")) {
+        const burger = document.createElement("button");
+        burger.type = "button";
+        burger.id = "burger";
+        burger.className = "burger";
+        burger.setAttribute("aria-label", "Abrir menu de navegação");
+        burger.innerHTML = '<i class="bi bi-list"></i>';
+        burger.addEventListener("click", window.toggleMobileSidebar);
+        tb.insertBefore(burger, tb.firstChild);
+      }
     });
 
-    // 8. Admin role check for menu items
+    // 8. Global overlay click-to-close for the mobile sidebar
+    const overlayEl = document.getElementById("overlay");
+    if (overlayEl && !overlayEl.dataset.bound) {
+      overlayEl.dataset.bound = "true";
+      overlayEl.addEventListener("click", function () {
+        const sidebar = document.getElementById("sidebar");
+        if (sidebar) sidebar.classList.remove("show");
+        overlayEl.classList.remove("show");
+      });
+    }
+
+    // 9. Admin role check for menu items
     const isAdmin = authUser.perfil === "administrador" || authUser.perfil === "admin" || authUser.email === "adm@adm.com";
     document.querySelectorAll(".admin-only").forEach((el) => {
       el.style.display = isAdmin ? "flex" : "none";
     });
 
-    // 9. Click-away to close popover
+    // 10. Click-away to close popover
     document.addEventListener("click", function (e) {
       const pop = document.getElementById("userPopover");
       const container = document.querySelector(".sidebar-user-container");
@@ -600,7 +630,7 @@
       }
     });
 
-    // 10. Inject modals into body and check notification alerts
+    // 11. Inject modals into body and check notification alerts
     injectModals();
     checarNotificacoesPendentes();
   }
