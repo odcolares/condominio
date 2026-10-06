@@ -7,7 +7,7 @@
       "senha_hash": "123",
       "perfil": "administrador",
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 2,
@@ -16,37 +16,24 @@
       "senha_hash": "123",
       "perfil": "morador",
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "moradores": [
-    {
-      "id": 1,
-      "nome_completo": "Carlos Lima",
-      "cpf": "123.456.789-00",
-      "telefone": "(11) 98765-4321",
-      "whatsapp": "(11) 98765-4321",
-      "bloco": "05",
-      "apartamento": "502",
-      "vinculo": "proprietario",
-      "foto_url": null,
-      "numero_vaga": "V-045",
-      "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
-    },
     {
       "id": 2,
       "nome_completo": "Maria Oliveira",
       "cpf": "987.654.321-00",
       "telefone": "(11) 91234-5678",
       "whatsapp": "(11) 91234-5678",
+      "telegram": null,
       "bloco": "08",
       "apartamento": "103",
       "vinculo": "inquilino",
       "foto_url": null,
       "numero_vaga": "V-112",
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 3,
@@ -54,25 +41,17 @@
       "cpf": "456.789.123-00",
       "telefone": "(11) 99887-7665",
       "whatsapp": "(11) 99887-7665",
+      "telegram": "@joaosilva201",
       "bloco": "10",
       "apartamento": "201",
       "vinculo": "proprietario",
       "foto_url": null,
       "numero_vaga": "V-078",
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "veiculos": [
-    {
-      "id": 1,
-      "placa": "ABC1D23",
-      "modelo": "Onix",
-      "cor": "Prata",
-      "vaga": "V-045",
-      "morador_id": 1,
-      "criado_em": "2026-10-05T19:31:25.164Z"
-    },
     {
       "id": 2,
       "placa": "XYZ9F87",
@@ -80,16 +59,7 @@
       "cor": "Preto",
       "vaga": "V-078",
       "morador_id": 3,
-      "criado_em": "2026-10-05T19:31:25.164Z"
-    },
-    {
-      "id": 3,
-      "placa": "BRA2E19",
-      "modelo": "Jeep Compass",
-      "cor": "Preto",
-      "vaga": "V-099",
-      "morador_id": 1,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "visitantes": [
@@ -107,7 +77,7 @@
       "morador_visitado_id": 3,
       "agendado_para": null,
       "presente": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 2,
@@ -123,7 +93,7 @@
       "morador_visitado_id": 2,
       "agendado_para": null,
       "presente": true,
-      "criado_em": "2026-10-05T19:31:25.164Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "acessos": [
@@ -136,7 +106,7 @@
       "placa_veiculo": "ABC1D23",
       "vaga": "V-045",
       "observacao": null,
-      "registrado_em": "2026-10-05T17:31:25.164Z"
+      "registrado_em": "2026-10-06T12:27:45.892Z"
     },
     {
       "id": 2,
@@ -147,7 +117,7 @@
       "placa_veiculo": "ABC1D23",
       "vaga": null,
       "observacao": null,
-      "registrado_em": "2026-10-05T18:31:25.164Z"
+      "registrado_em": "2026-10-06T13:27:45.892Z"
     }
   ],
   "encomendas": [
@@ -166,7 +136,7 @@
       "observacoes": "Contém item frágil",
       "codigo_retirada": "RET-8421",
       "status": "pendente",
-      "recebido_em": "2026-10-05T16:31:25.164Z",
+      "recebido_em": "2026-10-06T11:27:45.892Z",
       "recebido_por": "Portaria Central",
       "retirado_em": null,
       "retirado_por": null,
@@ -189,9 +159,9 @@
       "observacoes": null,
       "codigo_retirada": "RET-1934",
       "status": "entregue",
-      "recebido_em": "2026-10-05T14:31:25.164Z",
+      "recebido_em": "2026-10-06T09:27:45.892Z",
       "recebido_por": "Portaria Central",
-      "retirado_em": "2026-10-05T18:31:25.164Z",
+      "retirado_em": "2026-10-06T13:27:45.892Z",
       "retirado_por": "Maria Oliveira (Própria)",
       "notificacao_enviada_whatsapp": true,
       "notificacao_enviada_telegram": false,
@@ -212,7 +182,7 @@
       "observacoes": "Entrega expressa Shopee Xpress",
       "codigo_retirada": "RET-5521",
       "status": "pendente",
-      "recebido_em": "2026-10-05T18:19:25.164Z",
+      "recebido_em": "2026-10-06T13:15:45.892Z",
       "recebido_por": "Portaria Central",
       "retirado_em": null,
       "retirado_por": null,
@@ -238,13 +208,13 @@
       "apartamento": "502",
       "morador_autorizador_id": 1,
       "morador_autorizador_nome": "Carlos Lima",
-      "data_inicio": "2026-10-05",
-      "data_fim": "2026-10-12",
+      "data_inicio": "2026-10-06",
+      "data_fim": "2026-10-13",
       "horario_permitido": "08:00 às 17:00 (Seg a Sex)",
       "observacao": "Reforma da cozinha autorizada pelo síndico",
       "presente": true,
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 2,
@@ -262,13 +232,13 @@
       "apartamento": "103",
       "morador_autorizador_id": 2,
       "morador_autorizador_nome": "Maria Oliveira",
-      "data_inicio": "2026-10-05",
-      "data_fim": "2026-10-05",
+      "data_inicio": "2026-10-06",
+      "data_fim": "2026-10-06",
       "horario_permitido": "09:00 às 13:00",
       "observacao": "Passagem de cabo óptico pelo duto central",
       "presente": false,
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 3,
@@ -286,13 +256,13 @@
       "apartamento": null,
       "morador_autorizador_id": null,
       "morador_autorizador_nome": "Administração Condominial",
-      "data_inicio": "2026-10-02",
-      "data_fim": "2026-10-12",
+      "data_inicio": "2026-10-03",
+      "data_fim": "2026-10-13",
       "horario_permitido": "Comercial livre",
       "observacao": "Chamado técnico preventivo mensal",
       "presente": false,
       "ativo": true,
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "ocorrencias": [
@@ -308,7 +278,7 @@
       "descricao": "Vizinho do 402 relatou som alto e arrasto de móveis às 23:45. Porteiro interfonou e o morador reduziu o volume.",
       "acao_tomada": "Primeira advertência verbal realizada pelo interfone da portaria.",
       "registrado_por": "Porteiro Silva",
-      "data_hora": "2026-10-04T19:31:25.165Z",
+      "data_hora": "2026-10-05T14:27:45.892Z",
       "resolvido_em": null
     },
     {
@@ -323,8 +293,8 @@
       "descricao": "Veículo HB20 (XYZ9F87) estacionado fora do alinhamento da vaga V-078 dificultando a saída da vaga vizinha.",
       "acao_tomada": "Morador contatado e reposicionou o automóvel de forma correta.",
       "registrado_por": "Porteiro Santos",
-      "data_hora": "2026-10-05T14:31:25.165Z",
-      "resolvido_em": "2026-10-05T15:31:25.165Z"
+      "data_hora": "2026-10-06T09:27:45.892Z",
+      "resolvido_em": "2026-10-06T10:27:45.892Z"
     }
   ],
   "restricoes": [
@@ -338,7 +308,7 @@
       "bloqueio_total": true,
       "ativo": true,
       "criado_por": "Síndico Geral",
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 2,
@@ -350,7 +320,7 @@
       "bloqueio_total": false,
       "ativo": true,
       "criado_por": "Administração",
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "reservas": [
@@ -358,7 +328,7 @@
       "id": 1,
       "espaco": "salao_festas",
       "espaco_nome": "Salão de Festas Principal",
-      "data_reserva": "2026-10-09",
+      "data_reserva": "2026-10-10",
       "periodo": "noite",
       "morador_id": 1,
       "morador_nome": "Carlos Lima",
@@ -367,15 +337,15 @@
       "status": "confirmada",
       "convidados_estimados": 35,
       "observacoes": "Aniversário familiar",
-      "solicitado_em": "2026-10-03T19:31:25.165Z",
-      "aprovado_em": "2026-10-04T19:31:25.165Z",
+      "solicitado_em": "2026-10-04T14:27:45.892Z",
+      "aprovado_em": "2026-10-05T14:27:45.892Z",
       "aprovado_por": "Administração"
     },
     {
       "id": 2,
       "espaco": "churrasqueira_1",
       "espaco_nome": "Espaço Gourmet & Churrasqueira 1",
-      "data_reserva": "2026-10-10",
+      "data_reserva": "2026-10-11",
       "periodo": "tarde",
       "morador_id": 2,
       "morador_nome": "Maria Oliveira",
@@ -384,8 +354,8 @@
       "status": "confirmada",
       "convidados_estimados": 15,
       "observacoes": "Almoço de domingo com amigos",
-      "solicitado_em": "2026-10-04T19:31:25.165Z",
-      "aprovado_em": "2026-10-05T15:31:25.165Z",
+      "solicitado_em": "2026-10-05T14:27:45.892Z",
+      "aprovado_em": "2026-10-06T10:27:45.892Z",
       "aprovado_por": "Administração"
     }
   ],
@@ -397,7 +367,7 @@
       "conteudo": "Informamos que na próxima terça-feira, das 08h às 14h, será realizada a limpeza semestral dos reservatórios. Pedimos moderação no uso de água.",
       "importante": true,
       "publicado_por": "Síndico Geral",
-      "data_publicacao": "2026-10-03T19:31:25.165Z",
+      "data_publicacao": "2026-10-04T14:27:45.892Z",
       "ativo": true
     },
     {
@@ -407,7 +377,7 @@
       "conteudo": "Ficam convocados todos os senhores condôminos para a AGO no dia 20 deste mês, no Salão de Festas, com pauta sobre prestação de contas e eleição de síndico.",
       "importante": true,
       "publicado_por": "Conselho Consultivo",
-      "data_publicacao": "2026-10-01T19:31:25.165Z",
+      "data_publicacao": "2026-10-02T14:27:45.892Z",
       "ativo": true
     },
     {
@@ -417,7 +387,7 @@
       "conteudo": "Lembramos que o uso de caixas de som nas áreas da piscina é restrito a volume ambiente. O horário de término das churrasqueiras aos finais de semana é às 22h.",
       "importante": false,
       "publicado_por": "Administração",
-      "data_publicacao": "2026-09-29T19:31:25.165Z",
+      "data_publicacao": "2026-09-30T14:27:45.892Z",
       "ativo": true
     }
   ],
@@ -429,8 +399,8 @@
       "titulo": "Nova Encomenda na Portaria",
       "mensagem": "Seu pacote do Mercado Livre (BR98765432101) está disponível. Use o código RET-8421 para retirada.",
       "canal": "whatsapp",
-      "enviado_em": "2026-10-05T16:31:25.165Z",
-      "lida": true,
+      "enviado_em": "2026-10-06T11:27:45.892Z",
+      "lida": false,
       "dados_adicionais": {
         "codigo_retirada": "RET-8421",
         "encomenda_id": 1
@@ -443,7 +413,7 @@
       "titulo": "Reserva de Salão Confirmada!",
       "mensagem": "Sua solicitação para o Salão de Festas no dia 06/10 foi aprovada pela administração.",
       "canal": "app",
-      "enviado_em": "2026-10-04T19:31:25.165Z",
+      "enviado_em": "2026-10-05T14:27:45.892Z",
       "lida": true,
       "dados_adicionais": {
         "reserva_id": 1
@@ -460,11 +430,11 @@
       "nome_visitante": "Mariana Alencar",
       "documento_visitante": "444.333.222-11",
       "placa_veiculo": "MAR2A26",
-      "data_prevista": "2026-10-08",
+      "data_prevista": "2026-10-09",
       "observacao": "Convidada para churrasco",
       "codigo_acesso_qr": "QR-7104",
       "status": "aguardando",
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     },
     {
       "id": 2,
@@ -475,11 +445,11 @@
       "nome_visitante": "Eduardo Fonseca",
       "documento_visitante": null,
       "placa_veiculo": null,
-      "data_prevista": "2026-10-08",
+      "data_prevista": "2026-10-09",
       "observacao": "Familiar visitante",
       "codigo_acesso_qr": "QR-3891",
       "status": "aguardando",
-      "criado_em": "2026-10-05T19:31:25.165Z"
+      "criado_em": "2026-10-06T14:27:45.892Z"
     }
   ],
   "nextUserId": 3,
