@@ -62,111 +62,123 @@ O servidor fica em `http://0.0.0.0:3000`.
 Todas as rotas estão montadas sob `/` e `/api` (ex: `/auth/login` e `/api/auth/login`).
 
 ### Auth
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/auth/login` | Autenticação por email/senha, retorna JWT |
-| GET | `/auth/me` | Dados do usuário autenticado |
+
+| Método | Endpoint        | Descrição                                 |
+| ------- | --------------- | ------------------------------------------- |
+| POST    | `/auth/login` | Autenticação por email/senha, retorna JWT |
+| GET     | `/auth/me`    | Dados do usuário autenticado               |
 
 ### Dashboard
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/dashboard` | Cards, movimentação por faixas de 3h, últimos acessos, visitantes 7d |
+
+| Método | Endpoint       | Descrição                                                             |
+| ------- | -------------- | ----------------------------------------------------------------------- |
+| GET     | `/dashboard` | Cards, movimentação por faixas de 3h, últimos acessos, visitantes 7d |
 
 ### Moradores
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/moradores` | Lista com busca (nome/CPF/bloco), filtros, skip/limit |
-| GET | `/moradores/:id` | Busca por ID |
-| POST | `/moradores` | Cadastro (aceita `placa_veiculo` para cadastro simultâneo) |
-| PUT | `/moradores/:id` | Atualização parcial |
-| DELETE | `/moradores/:id` | Exclusão (remove veículos vinculados) |
+
+| Método | Endpoint           | Descrição                                                  |
+| ------- | ------------------ | ------------------------------------------------------------ |
+| GET     | `/moradores`     | Lista com busca (nome/CPF/bloco), filtros, skip/limit        |
+| GET     | `/moradores/:id` | Busca por ID                                                 |
+| POST    | `/moradores`     | Cadastro (aceita`placa_veiculo` para cadastro simultâneo) |
+| PUT     | `/moradores/:id` | Atualização parcial                                        |
+| DELETE  | `/moradores/:id` | Exclusão (remove veículos vinculados)                      |
 
 ### Veículos
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/veiculos/stats` | Estatísticas: `total`, `com_morador`, `vagas_ocupadas`, `visitantes_com_carro` |
-| GET | `/veiculos` | Lista com busca por placa/modelo/morador |
-| GET | `/veiculos/:id` | Busca por ID |
-| POST | `/veiculos` | Cadastro (valida placa duplicada) |
-| PUT | `/veiculos/:id` | Atualização |
-| DELETE | `/veiculos/:id` | Exclusão |
+
+| Método | Endpoint            | Descrição                                                                            |
+| ------- | ------------------- | -------------------------------------------------------------------------------------- |
+| GET     | `/veiculos/stats` | Estatísticas:`total`, `com_morador`, `vagas_ocupadas`, `visitantes_com_carro` |
+| GET     | `/veiculos`       | Lista com busca por placa/modelo/morador                                               |
+| GET     | `/veiculos/:id`   | Busca por ID                                                                           |
+| POST    | `/veiculos`       | Cadastro (valida placa duplicada)                                                      |
+| PUT     | `/veiculos/:id`   | Atualização                                                                          |
+| DELETE  | `/veiculos/:id`   | Exclusão                                                                              |
 
 ### Visitantes
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/visitantes/stats` | Estatísticas: total, presentes, agendados hoje |
-| GET | `/visitantes` | Lista com filtros `busca`, `presentes`, `skip`, `limit` (inclui flag `expirado`) |
-| GET | `/visitantes/:id` | Busca por ID (inclui dados do morador visitado e `expirado`) |
-| POST | `/visitantes` | Cadastro (`entrada_imediata` já gera o acesso de entrada) |
-| PUT | `/visitantes/:id` | Atualização |
-| POST | `/visitantes/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
-| POST | `/visitantes/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` (visitantes possuem auto-saída em 24h) |
-| DELETE | `/visitantes/:id` | Exclusão |
+
+| Método | Endpoint                    | Descrição                                                                                           |
+| ------- | --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| GET     | `/visitantes/stats`       | Estatísticas: total, presentes, agendados hoje                                                       |
+| GET     | `/visitantes`             | Lista com filtros`busca`, `presentes`, `skip`, `limit` (inclui flag `expirado`)             |
+| GET     | `/visitantes/:id`         | Busca por ID (inclui dados do morador visitado e`expirado`)                                         |
+| POST    | `/visitantes`             | Cadastro (`entrada_imediata` já gera o acesso de entrada)                                          |
+| PUT     | `/visitantes/:id`         | Atualização                                                                                         |
+| POST    | `/visitantes/:id/entrada` | Registra entrada: cria`Acesso` e define `presente = true`                                         |
+| POST    | `/visitantes/:id/saida`   | Registra saída: cria`Acesso` e define `presente = false` (visitantes possuem auto-saída em 24h) |
+| DELETE  | `/visitantes/:id`         | Exclusão                                                                                             |
 
 ### Acessos
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/acessos` | Lista com filtros `tipo_pessoa`, `sentido`, `inicio`, `fim`, `busca`, `skip`, `limit` (inclui `duracao_minutos` e `em_aberto` derivados) |
-| POST | `/acessos` | Registro manual de entrada/saída (atualiza `presente` de visitante/prestador) |
+
+| Método | Endpoint     | Descrição                                                                                                                                               |
+| ------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/acessos` | Lista com filtros`tipo_pessoa`, `sentido`, `inicio`, `fim`, `busca`, `skip`, `limit` (inclui `duracao_minutos` e `em_aberto` derivados) |
+| POST    | `/acessos` | Registro manual de entrada/saída (atualiza`presente` de visitante/prestador)                                                                           |
 
 ### Encomendas
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/encomendas` | Lista com filtros por status/busca |
-| GET | `/encomendas/stats` | Total, pendentes, retiradas hoje |
-| GET | `/encomendas/:id` | Busca por ID |
-| POST | `/encomendas` | Cadastro (gera código RET-XXXX e links de notificação) |
-| POST | `/encomendas/:id/retirar` | Retirada (valida código de retirada) |
-| POST | `/encomendas/:id/notificar` | Marca notificação enviada (whatsapp/telegram) |
-| DELETE | `/encomendas/:id` | Exclusão |
+
+| Método | Endpoint                      | Descrição                                               |
+| ------- | ----------------------------- | --------------------------------------------------------- |
+| GET     | `/encomendas`               | Lista com filtros por status/busca                        |
+| GET     | `/encomendas/stats`         | Total, pendentes, retiradas hoje                          |
+| GET     | `/encomendas/:id`           | Busca por ID                                              |
+| POST    | `/encomendas`               | Cadastro (gera código RET-XXXX e links de notificação) |
+| POST    | `/encomendas/:id/retirar`   | Retirada (valida código de retirada)                     |
+| POST    | `/encomendas/:id/notificar` | Marca notificação enviada (whatsapp/telegram)           |
+| DELETE  | `/encomendas/:id`           | Exclusão                                                 |
 
 ### Prestadores
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/prestadores` | Lista com filtros `presentes`, `busca`, `bloco`, `apartamento` (inclui `expirado`) |
-| GET | `/prestadores/:id` | Busca por ID (inclui `expirado`) |
-| POST | `/prestadores` | Cadastro (exige `nome`, `documento`, `funcao`, `data_inicio`, e `data_fim` ou `prazo_dias`) |
-| PUT | `/prestadores/:id` | Atualização (aceita `prazo_dias` para recalcular `data_fim`) |
-| POST | `/prestadores/:id/entrada` | Registra entrada: cria `Acesso` e define `presente = true` |
-| POST | `/prestadores/:id/saida` | Registra saída: cria `Acesso` e define `presente = false` |
-| DELETE | `/prestadores/:id` | Exclusão |
+
+| Método | Endpoint                     | Descrição                                                                                            |
+| ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| GET     | `/prestadores`             | Lista com filtros`presentes`, `busca`, `bloco`, `apartamento` (inclui `expirado`)            |
+| GET     | `/prestadores/:id`         | Busca por ID (inclui`expirado`)                                                                      |
+| POST    | `/prestadores`             | Cadastro (exige`nome`, `documento`, `funcao`, `data_inicio`, e `data_fim` ou `prazo_dias`) |
+| PUT     | `/prestadores/:id`         | Atualização (aceita`prazo_dias` para recalcular `data_fim`)                                      |
+| POST    | `/prestadores/:id/entrada` | Registra entrada: cria`Acesso` e define `presente = true`                                          |
+| POST    | `/prestadores/:id/saida`   | Registra saída: cria`Acesso` e define `presente = false`                                          |
+| DELETE  | `/prestadores/:id`         | Exclusão                                                                                              |
 
 ### Ocorrências
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/ocorrencias` | Lista com filtros `status`, `categoria`, `gravidade`, `busca` (mais recentes primeiro) |
-| GET | `/ocorrencias/:id` | Busca por ID |
-| POST | `/ocorrencias` | Cadastro (exige `titulo`, `categoria`, `gravidade`, `descricao`; status inicia como `aberta`) |
-| PUT | `/ocorrencias/:id` | Atualização; ao mudar para `resolvida` preenche `resolvido_em` |
-| DELETE | `/ocorrencias/:id` | Exclusão |
+
+| Método | Endpoint             | Descrição                                                                                            |
+| ------- | -------------------- | ------------------------------------------------------------------------------------------------------ |
+| GET     | `/ocorrencias`     | Lista com filtros`status`, `categoria`, `gravidade`, `busca` (mais recentes primeiro)          |
+| GET     | `/ocorrencias/:id` | Busca por ID                                                                                           |
+| POST    | `/ocorrencias`     | Cadastro (exige`titulo`, `categoria`, `gravidade`, `descricao`; status inicia como `aberta`) |
+| PUT     | `/ocorrencias/:id` | Atualização; ao mudar para`resolvida` preenche `resolvido_em`                                    |
+| DELETE  | `/ocorrencias/:id` | Exclusão                                                                                              |
 
 ### Restrições de acesso
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/restricoes` | Lista apenas as restrições ativas |
-| POST | `/restricoes` | Cadastro (exige `tipo_identificador`, `valor_identificador`, `motivo`, `instrucao_portaria`) |
-| GET | `/restricoes/verificar` | Checagem rápida por `termo`/`documento`/`placa`; normaliza pontuação e retorna `{ alerta, bloqueio_total, restricoes }` |
-| DELETE | `/restricoes/:id` | Soft delete — define `ativo = false` |
+
+| Método | Endpoint                  | Descrição                                                                                                                       |
+| ------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/restricoes`           | Lista apenas as restrições ativas                                                                                               |
+| POST    | `/restricoes`           | Cadastro (exige`tipo_identificador`, `valor_identificador`, `motivo`, `instrucao_portaria`)                               |
+| GET     | `/restricoes/verificar` | Checagem rápida por`termo`/`documento`/`placa`; normaliza pontuação e retorna `{ alerta, bloqueio_total, restricoes }` |
+| DELETE  | `/restricoes/:id`       | Soft delete — define`ativo = false`                                                                                            |
 
 ### Reservas
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/reservas/espacos` | Catálogo de áreas comuns (capacidade, regras, taxa) |
-| GET | `/reservas` | Lista com filtros `espaco`, `status`, `morador_id`, `data` |
-| POST | `/reservas` | Cadastro; retorna `409` em conflito de período e notifica o morador |
-| PUT | `/reservas/:id` | Atualização de `status` e `observacoes` |
-| DELETE | `/reservas/:id` | Exclusão |
+
+| Método | Endpoint              | Descrição                                                           |
+| ------- | --------------------- | --------------------------------------------------------------------- |
+| GET     | `/reservas/espacos` | Catálogo de áreas comuns (capacidade, regras, taxa)                 |
+| GET     | `/reservas`         | Lista com filtros`espaco`, `status`, `morador_id`, `data`     |
+| POST    | `/reservas`         | Cadastro; retorna`409` em conflito de período e notifica o morador |
+| PUT     | `/reservas/:id`     | Atualização de`status` e `observacoes`                          |
+| DELETE  | `/reservas/:id`     | Exclusão                                                             |
 
 ### Portal do morador
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/portal/morador` | Visão consolidada (morador, veículos, encomendas, pré-autorizações, reservas, prestadores, comunicados, notificações) |
-| POST | `/portal/preautorizacao` | Pré-autoriza visitante: gera `codigo_acesso_qr` (`QR-XXXX`), registra o visitante na portaria e notifica o morador |
-| DELETE | `/portal/preautorizacao/:id` | Exclusão |
-| GET | `/portal/comunicados` | Mural: comunicados ativos (mais recentes primeiro) |
-| POST | `/portal/comunicados` | Publica comunicado e notifica todos os moradores |
-| DELETE | `/portal/comunicados/:id` | Soft delete — define `ativo = false` |
-| POST | `/portal/notificacoes/disparar` | Simula o envio de uma notificação a um morador |
+
+| Método | Endpoint                          | Descrição                                                                                                                  |
+| ------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/portal/morador`               | Visão consolidada (morador, veículos, encomendas, pré-autorizações, reservas, prestadores, comunicados, notificações) |
+| POST    | `/portal/preautorizacao`        | Pré-autoriza visitante: gera`codigo_acesso_qr` (`QR-XXXX`), registra o visitante na portaria e notifica o morador       |
+| DELETE  | `/portal/preautorizacao/:id`    | Exclusão                                                                                                                    |
+| GET     | `/portal/comunicados`           | Mural: comunicados ativos (mais recentes primeiro)                                                                           |
+| POST    | `/portal/comunicados`           | Publica comunicado e notifica todos os moradores                                                                             |
+| DELETE  | `/portal/comunicados/:id`       | Soft delete — define`ativo = false`                                                                                       |
+| POST    | `/portal/notificacoes/disparar` | Simula o envio de uma notificação a um morador                                                                             |
 
 ## 🔄 Fluxo de visitantes
 
