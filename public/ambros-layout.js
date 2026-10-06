@@ -592,26 +592,51 @@
       tb.querySelectorAll(".topuser").forEach((u) => u.remove());
       tb.querySelectorAll(".bell").forEach((b) => b.remove());
 
-      if (!tb.querySelector(".burger")) {
-        const burger = document.createElement("button");
+      let burger = tb.querySelector(".burger");
+      if (!burger) {
+        burger = document.createElement("button");
         burger.type = "button";
         burger.id = "burger";
         burger.className = "burger";
         burger.setAttribute("aria-label", "Abrir menu de navegação");
         burger.innerHTML = '<i class="bi bi-list"></i>';
-        burger.addEventListener("click", window.toggleMobileSidebar);
         tb.insertBefore(burger, tb.firstChild);
+      }
+      if (!burger.dataset.bound) {
+        burger.dataset.bound = "true";
+        burger.addEventListener("click", window.toggleMobileSidebar);
       }
     });
 
-    // 8. Global overlay click-to-close for the mobile sidebar
-    const overlayEl = document.getElementById("overlay");
+    // 8. Global overlay & ESC click-to-close for the mobile sidebar
+    let overlayEl = document.getElementById("overlay");
+    if (!overlayEl) {
+      overlayEl = document.createElement("div");
+      overlayEl.className = "overlay";
+      overlayEl.id = "overlay";
+      document.body.appendChild(overlayEl);
+    }
     if (overlayEl && !overlayEl.dataset.bound) {
       overlayEl.dataset.bound = "true";
       overlayEl.addEventListener("click", function () {
         const sidebar = document.getElementById("sidebar");
         if (sidebar) sidebar.classList.remove("show");
         overlayEl.classList.remove("show");
+      });
+    }
+
+    // Close mobile sidebar on Escape key
+    if (!document.body.dataset.escapeBound) {
+      document.body.dataset.escapeBound = "true";
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          const sidebar = document.getElementById("sidebar");
+          const overlay = document.getElementById("overlay");
+          if (sidebar && sidebar.classList.contains("show")) {
+            sidebar.classList.remove("show");
+            if (overlay) overlay.classList.remove("show");
+          }
+        }
       });
     }
 

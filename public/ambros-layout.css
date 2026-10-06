@@ -525,6 +525,12 @@ html.ambros-pre-collapsed .nav-group-btn {
   justify-content: center;
 }
 @media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px !important;
+  }
+  .topbar .title {
+    font-size: 16px !important;
+  }
   .topbar .burger {
     display: inline-flex;
     min-width: 44px;
@@ -536,6 +542,11 @@ html.ambros-pre-collapsed .nav-group-btn {
     min-height: 40px;
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+  }
+  /* Touch target polish for action buttons */
+  .btn-eye {
+    min-width: 38px;
+    min-height: 38px;
   }
 }
 
@@ -575,7 +586,7 @@ html.ambros-pre-collapsed .nav-group-btn {
     margin-left: 0 !important;
   }
   .content {
-    padding: 20px 16px !important;
+    padding: 16px !important;
   }
   .overlay.show {
     display: block;
