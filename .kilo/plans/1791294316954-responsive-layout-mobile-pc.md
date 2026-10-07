@@ -7,6 +7,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 **Páginas com layout de sidebar:** `ambros-dashboard.html` + 10 páginas de conteúdo (`encomendas`, `visitantes`, `prestadores`, `reservas`, `ocorrencias`, `moradores`, `veiculos`, `portal-morador`, `portaria-entrada`, `auditoria`, `usuarios`). `login.html` e `index.html` são páginas fixas responsivas (OK).
 
 ### Achados — responsividade atual
+
 1. **Quebra crítica (mobile):** não existe botão "burger" em nenhuma página.
    - `ambros-layout.css:500-505` tem `.topbar .burger { display:none !important }` — esconde qualquer burger.
    - `ambros-layout.js:581-586` (`initLayout`) remove elementos `.burger` do topbar.
@@ -21,6 +22,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 7. **Touch targets:** `btn-sm` (~30px) e `btn-eye` (30px) abaixo de 44px (WCAG) — polish, não crítico.
 
 ### Pontos positivos (manter)
+
 - `<meta viewport>` presente em todas as páginas.
 - `stats-grid` usa `repeat(auto-fit, minmax(220px,1fr))` (auto-ajusta).
 - Tabelas de conteúdo já embrulhadas em `.table-responsive` (exceto dashboard:497/507).
@@ -29,6 +31,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 - `login.html`/`index.html` responsivos.
 
 ### Validação existente (não frontend)
+
 - `package.json`: `npm run build` (`tsc`) e `npm test` (`vitest run`). Frontend é estático — não compilado. Mudanças em `public/` não afetam `tsc`/`vitest`; validar responsividade é manual (dev-tools device toggle).
 
 ---
@@ -49,6 +52,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 ## Tarefas (ordem)
 
 ### 1. `public/ambros-layout.js` — burger mobile + toggle (crítica)
+
 - Em `initLayout()`, após o passo "Clean topbar" (onde os `.burger` são removidos), **injetar** um burger em cada `.topbar` (se ausente):
   ```js
   const topbar = document.querySelector(".topbar");
@@ -72,6 +76,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 - Remover (ou marcar obsoletas) as listeners inline de 11 páginas (ver Tarefa 4) — com o burger injetado pelo shared JS, os listeners inline anexam a `null` (timing DOMContentLoaded) e são dead-code; remover evita risco de dupla-toggle.
 
 ### 2. `public/ambros-layout.css` — rules responsivas compartilhadas (crítica)
+
 - Substituir bloco `/* Hide all old clutter from the topbar */` (linhas 499-505):
   ```css
   /* Burger: escondido no desktop, visível no mobile */
@@ -91,6 +96,7 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
     .topbar .burger { display: inline-flex; align-items: center; justify-content: center; }
   }
   ```
+
   (Manter `.topbar .right`, `.topuser`, `.bell` escondidos apenas se inutilizados; o dashboard já tem `.right` hidden via markup.)
 - Acrescentar ao final do ficheiro o bloco mobile comum (consolidado):
   ```css
@@ -106,12 +112,15 @@ Frontend: HTML estático + CSS (Bootstrap 5.3) + JS, servido de `public/`. Layou
 - `min-width:0` já em `.main`/`.user-info` (evita overflow texto). Confirmar preservado.
 
 ### 3. `public/ambros-dashboard.html` — tabelas + mobile
+
 - [3a] Linha 497: envolver `<table>` em `<div class="table-responsive">...</div>`.
 - [3b] Linha 507: idem.
 - [3c] O burger do shared JS já cobre o mobile; remover `@media(max-width:768px){...}` duplicado das linhas 204-211 (mantém apenas `.footer` mobile se necessário) — **opcional** para evitar duplicidade. Recomendar: deixar página manter `.cards-grid`/`.footer` mobile e REMOVER apenas as 4 linhas duplicadas de sidebar/overlay/main (`205-207, 209`), confiando no shared CSS.
 
 ### 4. Páginas de conteúdo — dedup JS burger + `.right` mobile (11 arquivos)
+
 Para cada uma de: `encomendas, visitantes, prestadores, resem, ocorrencias, moradores, veiculos, portal-morador, portaria-entrada, auditoria, usuarios`:
+
 - Remover/bloco inline de burger listener:
   ```js
   var sidebar=document.getElementById('sidebar'), overlay=document.getElementById('overlay');
@@ -122,6 +131,7 @@ Para cada uma de: `encomendas, visitantes, prestadores, resem, ocorrencias, mora
     sidebar.classList.remove('show'); overlay.classList.remove('show');
   });
   ```
+
   (o overlay-click pode permanecer se não estiver no shared JS; mas como `overlay.show` ja tem `.overlay.show{display:block}`, manter um listener global seria mais DRY — ver nota). Na prática, remover blocos `sidebar`/`burger` inline; o shared JS trata o burger.
 - `.right` mobile: adicionar `d-none d-md-inline-flex` nos botões secundários de cada topbar `.right`, mantendo o primário (ex.: `+ Nova Encomenda`). Exceções páginas já responsivas (se houver 1 só botão, manter).
 - Remover bloco `@media(max-width:768px){ .sidebar{...}.overlay.show{...} }` duplicado (4-5 linhas) — confiar no shared CSS (Tarefa 2). Manter apenas overrides específicos (ex.: `.topuser` em encomendas/auditoria — irrelevante, pode remover; `.cards-grid`/`.footer` apenas no dashboard).
@@ -129,16 +139,19 @@ Para cada uma de: `encomendas, visitantes, prestadores, resem, ocorrencias, mora
 > **Nota (opcional DRY):** mover o `overlay` click-close para `ambros-layout.js` (listener global em `#overlay`) e remover o inline de todas as páginas. Incluir como tarefa 4b baixa prioridade.
 
 ### 5. Tabelas em mobile (tabelas >4 colunas)
+
 - Confirmar `table-responsive` em todas as páginas de conteúdo (já presente: encomendas, auditoria, moradores, ocorrencias, prestadores, reservas, usuarios, veiculos, visitantes). Apenas dashboard:497/507 (Tarefa 3).
 - Nenhuma outra tabela larga detectada.
 
 ### 6. Toques mobile (low priority / polish)
+
 - [6a] `btn-sm` primários em telas de formulário: garantir `min-height:44px` via utilitário shared ou trocar para `btn` padrão. Opcional.
 - [6b] `portaria-entrada`: confirmar inputs de placa/vaga/vaga — textarea `fObs` ocupa 100%, OK. `.grid` colapsa @992px ✓.
 
 ---
 
 ## Riscos / Limites
+
 - **Timing JS:** burger injetado no `DOMContentLoaded`; listeners inline de página anexam a `null` (no-op). Remover inline listeners (T4) elimina risco de dupla-execução e confusão.
 - **Dashboard minimal topbar:** `.right` hidden via markup `display:none` (não via classe) — não conflitará com burger.
 - **`!important` herdado:** shared CSS usa `!important` em várias rules; garantir burger não usar `!important` para deixar override per-page fácil — usar specificity normal.
@@ -146,11 +159,13 @@ Para cada uma de: `encomendas, visitantes, prestadores, resem, ocorrencias, mora
 - **Consistência visual:** páginas mantêm CSS inline duplicado — risco teor de drift. Mitigado centralizando mobile core; full-consolidation fora de escopo.
 
 ## Migração / Rollout
+
 - Mudanças apenas em `public/` (frontend estático). Sem migrations, sem API.
 - Ordem: shared JS/CSS (T1,T2) → dashboard tables (T3) → páginas conteúdo (T4) → polish (T6).
 - Deploy estático: recarregar navegador (cache bust recomendado se houver service worker — não detectado).
 
 ## Validação
+
 - Desktop ≥1024px: sidebar fixa 260px, collapse-btn funciona, topbar direto ao conteúdo, tabelas inline.
 - Tablet 768-1023px: sidebar fixa (desktop), `.right` botões visíveis, cards 1col (dashboard) / auto-fit (páginas).
 - Mobile ≤767px: **burger visível**, clique abre sidebar + overlay, clique overlay/esc/fechar → sidebar some; `.main` margem 0; `.right` secundário oculto (primário visível); tables `table-responsive` scroll horizontal; `content` padding 16px.
@@ -160,7 +175,26 @@ Para cada uma de: `encomendas, visitantes, prestadores, resem, ocorrencias, mora
 
 ---
 
+## 🔴 Achado pós-implementação (dashboard mobile ainda quebra) — RESOLVIDO
+
+**Correção aplicada em `public/ambros-dashboard.html`** (media queries inseridas no `<style>` inline, depois das regras base — cascade‑correct):
+```css
+@media(max-width:1200px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){
+  .cards-grid{grid-template-columns:1fr}
+  .panels{grid-template-columns:1fr}
+  .chart-wrap{height:200px}
+}
+```
+- Desktop: 4 cards/row; Tablet ≥<1200: 2 cards; Mobile ≤768: 1 coluna (cards + painéis) — sem overflow.
+- Validação: `npm run build` (tsc clean) + `npm test` (67/67).
+
+> Nota: o shared CSS `.cards-grid/.panels` mobile continua válido para páginas futuras, mas é supercedido pelo `<style>` inline do dashboard — de onde a correção foi feita.
+
+---
+
 ## Referências de arquivo
+
 - `public/ambros-layout.css` — shared styles; **sem breakpoints** (auditar).
 - `public/ambros-layout.js:77-87,580-606` — `toggleSidebarCollapse` (desktop) e `initLayout` (topstrip burger removal a refatorar).
 - `public/ambros-dashboard.html:364,368-370,497,507,204-211` — overlay, topbar minimal, tabelas soltas, media query.
