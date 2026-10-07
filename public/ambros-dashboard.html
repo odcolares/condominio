@@ -199,6 +199,19 @@
   .sidebar.collapsed .user-card{justify-content:center;padding:6px}
   .sidebar.collapsed .sidebar-user-container{padding:12px 8px}
   .main.collapsed{margin-left:72px}
+
+  /* ===== Responsive (dashboard-specific; must sit after the base rules to
+     win the cascade over this inline <style>, since shared ambros-layout.css
+     is loaded before this <style> and cannot override equal-specificity
+     base rules such as .cards-grid{repeat(4,1fr)} / .panels{1fr 1fr}). ===== */
+  @media(max-width:1200px){
+    .cards-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:768px){
+    .cards-grid{grid-template-columns:1fr}
+    .panels{grid-template-columns:1fr}
+    .chart-wrap{height:200px}
+  }
 </style>
 </head>
 <body>
