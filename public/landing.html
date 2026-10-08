@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMBROS — Controle de Acesso para Condomínios</title>
+  <meta name="description" content="AMBROS é o sistema de controle de acesso e gestão de condomínio que conecta portaria, moradores e síndico em uma única plataforma. Notificações por WhatsApp e Telegram.">
+  <meta property="og:title" content="AMBROS — Controle de Acesso para Condomínios">
+  <meta property="og:description" content="Sistema de gestão de condomínio com controle de visitantes, encomendas, reservas, ocorrências e notificações automáticas.">
+  <meta property="og:image" content="https://condominio-ambros.onrender.com/og-image.png">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --brand-blue: #2f6bff;
+      --brand-blue-dark: #1e40af;
+      --sidebar-bg: #1b2434;
+      --sidebar-bg2: #141c29;
+      --accent-teal: #0ea5e9;
+      --accent-emerald: #10b981;
+      --light: #f8fafc;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-600: #6b7280;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--gray-700);
+      line-height: 1.6;
+      background: var(--light);
+    }
+    /* Navbar */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 0;
+    }
+    .navbar .logo {
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--sidebar-bg);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+    .navbar .logo .shield {
+      color: var(--brand-blue);
+    }
+    .nav-link { color: var(--gray-700); text-decoration: none; font-weight: 500; font-size: 15px; }
+    .nav-link:hover { color: var(--brand-blue); }
+    .btn-cta {
+      background: var(--brand-blue);
+      border-color: var(--brand-blue);
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .btn-cta:hover {
+      background: var(--brand-blue-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(47, 107, 255, 0.25);
+    }
+    .btn-outline-cta {
+      border: 1px solid var(--brand-blue);
+      color: var(--brand-blue);
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .btn-outline-cta:hover {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--sidebar-bg2) 100%);
+      color: #fff;
+      padding: 80px 0;
+    }
+    .hero .badge {
+      background: rgba(47, 107, 255, 0.15);
+      color: var(--brand-blue);
+      border: 1px solid rgba(47, 107, 255, 0.3);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 24px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+    .hero .lead-text {
+      font-size: 1.25rem;
+      color: #9aa2b1;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .lead-capture {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 24px 50px rgba(0, 0, 0, 0.25);
+      margin-top: 40px;
+    }
+    .lead-capture h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 8px;
+    }
+    .lead-capture .subtitle {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 24px;
+    }
+    .lead-capture .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 6px;
+    }
+    .lead-capture .form-control {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 15px;
+    }
+    .lead-capture .form-control:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-grid-full { grid-column: 1 / -1; }
+    .success-card {
+      display: none;
+      text-align: center;
+      padding: 32px;
+    }
+    .success-card .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    /* Section padding */
+    .section { padding: 80px 0; }
+    .section-sm { padding: 60px 0; }
+    .section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .section .section-subtitle {
+      text-align: center;
+      color: var(--gray-600);
+      font-size: 1.1rem;
+      max-width: 640px;
+      margin: 0 auto 50px;
+    }
+    /* Problem cards */
+    .problem-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 28px;
+      height: 100%;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .problem-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+    .problem-card .icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: rgba(47, 107, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: var(--brand-blue);
+    }
+    .problem-card h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--gray-800);
+    }
+    .problem-card p {
+      color: var(--gray-600);
+      font-size: 14px;
+    }
+    .problem-card .badge-problem {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+    /* Features */
+    .feature-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .feature-item:last-child { margin-bottom: 0; }
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(47, 107, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: var(--brand-blue);
+      font-size: 22px;
+    }
+    .feature-content h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--gray-800);
+    }
+    .feature-content p {
+      color: var(--gray-600);
+      font-size: 14px;
+      margin: 0;
+    }
+    /* How it works */
+    .step {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-number {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--brand-blue);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .step h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--gray-800);
+    }
+    .step p {
+      color: var(--gray-600);
+      font-size: 14px;
+    }
+    /* Pricing */
+    .pricing-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 36px 28px;
+      height: 100%;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .pricing-card.popular {
+      border-color: var(--brand-blue);
+      transform: scale(1.03);
+    }
+    .pricing-card.popular .badge-popular {
+      background: var(--brand-blue);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    .pricing-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+    }
+    .price .amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--brand-blue);
+      line-height: 1;
+    }
+    .price .period {
+      font-size: 15px;
+      color: var(--gray-600);
+      margin-top: 4px;
+    }
+    .pricing-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .pricing-card ul li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pricing-card ul li:last-child { border-bottom: none; }
+    .pricing-card ul li i { color: var(--accent-emerald); }
+    /* Testimonial */
+    .testimonial {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    .testimonial .photo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin: 0 auto 12px;
+      color: #fff;
+    }
+    .testimonial blockquote {
+      font-style: italic;
+      color: var(--gray-700);
+      margin: 0 0 16px;
+      text-align: center;
+    }
+    .testimonial .author {
+      text-align: center;
+      font-weight: 600;
+      color: var(--gray-800);
+    }
+    .testimonial .role {
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    /* FAQ */
+    .faq-item {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 20px 0;
+    }
+    .faq-item:first-child { border-top: 1px solid #e5e7eb; }
+    .faq-item .question {
+      font-weight: 600;
+      color: var(--gray-800);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-item .question:before { content: "+"; font-size: 20px; color: var(--brand-blue); }
+    .faq-item.open .question:before { content: "−"; }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      color: var(--gray-600);
+      font-size: 15px;
+    }
+    .faq-item.open .faq-answer { max-height: 300px; padding: 16px 0 0; }
+    /* Footer */
+    .footer {
+      background: var(--gray-900);
+      color: #9aa2b1;
+      padding: 56px 0 32px;
+    }
+    .footer a { color: var(--gray-300); text-decoration: none; }
+    .footer a:hover { color: var(--brand-blue); }
+    .footer h4 { color: #fff; font-size: 16px; font-weight: 700; }
+    .footer-bottom {
+      border-top: 1px solid #374151;
+      padding-top: 24px;
+      margin-top: 40px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, var(--sidebar-bg) 0%, var(--sidebar-bg2) 100%);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand logo" href="/">
+        <i class="fa-solid fa-shield-halved shield"></i> AMBROS
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarsMain">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="#problemas">Problemas</a></li>
+          <li class="nav-item"><a class="nav-link" href="#solucao">Solução</a></li>
+          <li class="nav-item"><a class="nav-link" href="#como-funciona">Como Funciona</a></li>
+          <li class="nav-item"><a class="nav-link" href="#precos">Preços</a></li>
+          <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+        </ul>
+        <a href="#lead-form" class="btn-cta ms-lg-3">Experimente Grátis</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero hero-gradient">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <span class="badge">✓ 14 dias grátis • Sem cartão de crédito</span>
+          <h1>Controle de acesso e gestão completa do seu condomínio em uma únpla plataforma</h1>
+          <p class="lead-text">
+            Visiteiros, encomendas, reservas, ocorrências e notificações automáticas
+            por WhatsApp e Telegram — tudo conectado para a portaria e moradores.
+          </p>
+          <a href="#lead-form" class="btn-cta mt-4" style="font-size: 16px;">Comece Grátis Agora</a>
+          <a href="/login.html" class="btn-outline-cta mt-4 ms-3" style="font-size: 16px;">Já tem acesso?</a>
+        </div>
+        <div class="col-lg-6">
+          <div class="lead-capture" id="leadForm">
+            <h3>Receba uma demonstração personalizada</h3>
+            <p class="subtitle">Preencha seus dados e nossa equipe entrará em contato em até 1 dia útil.</p>
+
+            <div id="successCard" class="success-card">
+              <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <h4 style="color: var(--gray-800); font-weight: 700;">Obrigado!</h4>
+              <p style="color: var(--gray-600);">Sua solicitação foi recebida. Entraremos em contato em breve.</p>
+            </div>
+
+            <form id="leadFormEl" style="display: block;">
+              <div class="form-grid">
+                <div class="form-grid-full">
+                  <label class="form-label">Nome completo *</label>
+                  <input type="text" class="form-control" name="nome" required>
+                </div>
+                <div>
+                  <label class="form-label">E-mail *</label>
+                  <input type="email" class="form-control" name="email" required>
+                </div>
+                <div>
+                  <label class="form-label">Telefone / WhatsApp</label>
+                  <input type="tel" class="form-control" name="telefone" placeholder="(11) 99999-9999">
+                </div>
+                <div class="form-grid-full">
+                  <label class="form-label">Nome do condomínio</label>
+                  <input type="text" class="form-control" name="condominio_nome" placeholder="Ex: Residencial Alvorada">
+                </div>
+                <div>
+                  <label class="form-label">Número de unidades</label>
+                  <input type="number" class="form-control" name="numero_unidades" placeholder="Ex: 48">
+                </div>
+                <div>
+                  <label class="form-label">Sistema atual</label>
+                  <select class="form-control" name="sistema_atual">
+                    <option value="">Selecione...</option>
+                    <option value="Nenhum / Manual">Nenhum / Manual</option>
+                    <option value="Planilha Excel">Planilha Excel</option>
+                    <option value="Portia">Portia</option>
+                    <option value="Condomínio Fácil">Condomínio Fácil</option>
+                    <option value="Sfer">Sfer</option>
+                    <option value="Outro">Outro</option>
+                  </select>
+                </div>
+              </div>
+              <input type="hidden" name="origem" value="landing-page">
+              <button type="submit" class="btn-cta w-100 mt-4" id="submitBtn">
+                <span id="submitText">Solicitar Demonstração</span>
+                <span id="submitLoading" style="display: none;">
+                  <span class="spinner-border spinner-border-sm me-2"></span>Enviando...
+                </span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problemas -->
+  <section class="section" id="problemas">
+    <div class="container">
+      <h2>Problemas que condomínios enfrentam todos os dias</h2>
+      <p class="section-subtitle">
+        Portarias desorganizadas, encomendas perdidas, filas de visitantes e comunicação quebrada entre síndico, zelador e moradores.
+      </p>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="problem-card h-100">
+            <div class="icon"><i class="bi bi-person-x"></i></div>
+            <h4>Fila de visitantes</h4>
+            <p>Moradores esperam na portaria por falta de controle rápido. Visitantes anônimos entram sem registro.</p>
+            <span class="badge-problem">Insegurança</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="problem-card h-100">
+            <div class="icon"><i class="bi bi-box-seam"></i></div>
+            <h4>Encomendas perdidas</h4>
+            <p>Pacotes se acumulam na portaria. Moradores não são notificados e perdem entregas importantes.</p>
+            <span class="badge-problem">Perda de tempo</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="problem-card h-100">
+            <div class="icon"><i class="bi bi-telephone-x"></i></div>
+            <h4>Comunicação quebrada</h4>
+            <p>Síndico, zelador e moradores usam WhatsApp distintos. Informações se perdem no meio da conversa.</p>
+            <span class="badge-problem">Desgaste</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solução -->
+  <section class="section-sm bg-light" id="solucao">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-5 mb-4 mb-lg-0">
+          <h2 style="text-align: left;">AMBROS resolve tudo isso</h2>
+          <p style="font-size: 1.1rem; color: var(--gray-600); max-width: 560px;">
+            Um sistema completo que conecta portaria, moradores e síndico em uma única plataforma.
+            Tudo com notificações automáticas por WhatsApp e Telegram.
+          </p>
+
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-door-open"></i></div>
+            <div class="feature-content">
+              <h4>Controle de acesso inteligente</h4>
+              <p>Visiteiros e prestadores com pré-autorização via QR Code. Restrições proativas por CPF ou placa.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-phone"></i></div>
+            <div class="feature-content">
+              <h4>Notificações automáticas</h4>
+              <p>Encomendas, visitas e reservas notificam moradores via WhatsApp e Telegram com um clique.</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="feature-content">
+              <h4>Dashboard e auditoria</h4>
+              <p>Movimentação em tempo real, gráficos e auditoria completa de todos os acessos.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="text-center">
+            <img src="/mockup-dashboard.png" alt="Dashboard AMBROS" class="img-fluid rounded" style="max-height: 520px; box-shadow: 0 24px 50px rgba(0,0,0,0.15); display: block;">
+            <div style="text-align: center; color: var(--gray-600); font-size: 13px; margin-top: 12px;">
+              Dashboard do AMBROS — movimentação, encomendas e pré-autorizações
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <h2>Como funciona</h2>
+      <p class="section-subtitle">
+        Três passos simples para deixar a gestão do seu condomínio sob controle total.
+      </p>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h4>Agende uma demonstração</h4>
+            <p>Preencha o formulário ou ligue. Em até 1 dia útil marcamos uma call de 20 minutos.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="step">
+            <div class="step-number">2</div>
+            <h4>Configuramos seu ambiente</h4>
+            <p>Migranmos os dados dos moradores, veículos e visitantes atuais. Tudo pronto em 48h.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="step">
+            <div class="step-number">3</div>
+            <h4>Portaria entra em operação</h4>
+            <p>Sua equipe começa a usar o sistema. Treinamos portaria e zelador ao vivo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recursos -->
+  <section class="section-sm bg-light" id="recursos">
+    <div class="container">
+      <h2>Tudo que você precisa em um único sistema</h2>
+      <p class="section-subtitle mb-5">
+        12 módulos integrados para gestão completa de condomínios.
+      </p>
+      <div class="row g-4">
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-person-badge" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Moradores</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-car-front" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Veículos</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-people" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Visitantes</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-box-seam" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Encomendas</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-tools" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Prestadores</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-exclamation-triangle" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Ocorrências</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-calendar-check" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Reservas</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <i class="bi bi-megaphone" style="font-size: 32px; color: var(--brand-blue);"></i>
+            <p class="mt-2" style="font-size: 14px; font-weight: 500;">Comunicados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Depoimentos -->
+  <section class="section" id="depoimentos">
+    <div class="container">
+      <h2>O que nossos clientes dizem</h2>
+      <p class="section-subtitle">
+        Condomínios reais que já transformaram a gestão do dia a dia com AMBROS.
+      </p>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="testimonial">
+            <div class="photo">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <blockquote>
+              "Antes gastávamos 30 minutos por manhã resolvendo encomendas no WhatsApp.
+              Com o AMBROS, os moradores são notificados automaticamente e a portaria tem tudo digitalizado.
+              Recomendo para qualquer síndico!"
+            </blockquote>
+            <div class="author">Roberto Almeida</div>
+            <div class="role">Síndico — Residencial Jardim das Acácias (48 unidades)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preços -->
+  <section class="section bg-light" id="precos">
+    <div class="container">
+      <h2>Planos simples e transparentes</h2>
+      <p class="section-subtitle">
+        Escolha o plano ideal para o tamanho do seu condomínio. Sem surpresas.
+      </p>
+      <div class="row g-4 justify-content-center">
+        <div class="col-lg-4">
+          <div class="pricing-card h-100">
+            <h3>Starter</h3>
+            <div class="price">
+              <div class="amount">R$ 97</div>
+              <div class="period">/mês • até 50 unidades</div>
+            </div>
+            <ul>
+              <li><i class="bi bi-check-lg"></i> Controle de visitantes e veículos</li>
+              <li><i class="bi bi-check-lg"></i> Encomendas com códigos de retirada</li>
+              <li><i class="bi bi-check-lg"></i> Notificações WhatsApp/Telegram</li>
+              <li><i class="bi bi-check-lg"></i> Portal do morador</li>
+            </ul>
+            <a href="#lead-form" class="btn-cta w-100">Começar Grátis</a>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="pricing-card popular h-100">
+            <span class="badge-popular">Mais Popular</span>
+            <h3>Pro</h3>
+            <div class="price">
+              <div class="amount">R$ 197</div>
+              <div class="period">/mês • acima de 50 unidades</div>
+            </div>
+            <ul>
+              <li><i class="bi bi-check-lg"></i> Tudo do Starter</li>
+              <li><i class="bi bi-check-lg"></i> Reservas de áreas comuns</li>
+              <li><i class="bi bi-check-lg"></i> Ocorrências e restrições de acesso</li>
+              <li><i class="bi bi-check-lg"></i> Pré-autorização com QR Code</li>
+              <li><i class="bi bi-check-lg"></i> Dashboard com gráficos</li>
+            </ul>
+            <a href="#lead-form" class="btn-cta w-100">Começar Grátis</a>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="pricing-card h-100">
+            <h3>Enterprise</h3>
+            <div class="price">
+              <div class="amount">Sob</div>
+              <div class="period">consulta • condomínios grandes</div>
+            </div>
+            <ul>
+              <li><i class="bi bi-check-lg"></i> Tudo do Pro</li>
+              <li><i class="bi bi-check-lg"></i> API de integração</li>
+              <li><i class="bi bi-check-lg"></i> Customizações</li>
+              <li><i class="bi bi-check-lg"></i> Suporte prioritário</li>
+              <li><i class="bi bi-check-lg"></i> Treinamento on-site</li>
+            </ul>
+            <a href="#lead-form" class="btn-cta w-100">Falar com um especialista</a>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4" style="font-size: 13px; color: var(--gray-600);">
+        14 dias grátis • Sem cartão de crédito • Cancele quando quiser
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <h2>Perguntas frequentes</h2>
+      <p class="section-subtitle">
+        Tudo que você precisa saber sobre o AMBROS.
+      </p>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="faq-item">
+            <div class="question">Preciso instalar algum equipamento?</div>
+            <div class="faq-answer">
+              Não. O AMBROS roda totalmente na nuvem. Basta acessar pelo navegador do computador da portaria ou pelo celular do morador.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="question">Como é feita a migração dos dados?</div>
+            <div class="faq-answer">
+              Nossa equipe migra os dados de moradores, veículos e visitantes atuais em até 48h. Você não perde nenhum registro.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="question">E as notificações realmente chegam?</div>
+            <div class="faq-answer">
+              Sim! O sistema gera links diretos para WhatsApp e Telegram. Basta o porta-ou servidor clicar em "Notificar" e a mensagem é entregue instantaneamente ao morador.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="question">Posso testar antes de comprar?</div>
+            <div class="faq-answer">
+              Claro. Oferecemos 14 dias grátis, sem cartão de crédito. Use todas as funcionalidades sem compromisso.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-4 mb-md-0">
+          <a class="navbar-brand logo" href="/">
+            <i class="fa-solid fa-shield-halved" style="color: var(--brand-blue);"></i> AMBROS
+          </a>
+          <p style="font-size: 14px; margin-top: 12px;">
+            Sistema de controle de acesso e gestão de condomínio.
+            Conectando portaria, moradores e síndico em uma única plataforma.
+          </p>
+        </div>
+        <div class="col-md-2 mb-4 mb-md-0">
+          <h4>Produto</h4>
+          <ul class="list-unstyled">
+            <li><a href="#problemas">Recursos</a></li>
+            <li><a href="#precos">Preços</a></li>
+            <li><a href="#como-funciona">Como funciona</a></li>
+          </ul>
+        </div>
+        <div class="col-md-2 mb-4 mb-md-0">
+          <h4>Legal</h4>
+          <ul class="list-unstyled">
+            <li><a href="/politica-privacidade.html">Política de Privacidade</a></li>
+            <li><a href="/termos-uso.html">Termos de Uso</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h4>Contato</h4>
+          <ul class="list-unstyled">
+            <li style="margin-bottom: 8px;"><i class="bi bi-envelope me-2" style="color: var(--brand-blue);"></i>contato@ambros.com.br</li>
+            <li><i class="bi bi-whatsapp me-2" style="color: var(--brand-blue);"></i>(11) 99999-9999</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2025 AMBROS · Sistema de Controle de Acesso · Todos os direitos reservados
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_BASE = "";
+
+    const form = document.getElementById("leadFormEl");
+    const submitBtn = document.getElementById("submitBtn");
+    const submitText = document.getElementById("submitText");
+    const submitLoading = document.getElementById("submitLoading");
+    const successCard = document.getElementById("successCard");
+    const leadForm = document.getElementById("leadForm");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitText.style.display = "none";
+      submitLoading.style.display = "inline";
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+
+      try {
+        const resp = await fetch(`${API_BASE}/leads`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || "Erro ao enviar formulário");
+        }
+
+        const result = await resp.json();
+        console.log("Lead capturado:", result);
+
+        form.style.display = "none";
+        successCard.style.display = "block";
+
+      } catch (err) {
+        alert(err.message || "Não foi possível conectar ao servidor.");
+      } finally {
+        submitBtn.disabled = false;
+        submitText.style.display = "inline";
+        submitLoading.style.display = "none";
+      }
+    });
+
+    // FAQ toggle
+    document.querySelectorAll(".faq-item .question").forEach(q => {
+      q.addEventListener("click", () => {
+        const item = q.parentElement;
+        item.classList.toggle("open");
+      });
+    });
+
+    // Smooth scroll para âncoras
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener("click", function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute("href"));
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
