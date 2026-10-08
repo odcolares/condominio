@@ -208,6 +208,23 @@ export interface NotificacaoMorador {
   dados_adicionais: Record<string, any> | null;
 }
 
+export type StatusLead = "novo" | "contatado" | "em_demo" | "convertido" | "perdido";
+
+export interface Lead {
+  id: number;
+  nome: string;
+  email: string;
+  telefone: string | null;
+  condominio_nome: string | null;
+  numero_unidades: number | null;
+  sistema_atual: string | null;
+  status: StatusLead;
+  origem: string | null;
+  observacao: string | null;
+  criado_em: string;
+  atualizado_em: string;
+}
+
 export interface PreAutorizacaoVisitante {
   id: number;
   morador_id: number;

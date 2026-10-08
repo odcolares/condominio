@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMBROS · Leads de Prospecção</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link href="ambros-layout.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="ambros-layout.js"></script>
+  <style>
+    :root{
+      --sidebar-bg:#1b2434;--sidebar-bg2:#141c29;--sidebar-hover:#243044;
+      --brand-blue:#2f6bff;--brand-blue-dark:#1e3a8a;
+      --text-muted:#8a93a6;--content-bg:#f4f6f9;--card-radius:12px;
+      --status-novo:#f59e0b;--status-contatado:#3b82f6;
+      --status-demo:#8b5cf6;--status-convertido:#10b981;
+      --status-perdido:#ef4444;--status-frio:#6b7280;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--content-bg);color:#333}
+    a{text-decoration:none}
+    .app{display:flex;min-height:100vh}
+    .sidebar{
+      width:260px;flex-shrink:0;background:linear-gradient(180deg,var(--sidebar-bg),var(--sidebar-bg2));
+      color:#c8cfdd;position:fixed;top:0;bottom:0;left:0;display:flex;
+      flex-direction:column;overflow:hidden;transition:transform .25s ease;z-index:1040;box-shadow:2px 0 12px rgba(0,0,0,.15);
+    }
+    .main{margin-left:260px;flex:1;display:flex;flex-direction:column;min-width:0}
+    .brand{
+      display:flex;align-items:center;gap:12px;padding:18px 18px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;
+    }
+    .brand .logo{width:42px;height:42px;border-radius:9px;background:linear-gradient(135deg,#3a7bd5,#1e3a8a);display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+    .brand .name{font-size:22px;font-weight:800;letter-spacing:2px;color:#fff;line-height:1}
+    .brand .sub{font-size:9.5px;letter-spacing:2px;color:var(--text-muted);margin-top:3px}
+    .menu-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#8a93a6;padding:12px 18px 6px;font-weight:700;flex-shrink:0}
+    .sidebar-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0 16px}
+    .sidebar-nav::-webkit-scrollbar{width:5px}
+    .sidebar-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+    .nav-item{
+      display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;
+      font-size:13.5px;cursor:pointer;text-decoration:none;transition:background .15s;margin:2px 10px;border-radius:6px;
+    }
+    .nav-item i.lead{width:20px;text-align:center;font-size:16px}
+    .nav-item:hover{background:var(--sidebar-hover);color:#fff}
+    .nav-item.active{background:var(--brand-blue);color:#fff;border-radius:8px;margin:2px 10px;padding:10px 14px;font-weight:600}
+    .nav-group{margin-bottom:2px}
+    .nav-group-btn{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;color:#c1c9d6;font-size:13.5px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s}
+    .nav-group-btn:hover{background:var(--sidebar-hover);color:#fff}
+    .nav-group-btn i.lead{width:20px;text-align:center;font-size:16px}
+    .nav-group-btn .chev{margin-left:auto;font-size:11px;transition:transform .2s ease;color:#8a93a6}
+    .nav-group.open .nav-group-btn .chev{transform:rotate(180deg)}
+    .nav-group.open .nav-group-btn{color:#fff}
+    .nav-subitems{display:none;padding:2px 0 6px}
+    .nav-group.open .nav-subitems{display:block}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 18px 8px 44px;color:#9aa5b8;font-size:13px;text-decoration:none;transition:all .15s;border-radius:6px;margin:2px 10px 2px 24px}
+    .nav-subitem:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .nav-subitem.active{background:var(--brand-blue);color:#fff;font-weight:600}
+    .nav-subitem i{font-size:14px;width:16px;text-align:center}
+    .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,0.12);flex-shrink:0}
+    .sidebar-foot .t{color:#fff;font-weight:700;font-size:13px}
+    .sidebar-foot .s{color:var(--text-muted);font-size:11px;line-height:1.4}
+    .topbar{background:#fff;height:64px;display:flex;align-items:center;padding:0 22px;box-shadow:0 1px 3px rgba(0,0,0,.05);position:sticky;top:0;z-index:1020}
+    .topbar .title{font-size:20px;color:#3b4453;font-weight:400}
+    .content{padding:24px;flex:1}
+    .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .page-head h4{margin:0;color:#3b4453;font-weight:600}
+    .breadcrumb-mini{font-size:13px;color:#9aa2b1}
+    .breadcrumb-mini a{color:var(--brand-blue)}
+    .panel{background:#fff;border-radius:var(--card-radius);box-shadow:0 1px 4px rgba(0,0,0,.05);padding:20px;margin-bottom:20px}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+    .toolbar .search{flex:1;min-width:220px;position:relative}
+    .toolbar .search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9aa2b1}
+    .toolbar .search input{width:100%;padding:9px 12px 9px 36px;border:1px solid #dde2ea;border-radius:8px;font-size:14px}
+    table{width:100%;border-collapse:collapse}
+    thead th{font-size:13px;color:#9aa2b1;font-weight:600;text-align:left;padding:12px 10px;border-bottom:1px solid #eef0f3}
+    tbody td{padding:14px 10px;font-size:14px;color:#4b5563;border-bottom:1px solid #f4f6f8;vertical-align:middle}
+    tbody tr:last-child td{border-bottom:none}
+    .lead-item{display:flex;align-items:center;gap:12px}
+    .lead-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--brand-blue),var(--brand-blue-dark));display:grid;place-items:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0}
+    .lead-nome{font-weight:600;color:#1e293b}
+    .lead-email{font-size:12px;color:#94a3b8}
+    .action-btn{width:32px;height:32px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;display:inline-grid;place-items:center;color:#64748b;cursor:pointer;margin-right:4px}
+    .action-btn:hover{background:#f8fafc;color:#1e293b}
+    .action-btn.del:hover{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700}
+    .status-novo{background:#fef3c7;color:#92400e}
+    .status-contatado{background:#dbeafe;color:#1e3a8a}
+    .status-demo{background:#f3e8fd;color:#6b21a8}
+    .status-convertido{background:#dcfce7;color:#15803d}
+    .status-perdido{background:#fee2e2;color:#991b1b}
+    .status-frio{background:#f1f5f9;color:#475569}
+    .whatsapp-link{color:var(--accent-emerald);font-size:13px;font-weight:500}
+    .footer{padding:16px 24px;display:flex;justify-content:space-between;font-size:13px;color:#9aa2b1;margin-top:auto}
+    .footer .heart{color:#ef4444}
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1035}
+    .stat-card{display:flex;align-items:center;gap:12px;background:#fff;border-radius:var(--card-radius);padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,.05);height:100%}
+    .stat-icon{width:44px;height:44px;border-radius:10px;background:rgba(47,107,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--brand-blue);flex-shrink:0}
+    .stat-info h3{font-size:22px;font-weight:700;color:#1e293b;margin:0}
+    .stat-info .stat-label{font-size:12px;color:#9aa2b1;text-transform:uppercase;letter-spacing:.5px}
+    /* Collapsed sidebar support */
+    body.ambros-pre-collapsed .sidebar{margin-left:-260px}
+    .sidebar.collapsed,.main.collapsed{margin-left:0}
+    .sidebar.collapsed{width:60px}
+    .sidebar.collapsed .brand-text,.sidebar.collapsed .menu-label,.sidebar.collapsed .nav-item,.sidebar.collapsed .nav-group-btn,.sidebar.collapsed .nav-subitem,.sidebar.collapsed .sidebar-foot,.sidebar.collapsed .sidebar-user-container,.sidebar.collapsed .nav-group .chev{Display:none !important}
+    .sidebar.collapsed .brand{display:flow-root;place-items:start center;justify-content:center;padding:18px 14px 14px;flex-wrap:wrap}
+    .main.collapsed{margin-left:60px}
+    @media(max-width:768px){.sidebar{position:fixed;z-index:1050;width:260px;transform:translateX(-100%);transition:transform .25s ease}.sidebar.show{transform:translateX(0)}.main{margin-left:0}
+    .burger{font-size:20px;color:#555;background:none;border:none;cursor:pointer;margin-right:16px;display:none}
+    @media(max-width:768px){.burger{display:block}}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo" onclick="toggleSidebarCollapse()" title="AMBROS"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="brand-text">
+        <div class="name">AMBROS</div>
+        <div class="sub">CONTROLE DE ACESSO</div>
+      </div>
+      <button class="collapse-btn" onclick="toggleSidebarCollapse()" title="Recolher / Expandir menu">
+        <i class="bi bi-layout-sidebar"></i>
+      </button>
+    </div>
+
+    <div class="menu-label">MENU PRINCIPAL</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" href="ambros-dashboard.html">
+        <i class="bi bi-speedometer2 lead"></i>
+        <span>Dashboard</span>
+      </a>
+
+      <div class="nav-group" id="grp-portaria">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
+          <i class="lead bi bi-shield-lock"></i>
+          <span>Portaria & Acessos</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portaria-entrada.html">
+            <i class="bi bi-door-open"></i>
+            <span>Portaria Express</span>
+          </a>
+          <a class="nav-subitem" href="visitantes.html">
+            <i class="bi bi-person-badge"></i>
+            <span>Visitantes</span>
+          </a>
+          <a class="nav-subitem" href="prestadores.html">
+            <i class="bi bi-tools"></i>
+            <span>Prestadores & Obras</span>
+          </a>
+          <a class="nav-subitem" href="ocorrencias.html">
+            <i class="bi bi-shield-exclamation"></i>
+            <span>Ocorrências & Alertas</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="grp-cadastros">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
+          <i class="lead bi bi-folder2-open"></i>
+          <span>Cadastros</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="moradores.html">
+            <i class="bi bi-people"></i>
+            <span>Moradores</span>
+          </a>
+          <a class="nav-subitem" href="veiculos.html">
+            <i class="bi bi-car-front"></i>
+            <span>Veículos & Vagas</span>
+          </a>
+          <a class="nav-subitem" href="encomendas.html">
+            <i class="bi bi-box-seam"></i>
+            <span>Encomendas</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="grp-morador">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
+          <i class="lead bi bi-houses"></i>
+          <span>Área do Morador</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="portal-morador.html">
+            <i class="bi bi-phone"></i>
+            <span>Portal do Condômino</span>
+          </a>
+          <a class="nav-subitem" href="reservas.html">
+            <i class="bi bi-calendar-event"></i>
+            <span>Reservas de Lazer</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="nav-group" id="grp-relatorios">
+        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
+          <i class="lead bi bi-graph-up-arrow"></i>
+          <span>Gestão & Auditoria</span>
+          <i class="bi bi-chevron-down chev"></i>
+        </button>
+        <div class="nav-subitems">
+          <a class="nav-subitem" href="auditoria.html">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Auditoria de Acessos</span>
+          </a>
+          <a class="nav-subitem" href="leads.html">
+            <i class="bi bi-person-check"></i>
+            <span>Leads de Prospecção</span>
+          </a>
+          <a class="nav-subitem admin-only" href="usuarios.html">
+            <i class="bi bi-people-fill"></i>
+            <span>Usuários do Sistema</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ChatGPT-style Bottom User Card & Popover -->
+    <div class="sidebar-user-container">
+      <div class="user-card" onclick="toggleUserPopover(event)" title="Minha Conta & Notificações">
+        <div class="avatar-wrapper" onclick="handleAvatarClick(event)" title="Notificações">
+          <img src="https://i.pravatar.cc/80?img=12" alt="Avatar" id="sidebarAvatarImg">
+          <span class="avatar-badge-dot" id="sidebarAvatarDot" title="Notificações pendentes"></span>
+        </div>
+        <div class="user-info">
+          <div class="uname" id="sidebarUserName">Administrador</div>
+          <div class="ustatus"><span class="dot"></span>Online</div>
+        </div>
+        <i class="bi bi-three-dots text-muted"></i>
+      </div>
+
+      <div class="user-popover" id="userPopover">
+        <button type="button" onclick="openNotifModal(); event.stopPropagation();">
+          <i class="bi bi-bell"></i>
+          <span>Notificações</span>
+          <span class="badge-unread" id="popoverNotifBadge" style="display:none;">0</span>
+        </button>
+        <button type="button" onclick="openEditProfile(); event.stopPropagation();">
+          <i class="bi bi-person-gear"></i>
+          <span>Perfil</span>
+        </button>
+        <button type="button" onclick="openHelpModal(); event.stopPropagation();">
+          <i class="bi bi-headset"></i>
+          <span>Ajuda</span>
+        </button>
+        <div class="divider"></div>
+        <button type="button" class="danger" onclick="logout(); event.stopPropagation();">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" type="button" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="title">Leads de Prospecção</div>
+    </header>
+
+    <main class="content">
+      <div class="page-head">
+        <div>
+          <h4>Gestão de Leads</h4>
+          <div class="breadcrumb-mini"><a href="ambros-dashboard.html">Início</a> / Gestão & Auditoria / Leads de Prospecção</div>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalNovoLead()">
+          <i class="bi bi-plus-lg me-1"></i> Novo Lead
+        </button>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-person-badge"></i></div>
+            <div class="stat-info">
+              <h3 id="statTotal">0</h3>
+              <div class="stat-label">Total de Leads</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#92400e"><i class="bi bi-hourglass"></i></div>
+            <div class="stat-info">
+              <h3 id="statNovo">0</h3>
+              <div class="stat-label">Novos / Não Contatados</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(59,139,11,0.1);color:#15803d"><i class="bi bi-telephone-outbound"></i></div>
+            <div class="stat-info">
+              <h3 id="statConvertidos">0</h3>
+              <div class="stat-label">Convertidos</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(107,114,121,0.1);color:#475569"><i class="bi bi-emoji-frown"></i></div>
+            <div class="stat-info">
+              <h3 id="statPerdidos">0</h3>
+              <div class="stat-label">Perdidos / Frios</div>
+            </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <div class="search">
+            <i class="bi bi-search"></i>
+            <input type="text" id="inputBusca" placeholder="Buscar por nome, e-mail ou condomínio...">
+          </div>
+          <select class="form-select w-auto" id="selectStatus">
+            <option value="">Todos os status</option>
+            <option value="novo">Novo</option>
+            <option value="contatado">Contatado</option>
+            <option value="em_demo">Em Demo</option>
+            <option value="convertido">Convertido</option>
+            <option value="perdido">Perdido</option>
+            <option value="frio">Sem resposta (frio)</option>
+          </select>
+          <button class="btn btn-outline-secondary btn-sm" onclick="exportarCSV()">
+            <i class="bi bi-download me-1"></i> Exportar CSV
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>Lead</th>
+                <th>Contato</th>
+                <th>Condomínio</th>
+                <th>Unidades</th>
+                <th>Sistema Atual</th>
+                <th>Origem</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaLeads">
+              <tr><td colspan="10" class="text-center py-4 text-muted">Carregando lista de leads...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>© 2025 AMBROS · Sistema de Controle de Acesso · Todos os direitos reservados</span>
+      <span>Desenvolvido para condomínios inteligentes</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ===== Modal Novo Lead ===== -->
+<div class="modal fade" id="modalLead" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLeadTitulo"><i class="bi bi-plus-lg me-2 text-primary"></i>Novo Lead</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger d-none" id="modalLeadErro"></div>
+        <form id="formLead">
+          <input type="hidden" id="fLeadId">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome Completo *</label>
+              <input class="form-control" id="fLeadNome" required placeholder="Ex.: Carlos Lima">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">E-mail *</label>
+              <input class="form-control" id="fLeadEmail" type="email" required placeholder="seu@email.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Telefone / WhatsApp</label>
+              <input class="form-control" id="fLeadTelefone" placeholder="(11) 99999-9999">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Condomínio</label>
+              <input class="form-control" id="fLeadCondominio" placeholder="Ex.: Residencial Jardim das Acácias">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Número de Unidades</label>
+              <input class="form-control" id="fLeadUnidades" type="number" placeholder="Ex.: 48">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Sistema Atual</label>
+              <input class="form-control" id="fLeadSistema" placeholder="Ex.: Planilha Excel">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Origem</label>
+              <input class="form-control" id="fLeadOrigem" placeholder="Ex.: google-maps, landing-page">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="fLeadStatus">
+                <option value="novo">Novo</option>
+                <option value="contatado">Contatado</option>
+                <option value="em_demo">Em Demo</option>
+                <option value="convertido">Convertido</option>
+                <option value="perdido">Perdido</option>
+                <option value="frio">Sem resposta (frio)</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Observação</label>
+              <textarea class="form-control" id="fLeadObservacao" rows="3" placeholder="Anotações sobre o lead..."></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="btnSalvarLead"><i class="bi bi-check-lg"></i> Salvar Lead</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
+  if (!token) {
+    window.location.href = "login.html";
+  }
+
+  try {
+    const u = JSON.parse(localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}");
+    if (u.nome) {
+      document.getElementById("sidebarUserName").textContent = u.nome;
+    }
+  } catch(_) {}
+
+  function toggleMenu(id) {
+    var grp = document.getElementById(id);
+    if (!grp) return;
+    grp.classList.toggle('open');
+  }
+
+  function logout() {
+    localStorage.removeItem("ambros_token");
+    localStorage.removeItem("ambros_usuario");
+    sessionStorage.removeItem("ambros_token");
+    sessionStorage.removeItem("ambros_usuario");
+    window.location.href = "login.html";
+  }
+
+  function statusBadge(status) {
+    const labels = {
+      "novo": "Novo",
+      "contatado": "Contatado",
+      "em_demo": "Em Demo",
+      "convertido": "Convertido",
+      "perdido": "Perdido",
+      "frio": "Sem resposta"
+    };
+    const colors = {
+      "novo": "status-novo",
+      "contatado": "status-contatado",
+      "em_demo": "status-demo",
+      "convertido": "status-convertido",
+      "perdido": "status-perdido",
+      "frio": "status-frio"
+    };
+    return `<span class="status-badge ${colors[status] || 'status-frio'}">${labels[status] || status}</span>`;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function whatsappLink(phone) {
+    if (!phone) return null;
+    const digits = phone.replace(/\D/g, "");
+    let normalized = digits;
+    if (normalized.length === 11 && normalized.startsWith("0")) {
+      normalized = normalized.substring(1);
+    }
+    if (normalized.length === 11) {
+      normalized = "55" + normalized;
+    } else if (normalized.length === 10) {
+      normalized = "55" + normalized;
+    } else if (!normalized.startsWith("55") && normalized.length === 11) {
+      normalized = "55" + normalized;
+    }
+    const msg = encodeURIComponent("Olá, tudo bem? Sou do AMBROS — sistema de controle de acesso para condomínios. Gostaria de saber mais sobre a solução. Podemos conversar?");
+    return `https://wa.me/${normalized}?text=${msg}`;
+  }
+
+  async function carregarLeads() {
+    const busca = document.getElementById("inputBusca").value.trim();
+    const status = document.getElementById("selectStatus").value;
+
+    const params = new URLSearchParams();
+    if (busca) params.append("busca", busca);
+    if (status) params.append("status", status);
+
+    try {
+      const resp = await fetch(`/leads?${params.toString()}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        logout();
+        return;
+      }
+      const data = await resp.json();
+      const tbody = document.getElementById("tabelaLeads");
+
+      const stats = {
+        total: data.length,
+        novo: data.filter(l => l.status === "novo").length,
+        convertido: data.filter(l => l.status === "convertido").length,
+        perdido: data.filter(l => l.status === "perdido" || l.status === "frio").length
+      };
+
+      document.getElementById("statTotal").textContent = stats.total;
+      document.getElementById("statNovo").textContent = stats.novo;
+      document.getElementById("statConvertidos").textContent = stats.convertido;
+      document.getElementById("statPerdidos").textContent = stats.perdido;
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">Nenhum lead encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(l => {
+        const iniciais = l.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        const wlink = l.telefone ? whatsappLink(l.telefone) : null;
+        const waBtn = wlink ? `<a href="${wlink}" target="_blank" class="action-btn" title="Abrir WhatsApp"><i class="bi bi-whatsapp" style="color:#25d36e"></i></a>` : '';
+
+        return `
+          <tr>
+            <td><span class="text-muted">#${l.id}</span></td>
+            <td>
+              <div class="lead-item">
+                <div class="lead-avatar">${iniciais}</div>
+                <div>
+                  <div class="lead-nome">${l.nome}</div>
+                  <div class="lead-email">${l.email}</div>
+                </div>
+              </div>
+            </td>
+            <td>${l.telefone || '<span class="text-muted">—</span>'}</td>
+            <td>${l.condominio_nome || '<span class="text-muted">—</span>'}</td>
+            <td>${l.numero_unidades || '—'}</td>
+            <td>${l.sistema_atual || '<span class="text-muted">—</span>'}</td>
+            <td>${l.origem || '<span class="text-muted">—</span>'}</td>
+            <td>${statusBadge(l.status)}</td>
+            <td>${formatDate(l.criado_em)}</td>
+            <td>
+              <button class="action-btn" onclick="editarLead(${l.id})" title="Editar"><i class="bi bi-pencil"></i></button>
+              ${waBtn}
+              <button class="action-btn del" onclick="excluirLead(${l.id}, '${l.nome}')" title="Excluir"><i class="bi bi-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      document.getElementById("tabelaLeads").innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">Erro ao carregar leads.</td></tr>';
+    }
+  }
+
+  function abrirModalNovoLead() {
+    document.getElementById("formLead").reset();
+    document.getElementById("fLeadId").value = "";
+    document.getElementById("fLeadStatus").value = "novo";
+    document.getElementById("modalLeadTitulo").innerHTML = '<i class="bi bi-plus-lg me-2 text-primary"></i>Novo Lead';
+    document.getElementById("modalLeadErro").classList.add("d-none");
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalLead"));
+    modal.show();
+  }
+
+  async function editarLead(id) {
+    try {
+      const resp = await fetch(`/leads/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (!resp.ok) return;
+      const l = await resp.json();
+
+      document.getElementById("fLeadId").value = l.id;
+      document.getElementById("fLeadNome").value = l.nome || "";
+      document.getElementById("fLeadEmail").value = l.email || "";
+      document.getElementById("fLeadTelefone").value = l.telefone || "";
+      document.getElementById("fLeadCondominio").value = l.condominio_nome || "";
+      document.getElementById("fLeadUnidades").value = l.numero_unidades || "";
+      document.getElementById("fLeadSistema").value = l.sistema_atual || "";
+      document.getElementById("fLeadOrigem").value = l.origem || "";
+      document.getElementById("fLeadStatus").value = l.status || "novo";
+      document.getElementById("fLeadObservacao").value = l.observacao || "";
+
+      document.getElementById("modalLeadTitulo").innerHTML = '<i class="bi bi-pencil-square me-2 text-primary"></i>Editar Lead';
+      document.getElementById("modalLeadErro").classList.add("d-none");
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("modalLead"));
+      modal.show();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function excluirLead(id, nome) {
+    if (!confirm(`Deseja realmente excluir o lead ${nome}?`)) return;
+    try {
+      const resp = await fetch(`/leads/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) carregarLeads();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function exportarCSV() {
+    const rows = [['ID','Nome','Email','Telefone','Condomínio','Unidades','Sistema Atual','Origem','Status','Criado Em']];
+    const data = Array.from(document.querySelectorAll('#tabelaLeads tr'));
+    // Simpler: fetch current data and build CSV
+    fetch(`/leads`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+    .then(r => r.json())
+    .then(leads => {
+      leads.forEach(l => {
+        rows.push([
+          l.id, l.nome, l.email, l.telefone || '',
+          l.condominio_nome || '', l.numero_unidades || '',
+          l.sistema_atual || '', l.origem || '', l.status,
+          formatDate(l.criado_em)
+        ]);
+      });
+      const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads-ambros-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  document.getElementById("btnSalvarLead").addEventListener("click", async () => {
+    const leadId = document.getElementById("fLeadId").value;
+    const nome = document.getElementById("fLeadNome").value.trim();
+    const email = document.getElementById("fLeadEmail").value.trim();
+    const erroBox = document.getElementById("modalLeadErro");
+
+    if (!nome || !email) {
+      erroBox.textContent = "Nome e e-mail são obrigatórios.";
+      erroBox.classList.remove("d-none");
+      return;
+    }
+
+    const payload = {
+      nome,
+      email,
+      telefone: document.getElementById("fLeadTelefone").value.trim() || null,
+      condominio_nome: document.getElementById("fLeadCondominio").value.trim() || null,
+      numero_unidades: document.getElementById("fLeadUnidades").value.trim() || null,
+      sistema_atual: document.getElementById("fLeadSistema").value.trim() || null,
+      origem: document.getElementById("fLeadOrigem").value.trim() || null,
+      status: document.getElementById("fLeadStatus").value,
+      observacao: document.getElementById("fLeadObservacao").value.trim() || null,
+    };
+
+    const url = leadId ? `/leads/${leadId}` : "/leads";
+    const method = leadId ? "PUT" : "POST";
+
+    try {
+      const resp = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${leadId ? token : ""}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!resp.ok) {
+        const d = await resp.json().catch(() => ({}));
+        erroBox.textContent = d.detail || "Erro ao salvar lead.";
+        erroBox.classList.remove("d-none");
+        return;
+      }
+
+      erroBox.classList.add("d-none");
+      document.getElementById("formLead").reset();
+      const modal = bootstrap.Modal.getInstance(document.getElementById("modalLead"));
+      if (modal) modal.hide();
+      carregarLeads();
+    } catch (err) {
+      erroBox.textContent = "Erro de conexão com o servidor.";
+      erroBox.classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("inputBusca").addEventListener("input", carregarLeads);
+  document.getElementById("selectStatus").addEventListener("change", carregarLeads);
+
+  document.getElementById("burger").addEventListener("click", window.toggleMobileSidebar);
+
+  carregarLeads();
+</script>
+</body>
+</html>
