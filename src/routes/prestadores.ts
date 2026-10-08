@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 import { Prestador, Acesso, Morador } from "../types.js";
 import { gerarLinksNotificacao, tmplPrestador, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const prestadoresRouter = Router();
+prestadoresRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
 function addDaysUTC(dateStr: string, days: number): string {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -19,7 +20,7 @@ function isExpirado(dataFim: string): boolean {
   return todayUTC > dataFim;
 }
 
-prestadoresRouter.get(["", "/"], authMiddleware, (req, res) => {
+prestadoresRouter.get(["", "/"], (req, res) => {
   const presentesOnly = req.query.presentes === "true";
   const busca = (req.query.busca as string | undefined)?.toLowerCase().trim();
   const bloco = req.query.bloco as string | undefined;
@@ -59,7 +60,7 @@ prestadoresRouter.get(["", "/"], authMiddleware, (req, res) => {
   return res.json(enriquecidos);
 });
 
-prestadoresRouter.get("/:id", authMiddleware, (req, res) => {
+prestadoresRouter.get("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const p = db.prestadores.find((item) => item.id === id);
   if (!p) {
@@ -81,7 +82,7 @@ prestadoresRouter.get("/:id", authMiddleware, (req, res) => {
   });
 });
 
-prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
+prestadoresRouter.post(["", "/"], (req, res) => {
   const {
     nome,
     documento,
@@ -174,7 +175,7 @@ prestadoresRouter.post(["", "/"], authMiddleware, (req, res) => {
   });
 });
 
-prestadoresRouter.put("/:id", authMiddleware, (req, res) => {
+prestadoresRouter.put("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const p = db.prestadores.find((item) => item.id === id);
   if (!p) {
@@ -240,7 +241,7 @@ prestadoresRouter.put("/:id", authMiddleware, (req, res) => {
   });
 });
 
-prestadoresRouter.delete("/:id", authMiddleware, (req, res) => {
+prestadoresRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.prestadores.findIndex((item) => item.id === id);
   if (idx === -1) {
@@ -253,7 +254,7 @@ prestadoresRouter.delete("/:id", authMiddleware, (req, res) => {
 });
 
 // Registro de ENTRADA do prestador na portaria
-prestadoresRouter.post("/:id/entrada", authMiddleware, (req, res) => {
+prestadoresRouter.post("/:id/entrada", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const prestador = db.prestadores.find((p) => p.id === id);
   if (!prestador) {
@@ -297,7 +298,7 @@ prestadoresRouter.post("/:id/entrada", authMiddleware, (req, res) => {
 });
 
 // Registro de SAÍDA do prestador na portaria
-prestadoresRouter.post("/:id/saida", authMiddleware, (req, res) => {
+prestadoresRouter.post("/:id/saida", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const prestador = db.prestadores.find((p) => p.id === id);
   if (!prestador) {

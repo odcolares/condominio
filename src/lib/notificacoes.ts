@@ -96,6 +96,11 @@ export function tmplVisita(morador: Morador, visitante: Visitante): string {
   return `🚪 ${visitante.nome} chegou para visitar ${unidade}. Acompanhe entrada/saída na portaria.`;
 }
 
+export function tmplVisitaConfirmada(morador: Morador, visitante: Visitante): string {
+  const unidade = unidadeMorador(morador);
+  return `✅ Entrada confirmada: ${visitante.nome} está dentro do condomínio visitando ${unidade}.`;
+}
+
 export function tmplVisitaSaida(morador: Morador, visitante: Visitante): string {
   const unidade = unidadeMorador(morador);
   return `👋 ${visitante.nome} saiu da portaria após visitar ${unidade}.`;

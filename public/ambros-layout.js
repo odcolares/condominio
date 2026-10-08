@@ -655,6 +655,30 @@
       el.style.display = isAdmin ? "flex" : "none";
     });
 
+    // 10. Resident role check — hide non-resident menu items for morador perfil
+    const isMorador = authUser.perfil === "morador";
+    document.querySelectorAll(".no-morador").forEach((el) => {
+      if (isMorador) {
+        el.style.display = "none";
+      }
+    });
+
+    // 10b. Dynamically hide admin/portaria nav groups for residents
+    if (isMorador) {
+      ["grp-portaria", "grp-cadastros", "grp-relatorios"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.add("no-morador");
+          el.style.display = "none";
+        }
+      });
+      // Hide Dashboard top-level link for residents (they use portal-morador)
+      document.querySelectorAll('a.nav-item[href="ambros-dashboard.html"]').forEach((el) => {
+        el.classList.add("no-morador");
+        el.style.display = "none";
+      });
+    }
+
     // 10. Click-away to close popover
     document.addEventListener("click", function (e) {
       const pop = document.getElementById("userPopover");

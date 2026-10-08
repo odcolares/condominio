@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
-import { Visitante, Acesso, Morador } from "../types.js";
-import { gerarLinksNotificacao, tmplVisita, tmplVisitaSaida, DestinoNotificacao } from "../lib/notificacoes.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
+import { Visitante, Acesso, Morador, PreAutorizacaoVisitante } from "../types.js";
+import { gerarLinksNotificacao, tmplVisita, tmplVisitaSaida, tmplVisitaConfirmada, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const visitantesRouter = Router();
+visitantesRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
 function moradorDestino(morador: Morador | null | undefined): DestinoNotificacao | null {
   if (!morador) return null;
@@ -32,7 +33,7 @@ function isVisitanteExpirado(v: Visitante): boolean {
 }
 
 // GET /visitantes/stats
-visitantesRouter.get("/stats", authMiddleware, (_req, res) => {
+visitantesRouter.get("/stats", (_req, res) => {
   const now = new Date();
   const hojeStr = now.toISOString().slice(0, 10);
 
@@ -50,7 +51,7 @@ visitantesRouter.get("/stats", authMiddleware, (_req, res) => {
 });
 
 // GET /visitantes
-visitantesRouter.get("", authMiddleware, (req, res) => {
+visitantesRouter.get("", (req, res) => {
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase().trim() : null;
   const presentes =
     req.query.presentes !== undefined
@@ -104,7 +105,7 @@ visitantesRouter.get("", authMiddleware, (req, res) => {
 });
 
 // GET /visitantes/:id
-visitantesRouter.get("/:id", authMiddleware, (req, res) => {
+visitantesRouter.get("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const visitante = db.visitantes.find((v) => v.id === id);
   if (!visitante) {
@@ -130,7 +131,7 @@ visitantesRouter.get("/:id", authMiddleware, (req, res) => {
 });
 
 // POST /visitantes
-visitantesRouter.post("", authMiddleware, (req, res) => {
+visitantesRouter.post("", (req, res) => {
   const {
     nome,
     documento,
@@ -213,7 +214,7 @@ visitantesRouter.post("", authMiddleware, (req, res) => {
 });
 
 // PUT /visitantes/:id
-visitantesRouter.put("/:id", authMiddleware, (req, res) => {
+visitantesRouter.put("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const visitante = db.visitantes.find((v) => v.id === id);
   if (!visitante) {
@@ -266,7 +267,7 @@ visitantesRouter.put("/:id", authMiddleware, (req, res) => {
 });
 
 // POST /visitantes/:id/entrada (Registra entrada do visitante)
-visitantesRouter.post("/:id/entrada", authMiddleware, (req, res) => {
+visitantesRouter.post("/:id/entrada", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const visitante = db.visitantes.find((v) => v.id === id);
   if (!visitante) {
@@ -296,11 +297,22 @@ visitantesRouter.post("/:id/entrada", authMiddleware, (req, res) => {
     registrado_em: agora,
   };
 
+  // Atualiza pré-autorização associada (se existir) para status "acessou"
+  const preAuth = db.preautorizacoes.find(
+    (p) =>
+      p.morador_id === visitante.morador_visitado_id &&
+      p.nome_visitante === visitante.nome &&
+      p.status === "aguardando"
+  );
+  if (preAuth) {
+    preAuth.status = "acessou";
+  }
+
   db.acessos.unshift(novoAcesso);
   db.save();
 
   const destino = moradorDestino(morador);
-  const links = destino ? gerarLinksNotificacao(destino, tmplVisita(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
+  const links = destino ? gerarLinksNotificacao(destino, tmplVisitaConfirmada(morador!, visitante)) : { whatsappUrl: null, telegramUrl: null };
 
   return res.json({
     sucesso: true,
@@ -312,7 +324,7 @@ visitantesRouter.post("/:id/entrada", authMiddleware, (req, res) => {
 });
 
 // POST /visitantes/:id/saida (Registra saída do visitante)
-visitantesRouter.post("/:id/saida", authMiddleware, (req, res) => {
+visitantesRouter.post("/:id/saida", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const visitante = db.visitantes.find((v) => v.id === id);
   if (!visitante) {
@@ -356,7 +368,7 @@ visitantesRouter.post("/:id/saida", authMiddleware, (req, res) => {
 });
 
 // DELETE /visitantes/:id
-visitantesRouter.delete("/:id", authMiddleware, (req, res) => {
+visitantesRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.visitantes.findIndex((v) => v.id === id);
   if (idx === -1) {

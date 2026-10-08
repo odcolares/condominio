@@ -214,7 +214,7 @@
       </div>
     </nav>
 
-    <div class="px-3 py-2 border-top border-secondary border-opacity-25">
+    <div class="px-3 py-2 border-top border-secondary border-opacity-25 no-morador">
       <div class="small text-muted mb-1">Simular como morador:</div>
       <select class="form-select form-select-sm bg-dark text-white border-secondary" id="selectTrocarMorador" onchange="trocarMorador()">
         <option value="">Carregando moradores...</option>
@@ -358,7 +358,9 @@
           <div class="card-portal">
             <div class="card-portal-head">
               <h5><i class="bi bi-hammer text-warning"></i> Prestadores Autorizados para Minha Unidade</h5>
-              <a href="prestadores.html" class="btn btn-sm btn-light border"><i class="bi bi-plus-lg"></i></a>
+              <button class="btn btn-sm btn-outline-primary" onclick="abrirModalPrestador()">
+                <i class="bi bi-plus-lg me-1"></i> Liberar Serviço
+              </button>
             </div>
             <div id="boxMeusPrestadores">
               <div class="text-center py-3 text-muted">Carregando prestadores...</div>
@@ -425,6 +427,82 @@
   </div>
 </div>
 
+<!-- ===================== MODAL PRÉ-REGISTRO DE PRESTADOR (SERVIÇO) ===================== -->
+<div class="modal fade" id="modalPrestador" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title"><i class="bi bi-tools me-2"></i>Pré-Registrar Prestador / Serviço</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formPrestador" onsubmit="salvarPrestador(event)">
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Nome Completo *</label>
+            <input type="text" class="form-control" id="presNome" required placeholder="Ex: Marcos Ribeiro">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Função / Serviço *</label>
+            <input type="text" class="form-control" id="presFuncao" required placeholder="Ex: Encanador, Eletricista, Pedreiro">
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">CPF ou RG *</label>
+              <input type="text" class="form-control" id="presDoc" required placeholder="000.000.000-00">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Empresa (se houver)</label>
+              <input type="text" class="form-control" id="presEmpresa" placeholder="Ex: Marmoraria Gran Prime">
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Data de Início *</label>
+              <input type="date" class="form-control" id="presDataInicio" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-semibold">Data de Fim *</label>
+              <input type="date" class="form-control" id="presDataFim" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Telefone / WhatsApp</label>
+            <input type="text" class="form-control" id="presTelefone" placeholder="Ex: (11) 98765-4321">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Placa do Veículo (se vier de carro)</label>
+            <input type="text" class="form-control text-uppercase" id="presPlaca" placeholder="ABC1D23">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Horário Permitido</label>
+            <input type="text" class="form-control" id="presHorario" placeholder="Ex: 08:00 às 17:00 (Seg a Sex)">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-semibold">Observações</label>
+            <input type="text" class="form-control" id="presObs" placeholder="Ex: Reforma da cozinha">
+          </div>
+
+          <div class="p-3 bg-light rounded small text-muted">
+            <i class="bi bi-info-circle text-primary me-1"></i> O prestador receberá notificação e poderá entrar na portaria durante o período autorizado.
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-warning fw-semibold"><i class="bi bi-check2-circle me-1"></i> Registrar Prestador</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
   if (!token) {
@@ -445,20 +523,71 @@
     grp.classList.toggle('open');
   }
 
-  let moradorAtualId = 1; // Padrão Carlos Lima
+  let moradorAtualId = null;
   let dadosPortal = null;
   let modalPreBs = null;
+  let modalPresBs = null;
+
+  const boxesErro = [
+    "boxEncomendas", "boxPreAutorizacoes", "boxMinhasReservas",
+    "boxComunicados", "boxMeusVeiculos", "boxMeusPrestadores"
+  ];
+
+  function exibirErroNosBoxes(mensagem) {
+    boxesErro.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.innerHTML = `<div class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>${mensagem}</div>`;
+      }
+    });
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     modalPreBs = new bootstrap.Modal(document.getElementById("modalPre"));
+    modalPresBs = new bootstrap.Modal(document.getElementById("modalPrestador"));
     const hojeStr = new Date().toISOString().split("T")[0];
     document.getElementById("preData").value = hojeStr;
-    carregarPortal();
+    document.getElementById("presDataInicio").value = hojeStr;
+    const futuroStr = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+    document.getElementById("presDataFim").value = futuroStr;
+    inicializarMoradorAtual();
   });
+
+  async function inicializarMoradorAtual() {
+    try {
+      const resp = await fetch("/auth/me", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (resp.ok) {
+        const usuario = await resp.json();
+        const sel = document.getElementById("selectTrocarMorador");
+        if (sel) {
+          const options = Array.from(sel.options);
+          const match = options.find(o => o.textContent.includes(usuario.nome));
+          if (match) {
+            moradorAtualId = Number(match.value);
+          }
+        }
+        if (!moradorAtualId) {
+          moradorAtualId = 1;
+        }
+        await carregarPortal();
+      } else if (resp.status === 401 || resp.status === 403) {
+        logout();
+      }
+    } catch (err) {
+      console.warn("Aviso ao obter usuário:", err);
+      moradorAtualId = 1;
+      await carregarPortal();
+    }
+  }
 
   async function carregarPortal() {
     try {
-      const resp = await fetch(`/portal/morador?morador_id=${moradorAtualId}`, {
+      const url = moradorAtualId
+        ? `/portal/morador?morador_id=${moradorAtualId}`
+        : `/portal/morador`;
+      const resp = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (resp.status === 401 || resp.status === 403) {
@@ -468,161 +597,192 @@
       if (resp.ok) {
         dadosPortal = await resp.json();
         renderizarPortal();
+      } else {
+        exibirErroNosBoxes("Não foi possível carregar os dados. Tente recarregar a página.");
       }
     } catch (err) {
       console.warn("Aviso ao carregar portal do morador:", err);
+      exibirErroNosBoxes("Não foi possível carregar os dados. Verifique sua conexão e tente novamente.");
+    }
+  }
+
+  function formatarData(dataStr) {
+    if (!dataStr) return "—";
+    try {
+      const parts = String(dataStr).split("-");
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dataStr;
+    } catch {
+      return dataStr || "—";
     }
   }
 
   function renderizarPortal() {
-    const { morador, veiculos, encomendas, preautorizacoes, reservas, prestadores, comunicados, moradoresDisponiveis } = dadosPortal;
+    try {
+      const { morador, veiculos, encomendas, preautorizacoes, reservas, prestadores, comunicados, moradoresDisponiveis } = dadosPortal;
 
-    // Sidebar & Banner
-    document.getElementById("sidebarMoradorNome").textContent = morador.nome_completo;
-    document.getElementById("bannerOla").textContent = `Olá, ${morador.nome_completo.split(' ')[0]}!`;
-    document.getElementById("bannerDetalhes").innerHTML = `
-      Unidade <strong>Bloco ${morador.bloco || '—'} · Apartamento ${morador.apartamento || '—'}</strong> · 
-      ${morador.vinculo === 'proprietario' ? 'Proprietário' : 'Inquilino'} · Vaga <strong>${morador.numero_vaga || 'Sem vaga'}</strong>
-    `;
+      // Banner (usa sidebarUserName que já existe no HTML e é gerenciado pelo ambros-layout.js)
+      const nomeUsuarioEl = document.getElementById("sidebarUserName");
+      if (nomeUsuarioEl) nomeUsuarioEl.textContent = morador.nome_completo;
+      const bannerOla = document.getElementById("bannerOla");
+      if (bannerOla) bannerOla.textContent = `Olá, ${morador.nome_completo.split(' ')[0]}!`;
+      const bannerDetalhes = document.getElementById("bannerDetalhes");
+      if (bannerDetalhes) {
+        bannerDetalhes.innerHTML = `
+          Unidade <strong>Bloco ${morador.bloco || '—'} · Apartamento ${morador.apartamento || '—'}</strong> · 
+          ${morador.vinculo === 'proprietario' ? 'Proprietário' : 'Inquilino'} · Vaga <strong>${morador.numero_vaga || 'Sem vaga'}</strong>
+        `;
+      }
 
-    // Dropdown de troca rápida de morador
-    const sel = document.getElementById("selectTrocarMorador");
-    sel.innerHTML = moradoresDisponiveis.map(m => `
-      <option value="${m.id}" ${m.id === morador.id ? 'selected' : ''}>${m.nome} (${m.unidade})</option>
-    `).join('');
+      // Dropdown de troca rápido de morador
+      const sel = document.getElementById("selectTrocarMorador");
+      if (sel && moradoresDisponiveis) {
+        sel.innerHTML = moradoresDisponiveis.map(m => `
+          <option value="${m.id}" ${m.id === morador.id ? 'selected' : ''}>${m.nome} (${m.unidade})</option>
+        `).join('');
+      }
 
-    // 1. Encomendas
-    const pendentes = encomendas.filter(e => e.status === "pendente");
-    document.getElementById("badgeTotalEncomendas").textContent = `${pendentes.length} pendente${pendentes.length !== 1 ? 's' : ''}`;
+      // 1. Encomendas
+      const pendentes = encomendas.filter(e => e.status === "pendente");
+      const badgeEnc = document.getElementById("badgeTotalEncomendas");
+      if (badgeEnc) badgeEnc.textContent = `${pendentes.length} pendente${pendentes.length !== 1 ? 's' : ''}`;
 
-    const boxEnc = document.getElementById("boxEncomendas");
-    if (pendentes.length === 0) {
-      boxEnc.innerHTML = `
-        <div class="text-center py-4">
-          <i class="bi bi-check-circle-fill text-success fs-2 mb-2 d-block"></i>
-          <span class="text-muted">Você não possui encomendas pendentes de retirada no momento.</span>
-        </div>
-      `;
-    } else {
-      boxEnc.innerHTML = pendentes.map(e => `
-        <div class="p-3 mb-3 rounded border border-success border-opacity-25 bg-success bg-opacity-10 d-flex flex-wrap justify-content-between align-items-center gap-3">
-          <div>
-            <div class="fw-bold text-dark fs-6">${e.tipo_volume} · ${e.transportadora}</div>
-            <div class="text-muted small">Rastreio: <strong class="text-dark">${e.codigo_rastreio}</strong></div>
-            <div class="text-muted small">Local na Portaria: ${e.local_armazenamento}</div>
-          </div>
-          <div class="text-end">
-            <div class="small text-muted mb-1">Apresente para retirar:</div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge-codigo-retirada">${e.codigo_retirada}</span>
-              <button class="btn btn-sm btn-success" onclick="copiarCodigo('${e.codigo_retirada}')" title="Copiar Código">
-                <i class="bi bi-clipboard"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // 2. Pré-Autorizações
-    const boxPre = document.getElementById("boxPreAutorizacoes");
-    if (preautorizacoes.length === 0) {
-      boxPre.innerHTML = `
-        <div class="text-center py-4 text-muted">
-          Nenhum visitante pré-autorizado. Clique em "Novo Passe" para autorizar a entrada antecipada de amigos ou familiares.
-        </div>
-      `;
-    } else {
-      boxPre.innerHTML = preautorizacoes.map(p => {
-        const d = p.data_prevista.split('-');
-        const dataFmt = d.length === 3 ? `${d[2]}/${d[1]}/${d[0]}` : p.data_prevista;
-        return `
-          <div class="p-3 mb-2 rounded border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-              <div class="fw-bold text-dark">${p.nome_visitante}</div>
-              <div class="text-muted small">Data prevista: <strong>${dataFmt}</strong> ${p.placa_veiculo ? '· Carro: ' + p.placa_veiculo : ''}</div>
-              <div class="text-muted small">${p.observacao || ''}</div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge-qr-code">${p.codigo_acesso_qr}</span>
-              <button class="btn btn-sm btn-outline-danger" onclick="cancelarPreAutorizacao(${p.id})" title="Cancelar Passe"><i class="bi bi-x-lg"></i></button>
-            </div>
+      const boxEnc = document.getElementById("boxEncomendas");
+      if (!boxEnc) return;
+      if (pendentes.length === 0) {
+        boxEnc.innerHTML = `
+          <div class="text-center py-4">
+            <i class="bi bi-check-circle-fill text-success fs-2 mb-2 d-block"></i>
+            <span class="text-muted">Você não possui encomendas pendentes de retirada no momento.</span>
           </div>
         `;
-      }).join('');
-    }
-
-    // 3. Minhas Reservas
-    const boxRes = document.getElementById("boxMinhasReservas");
-    if (reservas.length === 0) {
-      boxRes.innerHTML = `
-        <div class="text-center py-4 text-muted">
-          Nenhuma reserva de espaço ativo. Você pode reservar o Salão de Festas ou as Churrasqueiras para eventos.
-        </div>
-      `;
-    } else {
-      boxRes.innerHTML = reservas.map(r => {
-        const d = r.data_reserva.split('-');
-        const dataFmt = d.length === 3 ? `${d[2]}/${d[1]}/${d[0]}` : r.data_reserva;
-        return `
-          <div class="p-3 mb-2 rounded border d-flex justify-content-between align-items-center">
+      } else {
+        boxEnc.innerHTML = pendentes.map(e => `
+          <div class="p-3 mb-3 rounded border border-success border-opacity-25 bg-success bg-opacity-10 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-              <div class="fw-bold text-primary">${r.espaco_nome}</div>
-              <div class="text-muted small">Data: <strong>${dataFmt}</strong> (${r.periodo}) · ${r.convidados_estimados} convidados</div>
+              <div class="fw-bold text-dark fs-6">${e.tipo_volume} · ${e.transportadora}</div>
+              <div class="text-muted small">Rastreio: <strong class="text-dark">${e.codigo_rastreio}</strong></div>
+              <div class="text-muted small">Local na Portaria: ${e.local_armazenamento}</div>
             </div>
-            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
+            <div class="text-end">
+              <div class="small text-muted mb-1">Apresente para retirar:</div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge-codigo-retirada">${e.codigo_retirada}</span>
+                <button class="btn btn-sm btn-success" onclick="copiarCodigo('${e.codigo_retirada}')" title="Copiar Código">
+                  <i class="bi bi-clipboard"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 2. Pré-Autorizações (Passes Digitais)
+      const boxPre = document.getElementById("boxPreAutorizacoes");
+      if (!boxPre) return;
+      if (preautorizacoes.length === 0) {
+        boxPre.innerHTML = `
+          <div class="text-center py-4 text-muted">
+            Nenhum visitante pré-autorizado. Clique em "Novo Passe" para autorizar a entrada antecipada de amigos ou familiares.
           </div>
         `;
-      }).join('');
-    }
+      } else {
+        boxPre.innerHTML = preautorizacoes.map(p => {
+          return `
+            <div class="p-3 mb-2 rounded border bg-light d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <div class="fw-bold text-dark">${p.nome_visitante}</div>
+                <div class="text-muted small">Data prevista: <strong>${formatarData(p.data_prevista)}</strong> ${p.placa_veiculo ? '· Carro: ' + p.placa_veiculo : ''}</div>
+                <div class="text-muted small">${p.observacao || ''}</div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge-qr-code">${p.codigo_acesso_qr}</span>
+                <button class="btn btn-sm btn-outline-danger" onclick="cancelarPreAutorizacao(${p.id})" title="Cancelar Passe"><i class="bi bi-x-lg"></i></button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
 
-    // 4. Mural de Comunicados
-    const boxCom = document.getElementById("boxComunicados");
-    if (comunicados.length === 0) {
-      boxCom.innerHTML = '<div class="text-muted text-center py-3">Nenhum aviso novo.</div>';
-    } else {
-      boxCom.innerHTML = comunicados.slice(0, 3).map(c => `
-        <div class="p-3 mb-2 rounded bg-white border">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="badge ${c.importante ? 'bg-danger' : 'bg-primary'}">${c.categoria.toUpperCase()}</span>
-            <span class="text-muted small">${new Date(c.data_publicacao).toLocaleDateString('pt-BR')}</span>
+      // 3. Minhas Reservas
+      const boxRes = document.getElementById("boxMinhasReservas");
+      if (!boxRes) return;
+      if (reservas.length === 0) {
+        boxRes.innerHTML = `
+          <div class="text-center py-4 text-muted">
+            Nenhuma reserva de espaço ativo. Você pode reservar o Salão de Festas ou as Churrasqueiras para eventos.
           </div>
-          <div class="fw-bold text-dark">${c.titulo}</div>
-          <div class="text-muted small mt-1">${c.conteudo}</div>
-        </div>
-      `).join('');
-    }
+        `;
+      } else {
+        boxRes.innerHTML = reservas.map(r => {
+          return `
+            <div class="p-3 mb-2 rounded border d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-primary">${r.espaco_nome}</div>
+                <div class="text-muted small">Data: <strong>${formatarData(r.data_reserva)}</strong> (${r.periodo}) · ${r.convidados_estimados} convidados</div>
+              </div>
+              <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
+            </div>
+          `;
+        }).join('');
+      }
 
-    // 5. Veículos
-    const boxVeic = document.getElementById("boxMeusVeiculos");
-    if (veiculos.length === 0) {
-      boxVeic.innerHTML = '<div class="text-muted text-center py-3">Nenhum veículo cadastrado na unidade.</div>';
-    } else {
-      boxVeic.innerHTML = veiculos.map(v => `
-        <div class="p-2 mb-2 rounded bg-light border d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-bold">${v.modelo || 'Automóvel'} (${v.cor || '—'})</div>
-            <div class="text-muted small">Vaga vinculada: <strong>${v.vaga || morador.numero_vaga || 'Geral'}</strong></div>
-          </div>
-          <span class="badge bg-dark font-monospace">${v.placa}</span>
-        </div>
-      `).join('');
-    }
+      // 4. Mural de Comunicados
+      const boxCom = document.getElementById("boxComunicados");
+      if (!boxCom) return;
+      if (comunicados.length === 0) {
+        boxCom.innerHTML = '<div class="text-muted text-center py-3">Nenhum aviso novo.</div>';
+      } else {
+        boxCom.innerHTML = comunicados.slice(0, 3).map(c => {
+          const dataFmt = c.data_publicacao ? new Date(c.data_publicacao).toLocaleDateString('pt-BR') : '—';
+          return `
+            <div class="p-3 mb-2 rounded bg-white border">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge ${c.importante ? 'bg-danger' : 'bg-primary'}">${c.categoria.toUpperCase()}</span>
+                <span class="text-muted small">${dataFmt}</span>
+              </div>
+              <div class="fw-bold text-dark">${c.titulo}</div>
+              <div class="text-muted small mt-1">${c.conteudo}</div>
+            </div>
+          `;
+        }).join('');
+      }
 
-    // 6. Prestadores
-    const boxPres = document.getElementById("boxMeusPrestadores");
-    if (prestadores.length === 0) {
-      boxPres.innerHTML = '<div class="text-muted text-center py-3">Nenhum prestador cadastrado no momento.</div>';
-    } else {
-      boxPres.innerHTML = prestadores.map(p => `
-        <div class="p-2 mb-2 rounded bg-light border d-flex justify-content-between align-items-center">
-          <div>
-            <div class="fw-semibold">${p.nome} (${p.funcao})</div>
-            <div class="text-muted small">${p.empresa || 'Autônomo'} · Até ${p.data_fim}</div>
+      // 5. Veículos
+      const boxVeic = document.getElementById("boxMeusVeiculos");
+      if (!boxVeic) return;
+      if (veiculos.length === 0) {
+        boxVeic.innerHTML = '<div class="text-muted text-center py-3">Nenhum veículo cadastrado na unidade.</div>';
+      } else {
+        boxVeic.innerHTML = veiculos.map(v => `
+          <div class="p-2 mb-2 rounded bg-light border d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-bold">${v.modelo || 'Automóvel'} (${v.cor || '—'})</div>
+              <div class="text-muted small">Vaga vinculada: <strong>${v.vaga || morador.numero_vaga || 'Geral'}</strong></div>
+            </div>
+            <span class="badge bg-dark font-monospace">${v.placa}</span>
           </div>
-          <span class="badge ${p.presente ? 'bg-success' : 'bg-secondary'}">${p.presente ? 'No Condomínio' : 'Fora'}</span>
-        </div>
-      `).join('');
+        `).join('');
+      }
+
+      // 6. Prestadores
+      const boxPres = document.getElementById("boxMeusPrestadores");
+      if (!boxPres) return;
+      if (prestadores.length === 0) {
+        boxPres.innerHTML = '<div class="text-muted text-center py-3">Nenhum prestador cadastrado no momento.</div>';
+      } else {
+        boxPres.innerHTML = prestadores.map(p => `
+          <div class="p-2 mb-2 rounded bg-light border d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">${p.nome} (${p.funcao})</div>
+              <div class="text-muted small">${p.empresa || 'Autônomo'} · Até ${formatarData(p.data_fim)}</div>
+            </div>
+            <span class="badge ${p.presente ? 'bg-success' : 'bg-secondary'}">${p.presente ? 'No Condomínio' : 'Fora'}</span>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      console.error("Erro ao renderizar portal:", err);
+      exibirErroNosBoxes("Erro ao exibir os dados. Tente recarregar a página.");
     }
   }
 
@@ -656,6 +816,11 @@
       observacao: document.getElementById("preObs").value.trim() || null,
     };
 
+    if (!payload.nome_visitante || !payload.data_prevista) {
+      alert("Nome do visitante e data prevista são obrigatórios.");
+      return;
+    }
+
     try {
       const resp = await fetch("/portal/preautorizacao", {
         method: "POST",
@@ -666,13 +831,19 @@
         body: JSON.stringify(payload)
       });
       if (resp.ok) {
+        const data = await resp.json();
         modalPreBs.hide();
-        carregarPortal();
+        await carregarPortal();
+        if (data.whatsappUrl) {
+          alert("Passe digital gerado com sucesso!\n\nClique no link para notificar o visitante via WhatsApp.");
+        }
       } else {
-        alert("Erro ao emitir passe digital.");
+        const data = await resp.json().catch(() => ({}));
+        alert(data.detail || "Erro ao emitir passe digital.");
       }
     } catch (err) {
       console.warn("Erro ao emitir pré-autorização:", err);
+      alert("Não foi possível conectar ao servidor. Tente novamente.");
     }
   }
 
@@ -685,11 +856,67 @@
       });
       if (resp.ok) {
         carregarPortal();
+      } else {
+        alert("Erro ao cancelar passe.");
       }
     } catch (err) {
       console.warn("Erro ao cancelar passe:", err);
+      alert("Não foi possível conectar ao servidor.");
     }
   }
+
+  function abrirModalPrestador() {
+    document.getElementById("formPrestador").reset();
+    const hojeStr = new Date().toISOString().split("T")[0];
+    document.getElementById("presDataInicio").value = hojeStr;
+    const futuroStr = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+    document.getElementById("presDataFim").value = futuroStr;
+    modalPresBs.show();
+  }
+
+  async function salvarPrestador(e) {
+    e.preventDefault();
+    const payload = {
+      nome: document.getElementById("presNome").value.trim(),
+      documento: document.getElementById("presDoc").value.trim(),
+      funcao: document.getElementById("presFuncao").value.trim(),
+      empresa: document.getElementById("presEmpresa").value.trim() || null,
+      telefone: document.getElementById("presTelefone").value.trim() || null,
+      placa_veiculo: document.getElementById("presPlaca").value.trim().toUpperCase() || null,
+      data_inicio: document.getElementById("presDataInicio").value,
+      data_fim: document.getElementById("presDataFim").value,
+      horario_permitido: document.getElementById("presHorario").value.trim() || null,
+      observacao: document.getElementById("presObs").value.trim() || null,
+    };
+
+    if (!payload.nome || !payload.documento || !payload.funcao || !payload.data_inicio) {
+      alert("Nome, documento, função e data de início são obrigatórios.");
+      return;
+    }
+
+    try {
+      const resp = await fetch("/portal/prestador", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        modalPresBs.hide();
+        await carregarPortal();
+        alert("Prestador registrado com sucesso! Ele receberá a notificação.");
+      } else {
+        const data = await resp.json().catch(() => ({}));
+        alert(data.detail || "Erro ao registrar prestador.");
+      }
+    } catch (err) {
+      console.warn("Erro ao registrar prestador:", err);
+      alert("Não foi possível conectar ao servidor.");
+    }
+  }
+  </script>
 </script>
 </body>
 </html>

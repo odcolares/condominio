@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 import { Encomenda } from "../types.js";
 import { gerarLinksNotificacao, tmplEncomenda, DestinoNotificacao } from "../lib/notificacoes.js";
 
 export const encomendasRouter = Router();
+encomendasRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
 function gerarCodigoRetirada(): string {
   // Gera código único no formato RET-XXXX (ex: RET-5819)
@@ -19,7 +20,7 @@ function gerarCodigoRetirada(): string {
 }
 
 // GET /encomendas/stats
-encomendasRouter.get("/stats", authMiddleware, (_req, res) => {
+encomendasRouter.get("/stats", (_req, res) => {
   const now = new Date();
   const hojeStr = now.toISOString().slice(0, 10);
 
@@ -37,7 +38,7 @@ encomendasRouter.get("/stats", authMiddleware, (_req, res) => {
 });
 
 // GET /encomendas
-encomendasRouter.get("", authMiddleware, (req, res) => {
+encomendasRouter.get("", (req, res) => {
   const status = typeof req.query.status === "string" ? req.query.status : null;
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase().trim() : null;
 
@@ -69,7 +70,7 @@ encomendasRouter.get("", authMiddleware, (req, res) => {
 });
 
 // GET /encomendas/:id
-encomendasRouter.get("/:id", authMiddleware, (req, res) => {
+encomendasRouter.get("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const encomenda = db.encomendas.find((e) => e.id === id);
   if (!encomenda) {
@@ -88,7 +89,7 @@ encomendasRouter.get("/:id", authMiddleware, (req, res) => {
 });
 
 // POST /encomendas
-encomendasRouter.post("", authMiddleware, (req, res) => {
+encomendasRouter.post("", (req, res) => {
   const {
     morador_id,
     codigo_rastreio,
@@ -162,7 +163,7 @@ encomendasRouter.post("", authMiddleware, (req, res) => {
 });
 
 // POST /encomendas/:id/retirar
-encomendasRouter.post("/:id/retirar", authMiddleware, (req, res) => {
+encomendasRouter.post("/:id/retirar", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const { codigo_retirada, retirado_por, observacao } = req.body;
 
@@ -206,7 +207,7 @@ encomendasRouter.post("/:id/retirar", authMiddleware, (req, res) => {
 });
 
 // POST /encomendas/:id/notificar
-encomendasRouter.post("/:id/notificar", authMiddleware, (req, res) => {
+encomendasRouter.post("/:id/notificar", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const { canal } = req.body; // 'whatsapp' | 'telegram' | 'ambos'
 
@@ -241,7 +242,7 @@ encomendasRouter.post("/:id/notificar", authMiddleware, (req, res) => {
 });
 
 // DELETE /encomendas/:id
-encomendasRouter.delete("/:id", authMiddleware, (req, res) => {
+encomendasRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.encomendas.findIndex((e) => e.id === id);
   if (idx === -1) {

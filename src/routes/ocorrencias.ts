@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil, AuthenticatedRequest } from "../auth.js";
 import { Ocorrencia, RestricaoAcesso, Morador } from "../types.js";
 import { gerarLinksNotificacao, tmplOcorrencia, DestinoNotificacao } from "../lib/notificacoes.js";
 
@@ -13,7 +13,7 @@ export const ocorrenciasRouter = Router();
 
 // ===================== OCORRÊNCIAS =====================
 
-ocorrenciasRouter.get(["", "/"], authMiddleware, (req, res) => {
+ocorrenciasRouter.get(["", "/"], authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const status = req.query.status as string | undefined;
   const categoria = req.query.categoria as string | undefined;
   const gravidade = req.query.gravidade as string | undefined;
@@ -42,7 +42,7 @@ ocorrenciasRouter.get(["", "/"], authMiddleware, (req, res) => {
   return res.json(resultado);
 });
 
-ocorrenciasRouter.get("/:id", authMiddleware, (req, res) => {
+ocorrenciasRouter.get("/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const id = parseInt(req.params.id, 10);
   const o = db.ocorrencias.find((item) => item.id === id);
   if (!o) {
@@ -101,7 +101,7 @@ ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
   return res.status(201).json({ ...nova, ...links });
 });
 
-ocorrenciasRouter.put("/:id", authMiddleware, (req, res) => {
+ocorrenciasRouter.put("/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const id = parseInt(req.params.id, 10);
   const o = db.ocorrencias.find((item) => item.id === id);
   if (!o) {
@@ -148,7 +148,7 @@ ocorrenciasRouter.put("/:id", authMiddleware, (req, res) => {
   return res.json({ ...o, ...links });
 });
 
-ocorrenciasRouter.delete("/:id", authMiddleware, (req, res) => {
+ocorrenciasRouter.delete("/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.ocorrencias.findIndex((item) => item.id === id);
   if (idx === -1) {
@@ -163,13 +163,14 @@ ocorrenciasRouter.delete("/:id", authMiddleware, (req, res) => {
 // ===================== RESTRIÇÕES E ALERTAS DE PORTARIA =====================
 
 export const restricoesRouter = Router();
+restricoesRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
-restricoesRouter.get(["", "/"], authMiddleware, (_req, res) => {
+restricoesRouter.get(["", "/"], (_req, res) => {
   const ativas = db.restricoes.filter((r) => r.ativo);
   return res.json(ativas);
 });
 
-restricoesRouter.post(["", "/"], authMiddleware, (req, res) => {
+restricoesRouter.post(["", "/"], (req, res) => {
   const { tipo_identificador, valor_identificador, nome_pessoa, motivo, instrucao_portaria, bloqueio_total } = req.body;
 
   if (!tipo_identificador || !valor_identificador || !motivo || !instrucao_portaria) {
@@ -196,7 +197,7 @@ restricoesRouter.post(["", "/"], authMiddleware, (req, res) => {
   return res.status(201).json(nova);
 });
 
-restricoesRouter.delete("/:id", authMiddleware, (req, res) => {
+restricoesRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const r = db.restricoes.find((item) => item.id === id);
   if (!r) {
@@ -209,8 +210,8 @@ restricoesRouter.delete("/:id", authMiddleware, (req, res) => {
 });
 
 // Endpoint rápido de checagem para a portaria
-restricoesRouter.get("/verificar", authMiddleware, (req, res) => {
-  const termo = ((req.query.termo || req.query.documento || req.query.placa) as string | undefined)?.toLowerCase().trim();
+restricoesRouter.get("/verificar", (_req, res) => {
+  const termo = ((_req.query.termo || _req.query.documento || _req.query.placa) as string | undefined)?.toLowerCase().trim();
 
   if (!termo) {
     return res.json({ alerta: false, restricoes: [] });
