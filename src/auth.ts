@@ -32,3 +32,17 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
     return res.status(401).json({ detail: "Credenciais inválidas" });
   }
 }
+
+export type Perfil = "administrador" | "morador" | "portaria" | "sindico";
+
+export function requirePerfil(...perfis: Perfil[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ detail: "Credenciais inválidas" });
+    }
+    if (!perfis.includes(req.user.perfil as Perfil)) {
+      return res.status(403).json({ detail: "Acesso restrito a perfis autorizados" });
+    }
+    next();
+  };
+}

@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 import { Morador } from "../types.js";
 
 export const moradoresRouter = Router();
+moradoresRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
-moradoresRouter.get("", authMiddleware, (req, res) => {
+moradoresRouter.get("", (req, res) => {
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase() : null;
   const bloco = typeof req.query.bloco === "string" ? req.query.bloco : null;
   const vinculo = typeof req.query.vinculo === "string" ? req.query.vinculo : null;
@@ -30,7 +31,7 @@ moradoresRouter.get("", authMiddleware, (req, res) => {
   return res.json(resultado);
 });
 
-moradoresRouter.get("/:id", authMiddleware, (req, res) => {
+moradoresRouter.get("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const morador = db.moradores.find((m) => m.id === id);
   if (!morador) {
@@ -39,7 +40,7 @@ moradoresRouter.get("/:id", authMiddleware, (req, res) => {
   return res.json(morador);
 });
 
-moradoresRouter.post("", authMiddleware, (req, res) => {
+moradoresRouter.post("", (req, res) => {
   const { nome_completo, cpf, telefone, whatsapp, telegram, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
 
   if (!nome_completo || !cpf) {
@@ -99,7 +100,7 @@ moradoresRouter.post("", authMiddleware, (req, res) => {
   return res.status(201).json(novoMorador);
 });
 
-moradoresRouter.put("/:id", authMiddleware, (req, res) => {
+moradoresRouter.put("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const morador = db.moradores.find((m) => m.id === id);
   if (!morador) {
@@ -132,7 +133,7 @@ moradoresRouter.put("/:id", authMiddleware, (req, res) => {
   return res.json(morador);
 });
 
-moradoresRouter.delete("/:id", authMiddleware, (req, res) => {
+moradoresRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.moradores.findIndex((m) => m.id === id);
   if (idx === -1) {

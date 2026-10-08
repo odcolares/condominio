@@ -194,7 +194,7 @@ export interface Comunicado {
 }
 
 export type CanalNotificacao = "whatsapp" | "telegram" | "app" | "email";
-export type TipoNotificacao = "encomenda" | "visitante" | "reserva" | "ocorrencia" | "comunicado";
+export type TipoNotificacao = "encomenda" | "visitante" | "reserva" | "ocorrencia" | "comunicado" | "prestador";
 
 export interface NotificacaoMorador {
   id: number;

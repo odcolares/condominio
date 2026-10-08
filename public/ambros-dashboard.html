@@ -543,6 +543,10 @@
     if (u.perfil !== "administrador" && u.perfil !== "admin") {
       document.querySelectorAll(".admin-only").forEach(el => el.style.display = "none");
     }
+    // Redirect residents to their dedicated portal
+    if (u.perfil === "morador") {
+      window.location.replace("portal-morador.html");
+    }
   } catch(_) {}
 
   function toggleSidebarCollapse() {

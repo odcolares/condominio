@@ -140,7 +140,12 @@
         store.setItem("ambros_usuario", JSON.stringify(data.usuario));
       }catch(_){ }
 
-      window.location.href = "ambros-dashboard.html";
+      const perfil = data.usuario?.perfil;
+      let destino = "ambros-dashboard.html";
+      if (perfil === "morador") destino = "portal-morador.html";
+      else if (perfil === "portaria" || perfil === "zelador") destino = "portaria-entrada.html";
+
+      window.location.href = destino;
     }catch(_){
       mostrarErro("Não foi possível conectar ao servidor.");
     }finally{

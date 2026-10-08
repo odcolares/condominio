@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware, AuthenticatedRequest } from "../auth.js";
+import { authMiddleware, requirePerfil, AuthenticatedRequest } from "../auth.js";
 import { Lead } from "../types.js";
 
 export const leadsRouter = Router();
 
-leadsRouter.get("", authMiddleware, (req: AuthenticatedRequest, res) => {
+leadsRouter.get("", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase() : null;
   const status = typeof req.query.status === "string" ? req.query.status : null;
   const skip = parseInt(req.query.skip as string, 10) || 0;
@@ -32,7 +32,7 @@ leadsRouter.get("", authMiddleware, (req: AuthenticatedRequest, res) => {
   return res.json(resultado);
 });
 
-leadsRouter.get("/:id", authMiddleware, (req: AuthenticatedRequest, res) => {
+leadsRouter.get("/:id", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const lead = db.leads.find((l) => l.id === id);
   if (!lead) {
@@ -92,7 +92,7 @@ leadsRouter.post("", (req, res) => {
   });
 });
 
-leadsRouter.put("/:id", authMiddleware, (req: AuthenticatedRequest, res) => {
+leadsRouter.put("/:id", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const lead = db.leads.find((l) => l.id === id);
   if (!lead) {
@@ -129,7 +129,7 @@ leadsRouter.put("/:id", authMiddleware, (req: AuthenticatedRequest, res) => {
   return res.json(lead);
 });
 
-leadsRouter.delete("/:id", authMiddleware, (req: AuthenticatedRequest, res) => {
+leadsRouter.delete("/:id", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.leads.findIndex((l) => l.id === id);
   if (idx === -1) {
