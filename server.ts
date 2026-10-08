@@ -13,6 +13,7 @@ import { prestadoresRouter } from "./src/routes/prestadores.js";
 import { ocorrenciasRouter, restricoesRouter } from "./src/routes/ocorrencias.js";
 import { reservasRouter } from "./src/routes/reservas.js";
 import { portalRouter } from "./src/routes/portal.js";
+import { leadsRouter } from "./src/routes/leads.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,7 @@ const routers = [
   { path: "/restricoes", router: restricoesRouter },
   { path: "/reservas", router: reservasRouter },
   { path: "/portal", router: portalRouter },
+  { path: "/leads", router: leadsRouter },
 ];
 
 for (const { path: routePath, router } of routers) {
@@ -54,9 +56,9 @@ for (const { path: routePath, router } of routers) {
   app.use(`/api${routePath}`, router);
 }
 
-// Redirect root to index.html
+// Serve landing page at root for unauthenticated visitors
 app.get("/", (_req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
+  res.sendFile(path.join(publicDir, "landing.html"));
 });
 
 // Explicit API 404 handler: guarantees API endpoints NEVER return HTML
@@ -74,6 +76,7 @@ const apiPrefixes = [
   "/restricoes",
   "/reservas",
   "/portal",
+  "/leads",
 ];
 
 app.use((req, res, next) => {

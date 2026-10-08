@@ -12,6 +12,7 @@ import {
   Comunicado,
   NotificacaoMorador,
   PreAutorizacaoVisitante,
+  Lead,
 } from "./types.js";
 import fs from "fs";
 import path from "path";
@@ -33,6 +34,7 @@ class InMemoryDB {
   comunicados: Comunicado[] = [];
   notificacoes: NotificacaoMorador[] = [];
   preautorizacoes: PreAutorizacaoVisitante[] = [];
+  leads: Lead[] = [];
 
   private nextUserId = 1;
   private nextMoradorId = 1;
@@ -47,6 +49,7 @@ class InMemoryDB {
   private nextComunicadoId = 1;
   private nextNotificacaoId = 1;
   private nextPreAutorizacaoId = 1;
+  private nextLeadId = 1;
 
   constructor() {
     this.init();
@@ -79,6 +82,7 @@ class InMemoryDB {
           this.comunicados = parsed.comunicados || [];
           this.notificacoes = parsed.notificacoes || [];
           this.preautorizacoes = parsed.preautorizacoes || [];
+          this.leads = parsed.leads || [];
 
           this.nextUserId = parsed.nextUserId || (this.usuarios.length + 1);
           this.nextMoradorId = parsed.nextMoradorId || (this.moradores.length + 1);
@@ -93,6 +97,7 @@ class InMemoryDB {
           this.nextComunicadoId = parsed.nextComunicadoId || (this.comunicados.length + 1);
           this.nextNotificacaoId = parsed.nextNotificacaoId || (this.notificacoes.length + 1);
           this.nextPreAutorizacaoId = parsed.nextPreAutorizacaoId || (this.preautorizacoes.length + 1);
+          this.nextLeadId = parsed.nextLeadId || (this.leads.length + 1);
 
           // Seed new collections if empty
           if (this.prestadores.length === 0) this.seedPrestadores();
@@ -102,6 +107,7 @@ class InMemoryDB {
           if (this.comunicados.length === 0) this.seedComunicados();
           if (this.notificacoes.length === 0) this.seedNotificacoes();
           if (this.preautorizacoes.length === 0) this.seedPreAutorizacoes();
+          if (this.leads.length === 0) this.seedLeads();
           return;
         }
       }
@@ -132,6 +138,7 @@ class InMemoryDB {
         comunicados: this.comunicados,
         notificacoes: this.notificacoes,
         preautorizacoes: this.preautorizacoes,
+        leads: this.leads,
         nextUserId: this.nextUserId,
         nextMoradorId: this.nextMoradorId,
         nextVeiculoId: this.nextVeiculoId,
@@ -145,6 +152,7 @@ class InMemoryDB {
         nextComunicadoId: this.nextComunicadoId,
         nextNotificacaoId: this.nextNotificacaoId,
         nextPreAutorizacaoId: this.nextPreAutorizacaoId,
+        nextLeadId: this.nextLeadId,
       };
       const tmp = `${DB_FILE}.tmp`;
       fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf-8");
@@ -328,6 +336,7 @@ class InMemoryDB {
     this.seedComunicados();
     this.seedNotificacoes();
     this.seedPreAutorizacoes();
+    this.seedLeads();
   }
 
   seedEncomendas() {
@@ -689,7 +698,27 @@ class InMemoryDB {
         observacao: "Familiar visitante",
         codigo_acesso_qr: "QR-3891",
         status: "aguardando",
-        criado_em: new Date().toISOString(),
+         criado_em: new Date().toISOString(),
+      }
+    );
+  }
+
+  seedLeads() {
+    const now = new Date();
+    this.leads.push(
+      {
+        id: this.nextLeadId++,
+        nome: "João Mendes",
+        email: "joao.mendes@email.com",
+        telefone: "(11) 99999-8877",
+        condominio_nome: "Residencial Jardim das Acácias",
+        numero_unidades: 48,
+        sistema_atual: "Planilha Excel + WhatsApp",
+        status: "novo",
+        origem: "landing-page",
+        observacao: "Interessado em controle de visitantes e encomendas",
+        criado_em: now.toISOString(),
+        atualizado_em: now.toISOString(),
       }
     );
   }
@@ -730,6 +759,9 @@ class InMemoryDB {
   getNextPreAutorizacaoId() {
     return this.nextPreAutorizacaoId++;
   }
+  getNextLeadId() {
+    return this.nextLeadId++;
+  }
 
   __resetDb() {
     this.usuarios = [];
@@ -745,6 +777,7 @@ class InMemoryDB {
     this.comunicados = [];
     this.notificacoes = [];
     this.preautorizacoes = [];
+    this.leads = [];
     this.nextUserId = 1;
     this.nextMoradorId = 1;
     this.nextVeiculoId = 1;
@@ -758,6 +791,7 @@ class InMemoryDB {
     this.nextComunicadoId = 1;
     this.nextNotificacaoId = 1;
     this.nextPreAutorizacaoId = 1;
+    this.nextLeadId = 1;
     this.seed();
   }
 }
