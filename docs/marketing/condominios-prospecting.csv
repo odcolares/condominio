@@ -1,0 +1,6 @@
+lead_id,nome_condominio,bairro,cidade,telefone,eh_whatsapp,tipo_fone,sindico_nome,unidades,sistema_atual,primeira_msg_data,ultima_resposta_data,status,ultimo_contato,resultado,observacao
+001,Jardim das Acácias,Moema,SP,5511999999999,sim,movel,,48,Excel,2026-10-08,,contatado,2026-10-08,"Interessado - marcou demo para 10/10",""
+002,Residencial Vila Verde,Brooklin,SP,551133334444,sim,movel,,32,Nenhum,2026-10-08,,contatado,2026-10-08,"Sistema atual é portaria manual - pevidencia oportunidade",""
+003,Condomínio Pinheiros Sul,Pinheiros,SP,551132221111,nao,fixo,Maria Souza,55,Nenhum,2026-10-08,,contatado,2026-10-08,"Ligar para confirmar WhatsApp do síndico",""
+004,,Alto de Pinheiros,SP,551198887777,sim,movel,,28,Planilha Excel + WhatsApp,2026-10-08,,novo,,""
+005,,Vila Olímpia,SP,551136667777,nao,fixo,,60,Sfer,2026-10-08,,novo,,""

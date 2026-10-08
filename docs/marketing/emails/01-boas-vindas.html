@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMBROS — Bem-vindo!</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: #f8fafc; color: #374151; }
+    .container { max-width: 640px; margin: 0 auto; padding: 32px 24px; }
+    .header { text-align: center; padding: 24px 0 0; }
+    .logo { font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: 2px; }
+    .logo span { color: #2f6bff; }
+    .badge { background: rgba(47, 107, 255, 0.1); color: #2f6bff; border: 1px solid rgba(47, 107, 255, 0.3); font-size: 13px; font-weight: 600; padding: 6px 16px; border-radius: 24px; display: inline-block; margin: 16px 0; }
+    .content { background: #fff; border-radius: 16px; padding: 40px; margin: 24px 0; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    h1 { font-size: 26px; color: #1e293b; margin: 0 0 16px; }
+    p { font-size: 16px; line-height: 1.7; margin: 0 0 16px; color: #4b5563; }
+    .highlight { background: #eff6ff; border-left: 4px solid #2f6bff; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+    .btn { background: #2f6bff; color: #fff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 15px; margin: 20px 0; }
+    .footer { text-align: center; font-size: 13px; color: #9ca3af; margin-top: 32px; }
+    .divider { height: 1px; background: #e5e7eb; margin: 24px 0; }
+    .timeline { list-style: none; padding: 0; margin: 24px 0; }
+    .timeline li { padding: 12px 0 12px 32px; position: relative; border-bottom: 1px solid #f3f4f6; }
+    .timeline li:last-child { border-bottom: none; }
+    .timeline li:before { content: attr(data-step); position: absolute; left: 0; top: 12px; width: 24px; height: 24px; background: #2f6bff; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .timeline li strong { color: #1e293b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo"><span>🛡️</span> AMBROS</div>
+      <div style="font-size: 13px; color: #6b7280; letter-spacing: 2px;">SISTEMA DE CONTROLE DE ACESSO</div>
+    </div>
+
+    <div class="content">
+      <span class="badge">E-mail #1 — Boas-vindas</span>
+      <h1>Bem-vindo ao time de gestão conectada, {{nome}}!</h1>
+
+      <p>Recebemos seu contato sobre o AMBROS para o condomínio <strong>{{condominio}}</strong>. Sua solicitação foi registrada e nossa equipe entrará em contato em até 1 dia útil.</p>
+
+      <div class="highlight">
+        <strong>Próximos passos:</strong> Em breve você receberá uma ligação ou e-mail para agendar uma demonstração de 20 minutos, onde mostraremos como o AMBROS resolve os principais problemas de portaria e gestão do seu condomínio.
+      </div>
+
+      <ul class="timeline">
+        <li data-step="1"><strong>Demonstração personalizada</strong> — mostramos o sistema ao vivo, focando em suas dores.</li>
+        <li data-step="2"><strong>Migração de dados</strong> — trazemos moradores e veículos atuais em até 48h.</li>
+        <li data-step="3"><strong>Operação iniciada</strong> — sua portaria começa a usar o sistema com treinamento ao vivo.</li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <p>Meanwhile, assista a este vídeo rápido de <strong>90 segundos</strong> mostrando como uma encomenda é notificada ao morador via WhatsApp:</p>
+
+      <div style="text-align: center; background: #0f172a; border-radius: 12px; padding: 24px; margin: 20px 0;">
+        <i class="fa-solid fa-play" style="font-size: 48px; color: #2f6bff;"></i>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 12px;">[Thumbnail: Demonstração AMBROS — Notificação de encomenda]</p>
+      </div>
+
+      <p style="text-align: center;">
+        <a href="https://wa.me/5511999999999?text=Quero%20agendar%20minha%20demonstração%20AMBROS" class="btn">Agendar pelo WhatsApp</a>
+      </p>
+    </div>
+
+    <p style="text-align: center; font-size: 14px; color: #6b7280;">
+      Tem dúvidas? Responda este e-mail ou ligue para <strong>(11) 99999-9999</strong>.
+    </p>
+
+    <div class="footer">
+      <p>© 2025 AMBROS — Sistema de Controle de Acesso</p>
+      <p>Rua da Tecnologia, 123 — São Paulo, SP · CNJP: 00.000.000/0001-00</p>
+    </div>
+  </div>
+</body>
+</html>
