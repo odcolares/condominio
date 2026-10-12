@@ -531,13 +531,6 @@
     if (relatoriosGroup) {
       const subitems = relatoriosGroup.querySelector(".nav-subitems");
       if (subitems) {
-        if (!subitems.querySelector('a[href="leads.html"]')) {
-          const leadsLink = document.createElement("a");
-          leadsLink.className = "nav-subitem";
-          leadsLink.href = "leads.html";
-          leadsLink.innerHTML = '<i class="bi bi-person-check"></i><span>Leads de Prospecção</span>';
-          subitems.appendChild(leadsLink);
-        }
         if (!subitems.querySelector('a[href="usuarios.html"]')) {
           const userLink = document.createElement("a");
           userLink.className = "nav-subitem admin-only";
