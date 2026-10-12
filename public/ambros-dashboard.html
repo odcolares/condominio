@@ -800,6 +800,8 @@
       const avUrl = localStorage.getItem("ambros_avatar_url") || "https://i.pravatar.cc/80?img=12";
       document.getElementById("profileAvatarUrl").value = avUrl;
       document.getElementById("profileAvatarPreview").src = avUrl;
+      const avatarFile = document.getElementById("profileAvatarFile");
+      if (avatarFile) avatarFile.value = "";
       document.getElementById("profileError").style.display = "none";
       document.getElementById("profileSuccess").style.display = "none";
       
@@ -810,6 +812,41 @@
       console.error(e);
     }
   }
+
+  function handleAvatarUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Por favor, selecione uma imagem (JPG, PNG, etc.).");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("A imagem deve ter no máximo 2 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const dataUrl = evt.target.result;
+      const prev = document.getElementById("profileAvatarPreview");
+      const urlInp = document.getElementById("profileAvatarUrl");
+      if (prev) prev.src = dataUrl;
+      if (urlInp) urlInp.value = dataUrl;
+    };
+    reader.onerror = function() {
+      alert("Erro ao ler o arquivo. Tente novamente.");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Bind avatar file upload
+  document.addEventListener("DOMContentLoaded", function() {
+    const avatarFile = document.getElementById("profileAvatarFile");
+    if (avatarFile && !avatarFile.dataset.bound) {
+      avatarFile.dataset.bound = "true";
+      avatarFile.addEventListener("change", handleAvatarUpload);
+    }
+  });
 
   function openHelpModal() {
     document.getElementById("userPopover").style.display = "none";
@@ -1049,12 +1086,20 @@
           <div class="row">
             <div class="col-md-4 text-center border-end mb-3 mb-md-0">
               <div class="mb-3">
-                <img id="profileAvatarPreview" src="https://i.pravatar.cc/80?img=12" alt="Avatar" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover;">
+                <div class="position-relative d-inline-block">
+                  <img id="profileAvatarPreview" src="https://i.pravatar.cc/80?img=12" alt="Avatar" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover; border: 2px dashed #dee2e6;">
+                  <label for="profileAvatarFile" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; cursor: pointer;" title="Alterar foto">
+                    <i class="bi bi-camera-fill"></i>
+                  </label>
+                  <input type="file" class="d-none" id="profileAvatarFile" accept="image/*" capture="environment">
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold">URL da Foto / Avatar</label>
+              <div class="mb-2">
                 <input type="text" class="form-control form-control-sm" id="profileAvatarUrl" placeholder="https://..." oninput="document.getElementById('profileAvatarPreview').src = this.value || 'https://i.pravatar.cc/80?img=12'">
               </div>
+              <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('profileAvatarFile').click()">
+                <i class="bi bi-upload me-1"></i>Fazer upload
+              </button>
             </div>
             <div class="col-md-8">
               <div class="mb-3">
