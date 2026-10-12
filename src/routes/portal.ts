@@ -1,20 +1,29 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
-import { PreAutorizacaoVisitante, Comunicado, NotificacaoMorador, Visitante } from "../types.js";
-import { gerarLinksNotificacao, DestinoNotificacao } from "../lib/notificacoes.js";
+import { authMiddleware, requirePerfil, AuthenticatedRequest } from "../auth.js";
+import { PreAutorizacaoVisitante, Comunicado, NotificacaoMorador, Visitante, Prestador } from "../types.js";
+import { gerarLinksNotificacao, DestinoNotificacao, tmplVisita, tmplPrestador } from "../lib/notificacoes.js";
 
 export const portalRouter = Router();
 
 // ===================== DADOS CONSOLIDADOS DO PORTAL DO MORADOR =====================
 
-portalRouter.get("/morador", authMiddleware, (req, res) => {
+portalRouter.get("/morador", authMiddleware, (req: AuthenticatedRequest, res) => {
   const moradorIdParam = req.query.morador_id ? Number(req.query.morador_id) : null;
-  
-  // Pega o morador selecionado ou o padrão (Carlos Lima, id 1)
-  const morador = moradorIdParam
-    ? db.moradores.find((m) => m.id === moradorIdParam)
-    : db.moradores[0];
+  const usuario = req.user;
+
+  let morador;
+  if (moradorIdParam) {
+    morador = db.moradores.find((m) => m.id === moradorIdParam);
+  } else if (usuario) {
+    // Resolve morador automatically from JWT user when no morador_id is passed
+    morador = db.moradores.find((m) => m.nome_completo === usuario.nome);
+    if (!morador) {
+      morador = db.moradores[0];
+    }
+  } else {
+    morador = db.moradores[0];
+  }
 
   if (!morador) {
     return res.status(404).json({ detail: "Morador não encontrado" });
@@ -123,15 +132,21 @@ portalRouter.post("/preautorizacao", authMiddleware, (req, res) => {
     morador_id: morador.id,
     tipo: "visitante",
     titulo: `Pré-autorização Gerada: ${pre.nome_visitante}`,
-    mensagem: `Passe digital ${codigoQr} gerado com sucesso para ${pre.nome_visitante} no dia ${pre.data_prevista}. A portaria já está ciente.`,
+    mensagem: `Passe digital ${pre.codigo_acesso_qr} gerado com sucesso para ${pre.nome_visitante} no dia ${pre.data_prevista}. A portaria já está ciente.`,
     canal: "app",
     enviado_em: new Date().toISOString(),
     lida: false,
-    dados_adicionais: { pre_id: pre.id, codigo_qr: codigoQr },
+    dados_adicionais: { pre_id: pre.id, codigo_qr: pre.codigo_acesso_qr },
   });
 
   db.save();
-  return res.status(201).json(pre);
+
+  const links = gerarLinksNotificacao(
+    { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram },
+    tmplVisita(morador, { ...novoVisitante, criado_em: novoVisitante.criado_em } as Visitante)
+  );
+
+  return res.status(201).json({ ...pre, ...links });
 });
 
 portalRouter.delete("/preautorizacao/:id", authMiddleware, (req, res) => {
@@ -154,7 +169,7 @@ portalRouter.get("/comunicados", authMiddleware, (_req, res) => {
   return res.json(comunicados);
 });
 
-portalRouter.post("/comunicados", authMiddleware, (req, res) => {
+portalRouter.post("/comunicados", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const { titulo, categoria, conteudo, importante, publicado_por } = req.body;
 
   if (!titulo || !categoria || !conteudo) {
@@ -193,7 +208,7 @@ portalRouter.post("/comunicados", authMiddleware, (req, res) => {
   return res.status(201).json(novo);
 });
 
-portalRouter.delete("/comunicados/:id", authMiddleware, (req, res) => {
+portalRouter.delete("/comunicados/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
   const id = parseInt(req.params.id, 10);
   const c = db.comunicados.find((item) => item.id === id);
   if (!c) {
@@ -263,4 +278,129 @@ portalRouter.post("/notificacoes-sistema/marcar-lidas", authMiddleware, (_req, r
   });
   db.save();
   return res.json({ sucesso: true, total_pendentes: 0 });
+});
+
+// ===================== PRÉ-REGISTRO DE PRESTADORES (SERVIÇO) PELO MORADOR =====================
+
+portalRouter.get("/prestadores", authMiddleware, (req: AuthenticatedRequest, res) => {
+  const moradorIdParam = req.query.morador_id ? Number(req.query.morador_id) : null;
+  const usuario = req.user;
+
+  let morador;
+  if (moradorIdParam) {
+    morador = db.moradores.find((m) => m.id === moradorIdParam);
+  } else if (usuario) {
+    morador = db.moradores.find((m) => m.nome_completo === usuario.nome) || db.moradores[0];
+  } else {
+    morador = db.moradores[0];
+  }
+
+  if (!morador) {
+    return res.status(404).json({ detail: "Morador não encontrado" });
+  }
+
+  const prestadores = db.prestadores.filter((p) => p.morador_autorizador_id === morador.id);
+
+  return res.json(prestadores);
+});
+
+portalRouter.post("/prestador", authMiddleware, (req: AuthenticatedRequest, res) => {
+  const {
+    nome,
+    documento,
+    tipo_documento,
+    empresa,
+    funcao,
+    telefone,
+    placa_veiculo,
+    data_inicio,
+    data_fim,
+    prazo_dias,
+    horario_permitido,
+    observacao,
+  } = req.body;
+
+  if (!nome || !documento || !funcao || !data_inicio || (!data_fim && prazo_dias === undefined)) {
+    return res.status(422).json({
+      detail: "Nome, documento, função, data de início e data final (ou prazo_dias) são obrigatórios",
+    });
+  }
+
+  // morador_autorizador_id vem do JWT (quem está logado)
+  const usuario = req.user;
+  const morador = db.moradores.find(
+    (m) => m.nome_completo === usuario?.nome
+  );
+
+  if (!morador) {
+    return res.status(404).json({ detail: "Morador vinculado ao usuário não encontrado" });
+  }
+
+  function addDaysUTC(dateStr: string, days: number): string {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const utcMs = Date.UTC(y, m - 1, d + days);
+    const dt = new Date(utcMs);
+    return dt.toISOString().split("T")[0];
+  }
+
+  let finalDataFim = data_fim ? String(data_fim).trim() : "";
+  if (!finalDataFim && prazo_dias !== undefined) {
+    const dias = parseInt(prazo_dias, 10);
+    if (!isNaN(dias) && dias > 0) {
+      finalDataFim = addDaysUTC(String(data_inicio).trim(), dias);
+    }
+  }
+
+  if (!finalDataFim) {
+    return res.status(422).json({ detail: "Data final de autorização inválida ou prazo_dias inválido" });
+  }
+
+  const novoPrestador: Prestador = {
+    id: db.getNextPrestadorId(),
+    nome: String(nome).trim(),
+    documento: String(documento).trim(),
+    tipo_documento: tipo_documento || "CPF",
+    empresa: empresa ? String(empresa).trim() : null,
+    funcao: String(funcao).trim(),
+    telefone: telefone ? String(telefone).trim() : null,
+    foto_url: null,
+    placa_veiculo: placa_veiculo ? String(placa_veiculo).trim().toUpperCase() : null,
+    cracha_numero: null,
+    tipo_vinculo: "unidade",
+    bloco: morador.bloco,
+    apartamento: morador.apartamento,
+    morador_autorizador_id: morador.id,
+    morador_autorizador_nome: morador.nome_completo,
+    data_inicio: String(data_inicio).trim(),
+    data_fim: finalDataFim,
+    horario_permitido: horario_permitido ? String(horario_permitido).trim() : "08:00 às 17:00",
+    observacao: observacao ? String(observacao).trim() : null,
+    presente: false,
+    ativo: true,
+    criado_em: new Date().toISOString(),
+  };
+
+  db.prestadores.push(novoPrestador);
+
+  // Notificação no app
+  db.notificacoes.push({
+    id: db.getNextNotificacaoId(),
+    morador_id: morador.id,
+    tipo: "prestador",
+    titulo: `Prestador Registrado: ${novoPrestador.nome}`,
+    mensagem: `${novoPrestador.nome} (${novoPrestador.funcao}) registrado para atender sua unidade até ${novoPrestador.data_fim}.`,
+    canal: "app",
+    enviado_em: new Date().toISOString(),
+    lida: false,
+    dados_adicionais: { prestador_id: novoPrestador.id },
+  });
+
+  db.save();
+
+  const links = gerarLinksNotificacao(
+    { whatsapp: morador.whatsapp, telefone: morador.telefone, telegram: morador.telegram },
+    tmplPrestador(morador, novoPrestador, "registrado")
+  );
+
+  return res.status(201).json({ ...novoPrestador, ...links });
 });

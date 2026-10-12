@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 
 export const dashboardRouter = Router();
+dashboardRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
-dashboardRouter.get(["", "/"], authMiddleware, (_req, res) => {
+dashboardRouter.get(["", "/"], (_req, res) => {
   try {
     const now = new Date();
     const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));

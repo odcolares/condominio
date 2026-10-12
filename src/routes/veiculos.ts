@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 import { Veiculo } from "../types.js";
 
 export const veiculosRouter = Router();
+veiculosRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
 // GET /veiculos/stats
-veiculosRouter.get("/stats", authMiddleware, (_req, res) => {
+veiculosRouter.get("/stats", (_req, res) => {
   const total = db.veiculos.length;
   const com_morador = db.veiculos.filter((v) => v.morador_id !== null).length;
   const vagas_ocupadas = new Set(
@@ -25,7 +26,7 @@ veiculosRouter.get("/stats", authMiddleware, (_req, res) => {
 });
 
 // GET /veiculos
-veiculosRouter.get("", authMiddleware, (req, res) => {
+veiculosRouter.get("", (req, res) => {
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase().trim() : null;
   const placa = typeof req.query.placa === "string" ? req.query.placa.toLowerCase().trim() : null;
   const moradorId = req.query.morador_id ? parseInt(req.query.morador_id as string, 10) : null;
@@ -69,7 +70,7 @@ veiculosRouter.get("", authMiddleware, (req, res) => {
 });
 
 // GET /veiculos/:id
-veiculosRouter.get("/:id", authMiddleware, (req, res) => {
+veiculosRouter.get("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const veiculo = db.veiculos.find((v) => v.id === id);
   if (!veiculo) {
@@ -85,7 +86,7 @@ veiculosRouter.get("/:id", authMiddleware, (req, res) => {
 });
 
 // POST /veiculos
-veiculosRouter.post("", authMiddleware, (req, res) => {
+veiculosRouter.post("", (req, res) => {
   const { placa, modelo, cor, vaga, morador_id } = req.body;
   if (!placa || !placa.trim()) {
     return res.status(422).json({ detail: "Placa é obrigatória" });
@@ -126,7 +127,7 @@ veiculosRouter.post("", authMiddleware, (req, res) => {
 });
 
 // PUT /veiculos/:id
-veiculosRouter.put("/:id", authMiddleware, (req, res) => {
+veiculosRouter.put("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const veiculo = db.veiculos.find((v) => v.id === id);
   if (!veiculo) {
@@ -161,7 +162,7 @@ veiculosRouter.put("/:id", authMiddleware, (req, res) => {
 });
 
 // DELETE /veiculos/:id
-veiculosRouter.delete("/:id", authMiddleware, (req, res) => {
+veiculosRouter.delete("/:id", (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.veiculos.findIndex((v) => v.id === id);
   if (idx === -1) {

@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil } from "../auth.js";
 import { Acesso, TipoPessoa, SentidoAcesso } from "../types.js";
 import { emparelharAcessos } from "../lib/duracao.js";
 
 export const acessosRouter = Router();
+acessosRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
 
 function resolverNome(tipo: TipoPessoa, pessoaId: number): string {
   if (tipo === "morador") {
@@ -22,7 +23,7 @@ function resolverNome(tipo: TipoPessoa, pessoaId: number): string {
   return "";
 }
 
-acessosRouter.post("", authMiddleware, (req, res) => {
+acessosRouter.post("", (req, res) => {
   const { tipo_pessoa, pessoa_id, sentido, placa_veiculo, vaga, observacao } = req.body;
 
   if (!tipo_pessoa || !pessoa_id || !sentido) {
@@ -68,7 +69,7 @@ acessosRouter.post("", authMiddleware, (req, res) => {
   return res.status(201).json(acesso);
 });
 
-acessosRouter.get("", authMiddleware, (req, res) => {
+acessosRouter.get("", (req, res) => {
   const tipoPessoa = req.query.tipo_pessoa as TipoPessoa | undefined;
   const sentido = req.query.sentido as SentidoAcesso | undefined;
   const inicioStr = req.query.inicio as string | undefined;
