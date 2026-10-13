@@ -87,25 +87,21 @@
 
 ---
 
-## Slide 4 — Cases de Sucesso
+## Slide 4 — Piloto (sem cases inventados)
 
-### Condomínio Jardim das Acácias (48 unidades)
-> *"Antes, a portaria ficava caótica na hora de registrar visitantes. Hoje, em 10 segundos o visita está registrado e o morador notificado pelo WhatsApp. Redução de 70% no tempo de espera."*
+> **Transparência:** estamos em lançamento. Em vez de depoimentos fictícios, abrimos **3 vagas de piloto** com 14 dias grátis + migração assistida em 48h.
 
-**Resultado:** 70% menos fila na portaria
+### O que vamos validar com você:
+- Visitante registrado em ~15 segundos com QR Code
+- Encomenda com código RET-XXXX + notificação automática ao morador
+- Auditoria completa de quem entrou/saiu
 
-### Condomínio Serra Dourada (72 unidades)
-> *"As encomendas não se perdem mais. O código RET-XXXX obriga o morador a retirar pessoalmente. Acabou o drama de pacote sumindo!"*
-
-**Resultado:** Zero encomendas perdidas após implantação
-
-### Métricas gerais dos clientes:
-| Métrica | Antes | Depois |
-|---------|-------|--------|
-| Tempo médio de registro de visita | 3 min | 15 seg |
-| Encomendas perdidas por mês | 4,2 | 0 |
-| Horas semanais de burocracia | 15h | 3h |
-| Reclamações de moradores | 12/mês | 1/mês |
+### Métricas-alvo do piloto (14 dias):
+| Métrica | Meta |
+|---------|------|
+| Tempo de registro de visita | < 30 seg |
+| Encomendas perdidas | 0 |
+| Burocracia semanal da portaria | -50% |
 
 ---
 
@@ -130,9 +126,11 @@
 
 > "Vamos resolver isso hoje? Podemos finalizar a contratação na hora e iniciar a migração já esta semana."
 
-**WhatsApp:** (11) 99999-9999  
-**E-mail:** contato@ambros.com.br  
-**Agenda online:** [Calendly — 15 minutos]
+### Contato — Odair Pinto Colares (Manaus/AM)
+
+**WhatsApp:** (92) 99512-9901 — https://wa.me/559295129901
+**E-mail:** odaircolares@msn.com
+**Agenda online:** chamar no WhatsApp (demo de 15 min)
 
 ---
 

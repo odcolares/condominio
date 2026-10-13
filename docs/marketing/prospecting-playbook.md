@@ -15,16 +15,15 @@ Google Maps → Extrair Contatos (CSV) → Verificar WhatsApp → Gerar Links (T
 
 ## Passo 1: Mapeamento de Condomínios (Google Maps)
 
-### Bairros-alvo (São Paulo — fase inicial validada)
+### Bairros-alvo (Manaus/AM — operação atual)
 
-| # | Bairro | Condomínios Estimados | Estratégia de busca |
-|---|--------|----------------------|---------------------|
-| 1 | **Moema** | ~80 | `"condomínio Moema São Paulo"` |
-| 2 | **Brooklin** | ~60 | `"condomínio Brooklin São Paulo"` |
-| 3 | **Pinheiros** | ~55 | `"condomínio Pinheiros São Paulo"` |
-| 4 | **Vila Olímpia** | ~45 | `"condomínio Vila Olímpia São Paulo"` |
-| 5 | **Alto de Pinheiros** | ~40 | `"condomínio Alto de Pinheiros São Paulo"` |
-| 6 | **Lajeado / Vila Candido** | ~70 | `"condomínio Jardim Lajeado São Paulo"` |
+| # | Bairro | Estratégia de busca |
+|---|--------|---------------------|
+| 1 | **Ponta Negra** | `"condomínio Ponta Negra Manaus"` |
+| 2 | **Vieiralves** | `"condomínio Vieiralves Manaus"` |
+| 3 | **Adrianópolis** | `"condomínio Adrianópolis Manaus"` |
+| 4 | **Parque 10 de Novembro** | `"condomínio Parque 10 Manaus"` |
+| 5 | **Alvorada** | `"condomínio Alvorada Manaus"` |
 
 ### Como extrair dados (manual — primeira semana)
 
@@ -57,9 +56,9 @@ Use o template em `docs/marketing/condominios-prospecting.csv`
 |--------|---------|--------|
 | `lead_id` | 001 | Auto-incremental |
 | `nome_condominio` | Jardim das Acácias | Google Maps |
-| `bairro` | Moema | Google Maps |
-| `cidade` | SP | Google Maps |
-| `telefone` | 5511999999999 | Google Maps/Site |
+| `bairro` | Ponta Negra | Google Maps |
+| `cidade` | Manaus/AM | Google Maps |
+| `telefone` | 559295129901 | Google Maps/Site |
 | `eh_whatsapp` | sim/nao | Verificação wa.me |
 | `tipo_fone` | movel/fixo | Classificação |
 | `sindico_nome` | Carlos Silva | Pergunta no primeiro contato |
@@ -144,9 +143,9 @@ node tools/generate-wa-links.cjs docs/marketing/condominios-prospecting.csv --fo
 ```
 Olá {{nome}}, tudo bem?
 
-Represento o AMBROS, sistema de gestão de condomínio que já ajuda mais de 20 síndicos no SP a reduzir filas na portaria em até 70%.
+Sou {{seu_nome}} do AMBROS, sistema de gestão de condomínio em lançamento — estamos abrindo pilotos com 14 dias grátis.
 
-Vi que o {{condominio}} poderia se beneficiar de controle digital de visitantes e encomendas. Posso te mostrar em 15 minutos como resolver isso?
+Vi que o {{condominio}} poderia se beneficiar de controle digital de visitantes e encomendas. Posso te mostrar em 15 minutos como funciona?
 
 Tem disponibilidade para uma demo rápida hoje à tarde?
 
@@ -155,7 +154,7 @@ Abraço!
 
 ### Dia 2 — Follow-up #1
 ```
-Oi {{nome}}, só reforçando a mensagem sobre o AMBROS. Outros condomínios na região já reduziram a burocracia da portaria em 70%. Ainda tenho disponibilidade hoje para uma call de 15 minutos. Se interessar, me avisa!
+Oi {{nome}}, só reforçando a mensagem sobre o AMBROS (piloto com 14 dias grátis). Ainda tenho disponibilidade hoje para uma call de 15 minutos. Se interessar, me avisa!
 
 []
 ```
@@ -199,13 +198,13 @@ Oi {{nome}}, só reforçando a mensagem sobre o AMBROS. Outros condomínios na r
 - [ ] Deck de vendas PDF pronto (`docs/marketing/deck.pt-br.md`)
 
 ### Mapeamento (Dia 1-2)
-- [ ] Buscar no Google Maps: `"condomínio Moema São Paulo"`
+- [ ] Buscar no Google Maps: `"condomínio Ponta Negra Manaus"`
 - [ ] Extrair 30 condomínios (nome, endereço, telefone, site)
 - [ ] Verificar WhatsApp de cada um (`wa.me`)
-- [ ] Preencher CSV com 30 leads validados
+- [ ] Preencher CSV `docs/marketing/condominios-manaus.csv` com 30 leads validados
 
 ### Primeiro contato (Dia 3)
-- [ ] Gerar links: `node tools/generate-wa-links.cjs docs/marketing/condominios-prospecting.csv`
+- [ ] Gerar links: `node tools/generate-wa-links.cjs docs/marketing/condominios-manaus.csv`
 - [ ] Enviar 10 mensagens (10h-11h)
 - [ ] Marcar não-respondedores como `contatado`
 
