@@ -225,7 +225,7 @@ Oi {{nome}}, só reforçando a mensagem sobre o AMBROS (piloto com 14 dias grát
 | CSV template prospecting | `docs/marketing/condominios-prospecting.csv` |
 | WhatsApp link generator | `tools/generate-wa-links.cjs` |
 | Landing page lead capture | `public/landing.html` → POST `/leads` |
-| Leads dashboard | `public/leads.html` → GET `/leads` (auth) |
+| Leads dashboard (interno, fora do menu) | `public/leads.html` via URL direta → GET `/leads` (auth) |
 | Email onboarding (5 seq) | `docs/marketing/emails/01-05.html` |
 | Sales deck | `docs/marketing/deck.pt-br.md` |
 | API de leads | `GET/POST/PUT/DELETE /leads` |

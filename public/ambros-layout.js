@@ -573,18 +573,15 @@
     const oldFoot = sidebar.querySelector(".sidebar-foot");
     if (oldFoot) oldFoot.remove();
 
-    // 5. Ensure "Usuários do Sistema" + "Leads de Prospecção" links exist in Gestão & Auditoria (admin-only)
+    // 5. Ensure "Usuários do Sistema" link exists in Gestão & Auditoria (admin-only).
+    // NOTE: "Leads de Prospecção" é ferramenta interna da empresa — fora do menu
+    // para todos os perfis do condomínio. Acesso via URL direta: /leads.html
     const relatoriosGroup = document.getElementById("grp-relatorios");
     if (relatoriosGroup) {
       const subitems = relatoriosGroup.querySelector(".nav-subitems");
       if (subitems) {
-        if (!subitems.querySelector('a[href="leads.html"]')) {
-          const leadLink = document.createElement("a");
-          leadLink.className = "nav-subitem admin-only";
-          leadLink.href = "leads.html";
-          leadLink.innerHTML = '<i class="bi bi-person-badge"></i><span>Leads de Prospecção</span>';
-          subitems.appendChild(leadLink);
-        }
+        // Remove link legado de Leads caso exista (migração de versões antigas)
+        subitems.querySelectorAll('a[href="leads.html"]').forEach((el) => el.remove());
         if (!subitems.querySelector('a[href="usuarios.html"]')) {
           const userLink = document.createElement("a");
           userLink.className = "nav-subitem admin-only";
