@@ -14,11 +14,11 @@
 const fs = require("fs");
 const path = require("path");
 
-const MSG_DIA_0 = "Olá {{nome}}, tudo bem?%0A%0ARepresento o AMBROS, sistema de gestão de condomínio que já ajuda mais de 20 síndicos no SP a reduzir filas na portaria em até 70%.%0A%0AVi que o {{condominio}} poderia se beneficiar de controle digital de visitantes e encomendas. Posso te mostrar em 15 minutos como resolver isso?%0A%0ATem disponibilidade para uma demo rápida hoje à tarde?%0A%0AAbraço!";
-const MSG_DIA_2 = "Oi {{nome}}, só reforçando a mensagem sobre o AMBROS. Outros condomínios na região já reduziram a burocracia da portaria em 70%. Ainda tenho disponibilidade hoje para uma call de 15 minutos. Se interessar, me avisa!%0A[]";
+const MSG_DIA_0 = "Olá {{nome}}, tudo bem?%0A%0ASou {{seu_nome}} do AMBROS, sistema de gestão de condomínio em lançamento — estamos abrindo pilotos com 14 dias grátis.%0A%0AVi que o {{condominio}} poderia se beneficiar de controle digital de visitantes e encomendas. Posso te mostrar em 15 minutos como funciona?%0A%0ATem disponibilidade para uma demo rápida hoje à tarde?%0A%0AAbraço!";
+const MSG_DIA_2 = "Oi {{nome}}, só reforçando a mensagem sobre o AMBROS (piloto com 14 dias grátis). Ainda tenho disponibilidade hoje para uma call de 15 minutos. Se interessar, me avisa!%0A[]";
 const MSG_DIA_5 = "{{nome}}, última tentativa desta semana. Oferecemos acesso antecipado com 20% de desconto. Se ainda houver interesse em testar grátis por 14 dias, estou à disposição.%0A[]";
 
-const SEU_NOME = process.env.AMBROS_NOME || "Carlos";
+const SEU_NOME = process.env.AMBROS_NOME || "Odair Pinto Colares";
 
 function parseCSV(filePath) {
   const content = fs.readFileSync(filePath, "utf8");

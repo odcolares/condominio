@@ -1,0 +1,3 @@
+lead_id,nome_condominio,bairro,cidade,telefone,eh_whatsapp,tipo_fone,sindico_nome,unidades,sistema_atual,primeira_msg_data,ultima_resposta_data,status,ultimo_contato,resultado,observacao
+001,Reserva Ponta Negra,Ponta Negra,Manaus/AM,,,,,48,,2026-10-13,,novo,,"Exemplo — mapear via Google Maps: condominio Ponta Negra Manaus",""
+002,Vieiralves Residence,Vieiralves,Manaus/AM,,,,,36,,2026-10-13,,novo,,"Exemplo — mapear via Google Maps: condominio Vieiralves Manaus",""

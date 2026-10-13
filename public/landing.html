@@ -488,7 +488,7 @@
                 </div>
                 <div>
                   <label class="form-label">Telefone / WhatsApp</label>
-                  <input type="tel" class="form-control" name="telefone" placeholder="(11) 99999-9999">
+                  <input type="tel" class="form-control" name="telefone" placeholder="(92) 99512-9901">
                 </div>
                 <div class="form-grid-full">
                   <label class="form-label">Nome do condomínio</label>
@@ -704,9 +704,9 @@
   <!-- Depoimentos -->
   <section class="section" id="depoimentos">
     <div class="container">
-      <h2>O que nossos clientes dizem</h2>
+      <h2>Veja na prática</h2>
       <p class="section-subtitle">
-        Condomínios reais que já transformaram a gestão do dia a dia com AMBROS.
+        Estamos abrindo os primeiros pilotos com condomínios parceiros — veja o potencial na sua portaria.
       </p>
       <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -715,12 +715,12 @@
               <i class="fa-solid fa-user-tie"></i>
             </div>
             <blockquote>
-              "Antes gastávamos 30 minutos por manhã resolvendo encomendas no WhatsApp.
-              Com o AMBROS, os moradores são notificados automaticamente e a portaria tem tudo digitalizado.
-              Recomendo para qualquer síndico!"
+              "Se a portaria gastasse 30 minutos por manhã resolvendo encomendas no WhatsApp,
+              com o AMBROS os moradores seriam notificados automaticamente e tudo ficaria digitalizado.
+              É o que queremos validar nos primeiros pilotos."
             </blockquote>
-            <div class="author">Roberto Almeida</div>
-            <div class="role">Síndico — Residencial Jardim das Acácias (48 unidades)</div>
+            <div class="author">Programa Piloto AMBROS</div>
+            <div class="role">Vagas abertas — 14 dias grátis · sem cartão</div>
           </div>
         </div>
       </div>
@@ -862,8 +862,9 @@
         <div class="col-md-4">
           <h4>Contato</h4>
           <ul class="list-unstyled">
-            <li style="margin-bottom: 8px;"><i class="bi bi-envelope me-2" style="color: var(--brand-blue);"></i>contato@ambros.com.br</li>
-            <li><i class="bi bi-whatsapp me-2" style="color: var(--brand-blue);"></i>(11) 99999-9999</li>
+            <!-- Contatos via public/ambros-config.js -->
+            <li style="margin-bottom: 8px;"><i class="bi bi-envelope me-2" style="color: var(--brand-blue);"></i><span data-ambros="email">Contato em breve</span></li>
+            <li><i class="bi bi-whatsapp me-2" style="color: var(--brand-blue);"></i><span data-ambros="whatsapp">WhatsApp em breve</span></li>
           </ul>
         </div>
       </div>
@@ -874,6 +875,21 @@
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="ambros-config.js"></script>
+  <script>
+    // Aplica contatos reais quando configurados em ambros-config.js
+    (function () {
+      try {
+        var cfg = window.AMBROS_CONFIG || {};
+        if (cfg.emailContato) {
+          document.querySelectorAll('[data-ambros="email"]').forEach(function (el) { el.textContent = cfg.emailContato; });
+        }
+        if (cfg.whatsappDisplay) {
+          document.querySelectorAll('[data-ambros="whatsapp"]').forEach(function (el) { el.textContent = cfg.whatsappDisplay; });
+        }
+      } catch (_) {}
+    })();
+  </script>
   <script>
     const API_BASE = "";
 
