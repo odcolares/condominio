@@ -119,63 +119,7 @@
 
     <div class="menu-label">MENU PRINCIPAL</div>
     <nav class="sidebar-nav">
-      <!-- Dashboard Top Level -->
-      <a class="nav-item" href="ambros-dashboard.html">
-        <i class="bi bi-speedometer2 lead"></i>
-        <span>Dashboard</span>
-      </a>
-
-      <!-- Subcategoria: Portaria & Segurança -->
-      <div class="nav-group" id="grp-portaria">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
-          <i class="lead bi bi-shield-lock"></i>
-          <span>Portaria & Acessos</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="portaria-entrada.html">
-            <i class="bi bi-door-open"></i>
-            <span>Portaria Express</span>
-          </a>
-          <a class="nav-subitem" href="visitantes.html">
-            <i class="bi bi-person-badge"></i>
-            <span>Visitantes</span>
-          </a>
-          <a class="nav-subitem" href="prestadores.html">
-            <i class="bi bi-tools"></i>
-            <span>Prestadores & Obras</span>
-          </a>
-          <a class="nav-subitem" href="ocorrencias.html">
-            <i class="bi bi-shield-exclamation"></i>
-            <span>Ocorrências & Alertas</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Cadastros do Condomínio -->
-      <div class="nav-group" id="grp-cadastros">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
-          <i class="lead bi bi-folder2-open"></i>
-          <span>Cadastros</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="moradores.html">
-            <i class="bi bi-people"></i>
-            <span>Moradores</span>
-          </a>
-          <a class="nav-subitem" href="veiculos.html">
-            <i class="bi bi-car-front"></i>
-            <span>Veículos & Vagas</span>
-          </a>
-          <a class="nav-subitem" href="encomendas.html">
-            <i class="bi bi-box-seam"></i>
-            <span>Encomendas</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Convivência & Morador (Ativo aqui) -->
+      <!-- Único grupo do perfil morador: Área do Morador -->
       <div class="nav-group open" id="grp-morador">
         <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
           <i class="lead bi bi-houses"></i>
@@ -191,35 +135,17 @@
             <i class="bi bi-calendar-event"></i>
             <span>Reservas de Lazer</span>
           </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Gestão & Auditoria -->
-      <div class="nav-group" id="grp-relatorios">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
-          <i class="lead bi bi-graph-up-arrow"></i>
-          <span>Gestão & Auditoria</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="auditoria.html">
-            <i class="bi bi-file-earmark-text"></i>
-            <span>Auditoria de Acessos</span>
+          <a class="nav-subitem" href="portal-morador.html#cadastro-visitantes">
+            <i class="bi bi-person-badge"></i>
+            <span>Cadastro de Visitantes</span>
           </a>
-          <a class="nav-subitem admin-only" href="usuarios.html">
-            <i class="bi bi-people-fill"></i>
-            <span>Usuários do Sistema</span>
+          <a class="nav-subitem" href="portal-morador.html#cadastro-prestadores">
+            <i class="bi bi-tools"></i>
+            <span>Cadastro de Prestadores</span>
           </a>
         </div>
       </div>
     </nav>
-
-    <div class="px-3 py-2 border-top border-secondary border-opacity-25 no-morador">
-      <div class="small text-muted mb-1">Simular como morador:</div>
-      <select class="form-select form-select-sm bg-dark text-white border-secondary" id="selectTrocarMorador" onchange="trocarMorador()">
-        <option value="">Carregando moradores...</option>
-      </select>
-    </div>
 
     <!-- ChatGPT-style Bottom User Card & Popover -->
     <div class="sidebar-user-container">
@@ -550,8 +476,23 @@
     document.getElementById("presDataInicio").value = hojeStr;
     const futuroStr = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
     document.getElementById("presDataFim").value = futuroStr;
+
+    // Abre modal de cadastro via hash na URL (carregamento inicial vindo de outra página)
+    verificarHashCadastro();
+
+    // Detecta mudança de hash SEM reload (clique nos links da sidebar estando já no portal)
+    window.addEventListener("hashchange", verificarHashCadastro);
+
     inicializarMoradorAtual();
   });
+
+  function verificarHashCadastro() {
+    if (window.location.hash === "#cadastro-visitantes") {
+      setTimeout(() => abrirModalPreAutorizacao(), 200);
+    } else if (window.location.hash === "#cadastro-prestadores") {
+      setTimeout(() => abrirModalPrestador(), 200);
+    }
+  }
 
   async function inicializarMoradorAtual() {
     try {
@@ -560,12 +501,16 @@
       });
       if (resp.ok) {
         const usuario = await resp.json();
-        const sel = document.getElementById("selectTrocarMorador");
-        if (sel) {
-          const options = Array.from(sel.options);
-          const match = options.find(o => o.textContent.includes(usuario.nome));
+        // Sem dropdown "Simular como morador" — busca morador pelo nome do usuário logado
+        const portalResp = await fetch("/portal/morador", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (portalResp.ok) {
+          const dados = await portalResp.json();
+          const lista = dados.moradoresDisponiveis || [];
+          const match = lista.find(m => m.nome === usuario.nome);
           if (match) {
-            moradorAtualId = Number(match.value);
+            moradorAtualId = match.id;
           }
         }
         if (!moradorAtualId) {
@@ -787,7 +732,10 @@
   }
 
   function trocarMorador() {
+    // Dropdown "Simular como morador" foi removido do perfil morador.
+    // Mantido como no-op para evitar quebra de referências antigas.
     const sel = document.getElementById("selectTrocarMorador");
+    if (!sel) return;
     moradorAtualId = Number(sel.value);
     carregarPortal();
   }

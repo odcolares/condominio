@@ -42,12 +42,18 @@
     <div style="font-weight: 600; letter-spacing: 1px;">AMBROS · Carregando...</div>
   </div>
   <script>
-    const token = localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
-    if (token) {
-      window.location.replace("ambros-dashboard.html");
-    } else {
-      window.location.replace("login.html");
-    }
+    // Redirecionamento por perfil: morador → portal, demais → dashboard.
+    (function () {
+      try {
+        var raw = localStorage.getItem("ambros_usuario") || sessionStorage.getItem("ambros_usuario") || "{}";
+        var u = JSON.parse(raw);
+        var destino = "ambros-dashboard.html";
+        if (u.perfil === "morador") destino = "portal-morador.html";
+        window.location.replace(destino);
+      } catch (_) {
+        window.location.replace("login.html");
+      }
+    })();
   </script>
 </body>
 </html>

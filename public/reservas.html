@@ -131,63 +131,7 @@
 
     <div class="menu-label">MENU PRINCIPAL</div>
     <nav class="sidebar-nav">
-      <!-- Dashboard Top Level -->
-      <a class="nav-item" href="ambros-dashboard.html">
-        <i class="bi bi-speedometer2 lead"></i>
-        <span>Dashboard</span>
-      </a>
-
-      <!-- Subcategoria: Portaria & Segurança -->
-      <div class="nav-group" id="grp-portaria">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-portaria')">
-          <i class="lead bi bi-shield-lock"></i>
-          <span>Portaria & Acessos</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="portaria-entrada.html">
-            <i class="bi bi-door-open"></i>
-            <span>Portaria Express</span>
-          </a>
-          <a class="nav-subitem" href="visitantes.html">
-            <i class="bi bi-person-badge"></i>
-            <span>Visitantes</span>
-          </a>
-          <a class="nav-subitem" href="prestadores.html">
-            <i class="bi bi-tools"></i>
-            <span>Prestadores & Obras</span>
-          </a>
-          <a class="nav-subitem" href="ocorrencias.html">
-            <i class="bi bi-shield-exclamation"></i>
-            <span>Ocorrências & Alertas</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Cadastros do Condomínio -->
-      <div class="nav-group" id="grp-cadastros">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-cadastros')">
-          <i class="lead bi bi-folder2-open"></i>
-          <span>Cadastros</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="moradores.html">
-            <i class="bi bi-people"></i>
-            <span>Moradores</span>
-          </a>
-          <a class="nav-subitem" href="veiculos.html">
-            <i class="bi bi-car-front"></i>
-            <span>Veículos & Vagas</span>
-          </a>
-          <a class="nav-subitem" href="encomendas.html">
-            <i class="bi bi-box-seam"></i>
-            <span>Encomendas</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Convivência & Morador (Ativo aqui) -->
+      <!-- Único grupo do perfil morador: Área do Morador -->
       <div class="nav-group open" id="grp-morador">
         <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-morador')">
           <i class="lead bi bi-houses"></i>
@@ -203,24 +147,13 @@
             <i class="bi bi-calendar-event"></i>
             <span>Reservas de Lazer</span>
           </a>
-        </div>
-      </div>
-
-      <!-- Subcategoria: Gestão & Auditoria -->
-      <div class="nav-group" id="grp-relatorios">
-        <button class="nav-group-btn" type="button" onclick="toggleMenu('grp-relatorios')">
-          <i class="lead bi bi-graph-up-arrow"></i>
-          <span>Gestão & Auditoria</span>
-          <i class="bi bi-chevron-down chev"></i>
-        </button>
-        <div class="nav-subitems">
-          <a class="nav-subitem" href="auditoria.html">
-            <i class="bi bi-file-earmark-text"></i>
-            <span>Auditoria de Acessos</span>
+          <a class="nav-subitem" href="portal-morador.html#cadastro-visitantes">
+            <i class="bi bi-person-badge"></i>
+            <span>Cadastro de Visitantes</span>
           </a>
-          <a class="nav-subitem admin-only" href="usuarios.html">
-            <i class="bi bi-people-fill"></i>
-            <span>Usuários do Sistema</span>
+          <a class="nav-subitem" href="portal-morador.html#cadastro-prestadores">
+            <i class="bi bi-tools"></i>
+            <span>Cadastro de Prestadores</span>
           </a>
         </div>
       </div>
