@@ -26,17 +26,24 @@
   // Safe modal display (works with or without bootstrap.Modal)
   function showModalSafe(modalId) {
     const el = document.getElementById(modalId);
-    if (!el) return;
+    if (!el) {
+      console.warn("showModalSafe: modal not found:", modalId);
+      return;
+    }
     if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
       try {
         const inst = bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el);
         inst.show();
         return;
-      } catch (_) {}
+      } catch (e) {
+        console.warn("Bootstrap modal failed, using fallback:", e);
+      }
     }
-    // Fallback display
+    // Fallback display - robusto
     el.classList.add("show");
     el.style.display = "block";
+    el.setAttribute("aria-modal", "true");
+    el.removeAttribute("aria-hidden");
     let backdrop = document.getElementById(modalId + "-backdrop");
     if (!backdrop) {
       backdrop = document.createElement("div");
@@ -44,6 +51,8 @@
       backdrop.className = "modal-backdrop fade show";
       document.body.appendChild(backdrop);
     }
+    // Trap focus no modal (acessibilidade)
+    el.focus();
   }
 
   function hideModalSafe(modalId) {
@@ -60,6 +69,8 @@
     }
     el.classList.remove("show");
     el.style.display = "none";
+    el.setAttribute("aria-hidden", "true");
+    el.removeAttribute("aria-modal");
     const backdrop = document.getElementById(modalId + "-backdrop");
     if (backdrop) backdrop.remove();
   }
@@ -182,7 +193,14 @@
     const pop = document.getElementById("userPopover");
     if (pop) pop.style.display = "none";
 
+    // Garante que o modal existe (injeta se necessário) antes de preencher
+    if (!document.getElementById("editProfileModal")) {
+      injectModals();
+    }
+
     const user = getAuthUser();
+    const isPriv = user.perfil === "administrador" || user.perfil === "admin" || user.email === "adm@adm.com";
+
     const nomeInp = document.getElementById("profileNome");
     const emailInp = document.getElementById("profileEmail");
     const perfilInp = document.getElementById("profilePerfil");
@@ -190,6 +208,9 @@
     const avatarInp = document.getElementById("profileAvatarUrl");
     const avatarPrev = document.getElementById("profileAvatarPreview");
     const avatarFile = document.getElementById("profileAvatarFile");
+    const prefTema = document.getElementById("prefTema");
+    const prefNotif = document.getElementById("prefNotif");
+    const configNote = document.getElementById("profileConfigNote");
 
     const savedAvatar = localStorage.getItem("ambros_avatar_url") || "https://i.pravatar.cc/80?img=12";
 
@@ -204,6 +225,12 @@
     if (avatarInp) avatarInp.value = savedAvatar;
     if (avatarPrev) avatarPrev.src = savedAvatar;
     if (avatarFile) avatarFile.value = "";
+
+    // Permissão dinâmica: config full só para admin; demais = disabled + nota
+    const dis = isPriv ? "" : " disabled";
+    if (prefTema) prefTema.disabled = !isPriv;
+    if (prefNotif) prefNotif.disabled = !isPriv;
+    if (configNote) configNote.style.display = isPriv ? "none" : "block";
 
     const err = document.getElementById("profileError");
     const succ = document.getElementById("profileSuccess");
@@ -328,11 +355,11 @@
     }
   }
 
-  // Inject standard modals into document if missing
+  // Inject standard modals into document if missing — modal base (estrutura fixa)
   function injectModals() {
     if (!document.getElementById("editProfileModal")) {
       const modalProfileHtml = `
-        <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade ambros-profile-modal" id="editProfileModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header">
@@ -344,22 +371,21 @@
                   <div class="row">
                     <div class="col-md-4 text-center border-end mb-3 mb-md-0">
                       <div class="mb-3">
-        <div class="mb-3">
-                          <div class="position-relative d-inline-block">
-                            <img id="profileAvatarPreview" src="https://i.pravatar.cc/80?img=12" alt="Avatar" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover; border: 2px dashed #dee2e6;">
-                            <label for="profileAvatarFile" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; cursor: pointer;" title="Alterar foto">
-                              <i class="bi bi-camera-fill fs-8"></i>
-                            </label>
-                            <input type="file" class="d-none" id="profileAvatarFile" accept="image/*" capture="environment">
-                          </div>
+                        <div class="position-relative d-inline-block">
+                          <img id="profileAvatarPreview" src="https://i.pravatar.cc/80?img=12" alt="Avatar" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover; border: 2px dashed #dee2e6;">
+                          <label for="profileAvatarFile" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; cursor: pointer;" title="Alterar foto">
+                            <i class="bi bi-camera-fill fs-8"></i>
+                          </label>
+                          <input type="file" class="d-none" id="profileAvatarFile" accept="image/*" capture="environment">
                         </div>
-                        <div class="mb-2">
-                          <input type="text" class="form-control form-control-sm" id="profileAvatarUrl" placeholder="https://..." oninput="document.getElementById('profileAvatarPreview').src = this.value || 'https://i.pravatar.cc/80?img=12'">
-                        </div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('profileAvatarFile').click()">
-                          <i class="bi bi-upload me-1"></i>Fazer upload
-                        </button>
                       </div>
+                      <div class="mb-2">
+                        <input type="text" class="form-control form-control-sm" id="profileAvatarUrl" placeholder="https://..." oninput="document.getElementById('profileAvatarPreview').src = this.value || 'https://i.pravatar.cc/80?img=12'">
+                      </div>
+                      <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="document.getElementById('profileAvatarFile').click()">
+                        <i class="bi bi-upload me-1"></i>Fazer upload
+                      </button>
+                    </div>
                     <div class="col-md-8">
                       <div class="mb-3">
                         <label class="form-label">Nome Completo</label>
@@ -395,6 +421,7 @@
                           </select>
                         </div>
                       </div>
+                      <div id="profileConfigNote" class="form-text" style="display:none;">Gerenciado pelo condomínio — solicite ao administrador para alterar.</div>
                     </div>
                   </div>
                   <div class="text-danger small mb-2 mt-3" id="profileError" style="display:none;"></div>
@@ -699,6 +726,13 @@
       el.style.display = isAdmin ? "flex" : "none";
     });
 
+    // 9b. Esconde "Área do Morador" para todos exceto o próprio morador
+    const _isMorador = authUser.perfil === "morador";
+    if (!_isMorador) {
+      const _grpMor = document.getElementById("grp-morador");
+      if (_grpMor) _grpMor.style.display = "none";
+    }
+
     // 10. Resident role check — hide non-resident menu items for morador perfil
     const isMorador = authUser.perfil === "morador";
     document.querySelectorAll(".no-morador").forEach((el) => {
@@ -708,12 +742,17 @@
     });
 
     // 10b. Dynamically hide admin/portaria nav groups for residents
+    // Morador vê: Portaria & Acessos, Cadastros, Área do Morador.
+    // Esconde apenas Gestão & Auditoria (itens admin-only).
     if (isMorador) {
-      ["grp-portaria", "grp-cadastros", "grp-relatorios"].forEach((id) => {
+      const hideForMorador = ["grp-relatorios"];
+      hideForMorador.forEach((id) => {
         const el = document.getElementById(id);
         if (el) {
           el.classList.add("no-morador");
           el.style.display = "none";
+          // Remove classe open residual para evitar "abre tudo" ao clicar em outros grupos
+          el.classList.remove("open");
         }
       });
       // Hide Dashboard top-level link for residents (they use portal-morador)
@@ -723,7 +762,29 @@
       });
     }
 
-    // 10. Click-away to close popover
+    // 10c. Portaria role check — sidebar operacional de guarita.
+    // Backend intacto (portaria opera tudo via API); menu mostra:
+    // Dashboard + Portaria & Acessos + Cadastros. Esconde: Área do Morador + Gestão & Auditoria.
+    const isPortaria = authUser.perfil === "portaria" || authUser.perfil === "zelador";
+    if (isPortaria) {
+      // Esconde apenas o que não é do turno: Área do Morador + Gestão & Auditoria
+      ["grp-morador", "grp-relatorios"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = "none";
+          el.classList.remove("open");
+        }
+      });
+      // Dashboard + Cadastros + Portaria ficam visíveis.
+      // NOTA: não removemos 'open' do grp-cadastros — nas páginas de cadastro
+      // (moradores, veículos, encomendas) ele já vem aberto no HTML e deve
+      // permanecer aberto. Em portaria-entrada.html ele já vem fechado (sem open).
+      // NOTA: não forçamos 'open' no grp-portaria via JS — cada página já abre
+      // o grupo correto no HTML. Forçar causava "abre junto" nas páginas de cadastro.
+      // Marca o body para touch targets maiores na tela de registro
+      document.body.classList.add("portaria-touch");
+    }
+    // 10d. Click-away to close popover
     document.addEventListener("click", function (e) {
       const pop = document.getElementById("userPopover");
       const container = document.querySelector(".sidebar-user-container");

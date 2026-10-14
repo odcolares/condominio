@@ -550,6 +550,54 @@ html.ambros-pre-collapsed .nav-group-btn {
   }
 }
 
+/* ==========================================================================
+   Modal Perfil & Configurações — blindagem de layout (anti-colisão)
+   Escopo mínimo: garante gutter do Bootstrap sem quebrar o grid col-md-4/8.
+   ========================================================================== */
+.ambros-profile-modal .modal-body .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ambros-profile-modal .modal-body .row > * {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  max-width: 100%;
+  padding-right: calc(1.5rem * 0.5);
+  padding-left: calc(1.5rem * 0.5);
+}
+@media (min-width: 768px) {
+  .ambros-profile-modal .modal-body .col-md-4 {
+    flex: 0 0 auto;
+    width: 33.33333333%;
+  }
+  .ambros-profile-modal .modal-body .col-md-8 {
+    flex: 0 0 auto;
+    width: 66.66666667%;
+  }
+  .ambros-profile-modal .modal-body .border-end {
+    border-right: 1px solid #dee2e6 !important;
+  }
+}
+.ambros-profile-modal .modal-body .g-2 {
+  --bs-gutter-x: 0.5rem;
+  --bs-gutter-y: 0.5rem;
+}
+.ambros-profile-modal .modal-body .col-6 {
+  flex: 0 0 auto;
+  width: 50%;
+}
+
+/* ==========================================================================
+   Portaria Express — touch targets de guarita (WCAG 44px, uso apressado)
+   ========================================================================== */
+.portaria-touch .btn-sm {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 /* Clean content area */
 .content {
   padding: 20px 24px !important;
