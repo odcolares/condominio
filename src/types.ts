@@ -35,7 +35,9 @@ export interface Veiculo {
   cor: string | null;
   vaga: string | null;
   morador_id: number | null;
+  tipo_vinculo: 'proprietario' | 'visitante' | 'especulativo';
   criado_em: string;
+  titulo: string | null; // Nome do titular (proprietario) ou null
 }
 
 export interface Visitante {
@@ -53,6 +55,10 @@ export interface Visitante {
   agendado_para: string | null;
   presente: boolean;
   criado_em: string;
+  nome_visitante: string; // Alias para nome, usado na geração de seeds
+  documento_visitante: string | null; // Documento do visitante (CPF, RG, CNH)
+  data_prevista: string; // Data prevista para visita (YYYY-MM-DD)
+  observacao: string; // Motivo da visita
 }
 
 export interface Acesso {
@@ -160,6 +166,19 @@ export interface RestricaoAcesso {
 }
 
 export type EspacoComum = "salao_festas" | "churrasqueira_1" | "churrasqueira_2" | "quadra" | "coworking";
+
+export interface Restricao {
+  id: number;
+  tipo_identificador: 'cpf' | 'rg' | 'placa' | 'nome';
+  valor_identificador: string;
+  nome_pessoa: string;
+  motivo: string;
+  instrucao_portaria: 'proibido' | 'advertencia' | 'restricao_horario';
+  bloqueio_total: boolean; // true = proibido / false = advertência
+  ativo: boolean;
+  criado_por: string;
+  criado_em: string;
+}
 export type StatusReserva = "pendente" | "confirmada" | "cancelada";
 
 export interface Reserva {
