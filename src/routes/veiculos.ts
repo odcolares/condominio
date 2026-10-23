@@ -112,6 +112,8 @@ veiculosRouter.post("", (req, res) => {
     cor: cor ? cor.trim() : null,
     vaga: vaga ? vaga.trim().toUpperCase() : null,
     morador_id: mId,
+    tipo_vinculo: mId ? "proprietario" : "especulativo",
+    titulo: mId ? db.moradores.find((m) => m.id === mId)?.nome_completo || null : null,
     criado_em: new Date().toISOString(),
   };
 

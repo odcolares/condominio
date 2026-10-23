@@ -175,6 +175,9 @@ visitantesRouter.post("", (req, res) => {
     morador_visitado_id: mId,
     agendado_para: agendado_para || null,
     presente: Boolean(entrada_imediata),
+    nome_visitante: nome.trim(),
+    documento_visitante: documento ? documento.trim() : null,
+    data_prevista: agendado_para || undefined,
     criado_em: agora,
   };
 
