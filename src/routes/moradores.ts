@@ -92,6 +92,8 @@ moradoresRouter.post("", (req, res) => {
       cor: req.body.cor_veiculo || null,
       vaga: numero_vaga || null,
       morador_id: novoMorador.id,
+      tipo_vinculo: "proprietario",
+      titulo: novoMorador.nome_completo,
       criado_em: new Date().toISOString(),
     });
   }

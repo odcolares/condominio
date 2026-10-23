@@ -244,6 +244,8 @@ class InMemoryDB {
         cor: "Prata",
         vaga: "V-045",
         morador_id: 1,
+        tipo_vinculo: "proprietario",
+        titulo: "Carlos Lima",
         criado_em: now.toISOString(),
       },
       {
@@ -253,6 +255,8 @@ class InMemoryDB {
         cor: "Preto",
         vaga: "V-078",
         morador_id: 3,
+        tipo_vinculo: "proprietario",
+        titulo: "Mariana Costa",
         criado_em: now.toISOString(),
       },
       {
@@ -262,6 +266,8 @@ class InMemoryDB {
         cor: "Preto",
         vaga: "V-099",
         morador_id: 1,
+        tipo_vinculo: "proprietario",
+        titulo: "Carlos Lima",
         criado_em: now.toISOString(),
       }
     );
@@ -282,6 +288,10 @@ class InMemoryDB {
         morador_visitado_id: 3,
         agendado_para: null,
         presente: true,
+        nome_visitante: "José Santos",
+        documento_visitante: "111.222.333-44",
+        data_prevista: undefined,
+        observacao: undefined,
         criado_em: now.toISOString(),
       },
       {
@@ -298,6 +308,10 @@ class InMemoryDB {
         morador_visitado_id: 2,
         agendado_para: null,
         presente: true,
+        nome_visitante: "Ana Paula",
+        documento_visitante: "555.666.777-88",
+        data_prevista: undefined,
+        observacao: undefined,
         criado_em: now.toISOString(),
       }
     );

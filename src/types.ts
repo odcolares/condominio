@@ -57,8 +57,8 @@ export interface Visitante {
   criado_em: string;
   nome_visitante: string; // Alias para nome, usado na geração de seeds
   documento_visitante: string | null; // Documento do visitante (CPF, RG, CNH)
-  data_prevista: string; // Data prevista para visita (YYYY-MM-DD)
-  observacao: string; // Motivo da visita
+  data_prevista?: string; // Data prevista para visita (YYYY-MM-DD)
+  observacao?: string; // Motivo da visita
 }
 
 export interface Acesso {

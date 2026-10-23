@@ -122,6 +122,10 @@ portalRouter.post("/preautorizacao", authMiddleware, (req, res) => {
     morador_visitado_id: morador.id,
     agendado_para: `${pre.data_prevista}T12:00:00.000Z`,
     presente: false,
+    nome_visitante: pre.nome_visitante,
+    documento_visitante: pre.documento_visitante,
+    data_prevista: pre.data_prevista,
+    observacao: pre.observacao ?? undefined,
     criado_em: new Date().toISOString(),
   };
   db.visitantes.push(novoVisitante);
