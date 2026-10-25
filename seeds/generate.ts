@@ -54,13 +54,15 @@ export function generateMoradores(tenant: TenantConfig, balance: () => number): 
     const block = tenant.blocos[i % blockCount];
     const apt = buildingUnit(balance);
     const isProprietario = chance(40, balance);
+    const firstName = pick(FIRST_NAMES, balance);
+    const lastName = pick(LAST_NAMES, balance);
     moradores.push({
       id: moradores.length + 1,
-      nome_completo: FIRST_NAMES[balance()] + ' ' + LAST_NAMES[balance()],
+      nome_completo: firstName + ' ' + lastName,
       cpf: generateCpf(balance),
       telefone: generatePhone('am', balance),
       whatsapp: generatePhone('am', balance),
-      telegram: generateTelegram(FIRST_NAMES[balance()], LAST_NAMES[balance()], balance),
+      telegram: generateTelegram(firstName, lastName, balance),
       bloco: block,
       apartamento: apt,
       vinculo: isProprietario ? 'proprietario' : 'inquilino',

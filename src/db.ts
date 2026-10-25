@@ -14,6 +14,8 @@ import {
   PreAutorizacaoVisitante,
   Lead,
 } from "./types.js";
+import { TenantConfig, TENANTS } from "./tenant.js";
+import { generate } from "../seeds/generate.ts";
 import fs from "fs";
 import path from "path";
 
@@ -35,6 +37,23 @@ class InMemoryDB {
   notificacoes: NotificacaoMorador[] = [];
   preautorizacoes: PreAutorizacaoVisitante[] = [];
   leads: Lead[] = [];
+
+  // Multi-tenant: dados isolados por tenant
+  tenantConfigs: TenantConfig[] = TENANTS;
+  tenantData: Map<string, {
+    moradores: Morador[];
+    veiculos: Veiculo[];
+    visitantes: Visitante[];
+    acessos: Acesso[];
+    encomendas: Encomenda[];
+    prestadores: Prestador[];
+    ocorrencias: Ocorrencia[];
+    restricoes: RestricaoAcesso[];
+    reservas: Reserva[];
+    comunicados: Comunicado[];
+    notificacoes: NotificacaoMorador[];
+    preautorizacoes: PreAutorizacaoVisitante[];
+  }> = new Map();
 
   private nextUserId = 1;
   private nextMoradorId = 1;
@@ -108,6 +127,7 @@ class InMemoryDB {
           if (this.notificacoes.length === 0) this.seedNotificacoes();
           if (this.preautorizacoes.length === 0) this.seedPreAutorizacoes();
           if (this.leads.length === 0) this.seedLeads();
+          this.seedMultiTenant();
           return;
         }
       }
@@ -116,6 +136,7 @@ class InMemoryDB {
     }
 
     this.seed();
+    this.seedMultiTenant();
     this.save();
   }
 
@@ -717,6 +738,36 @@ class InMemoryDB {
     );
   }
 
+  // ===================================================================
+  // Multi-tenant seed: gerar dados para todos os tenants usando seeds/generate.ts
+  // ===================================================================
+  seedMultiTenant() {
+    const allTenantData = generate(this.tenantConfigs);
+
+    for (const tenant of this.tenantConfigs) {
+      const data = allTenantData[tenant.slug];
+      this.tenantData.set(tenant.slug, data);
+    }
+
+    // Manter arrays flat com dados do primeiro tenant para compatibilidade com rotas existentes
+    const primeiroTenant = this.tenantConfigs[0];
+    const primeiro = this.tenantData.get(primeiroTenant.slug);
+    if (primeiro) {
+      this.moradores = primeiro.moradores;
+      this.veiculos = primeiro.veiculos;
+      this.visitantes = primeiro.visitantes;
+      this.acessos = primeiro.acessos;
+      this.encomendas = primeiro.encomendas;
+      this.prestadores = primeiro.prestadores;
+      this.ocorrencias = primeiro.ocorrencias;
+      this.restricoes = primeiro.restricoes;
+      this.reservas = primeiro.reservas;
+      this.comunicados = primeiro.comunicados;
+      this.notificacoes = primeiro.notificacoes;
+      this.preautorizacoes = primeiro.preautorizacoes;
+    }
+  }
+
   seedLeads() {
     const now = new Date();
     this.leads.push(
@@ -807,6 +858,7 @@ class InMemoryDB {
     this.nextPreAutorizacaoId = 1;
     this.nextLeadId = 1;
     this.seed();
+    this.seedMultiTenant();
   }
 }
 
