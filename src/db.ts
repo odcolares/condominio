@@ -127,6 +127,7 @@ class InMemoryDB {
           if (this.notificacoes.length === 0) this.seedNotificacoes();
           if (this.preautorizacoes.length === 0) this.seedPreAutorizacoes();
           if (this.leads.length === 0) this.seedLeads();
+          this.ensureDemoUsers();
           this.seedMultiTenant();
           return;
         }
@@ -186,14 +187,23 @@ class InMemoryDB {
   seed() {
     const now = new Date();
 
-    // Default admin & morador users
+    // Default admin & morador users (credenciais de demo)
     this.usuarios.push(
       {
         id: this.nextUserId++,
         nome: "Administrador",
-        email: "adm@adm.com",
-        senha_hash: "123",
+        email: "admin@ambros.com",
+        senha_hash: "admin123",
         perfil: "administrador",
+        ativo: true,
+        criado_em: now.toISOString(),
+      },
+      {
+        id: this.nextUserId++,
+        nome: "Porteiro",
+        email: "portaria@ambros.com",
+        senha_hash: "portaria123",
+        perfil: "portaria",
         ativo: true,
         criado_em: now.toISOString(),
       },
@@ -201,8 +211,17 @@ class InMemoryDB {
         id: this.nextUserId++,
         nome: "Carlos Lima",
         email: "carlos@ambros.com",
-        senha_hash: "123",
+        senha_hash: "morador123",
         perfil: "morador",
+        ativo: true,
+        criado_em: now.toISOString(),
+      },
+      {
+        id: this.nextUserId++,
+        nome: "Sindico",
+        email: "sindico@ambros.com",
+        senha_hash: "sindico123",
+        perfil: "sindico",
         ativo: true,
         criado_em: now.toISOString(),
       }
@@ -765,6 +784,31 @@ class InMemoryDB {
       this.comunicados = primeiro.comunicados;
       this.notificacoes = primeiro.notificacoes;
       this.preautorizacoes = primeiro.preautorizacoes;
+    }
+  }
+
+  // Garante que os usuarios de demo existam mesmo quando carregando do database.json
+  ensureDemoUsers() {
+    const demoUsers = [
+      { email: "admin@ambros.com", nome: "Administrador", senha_hash: "admin123", perfil: "administrador" },
+      { email: "portaria@ambros.com", nome: "Porteiro", senha_hash: "portaria123", perfil: "portaria" },
+      { email: "carlos@ambros.com", nome: "Carlos Lima", senha_hash: "morador123", perfil: "morador" },
+      { email: "sindico@ambros.com", nome: "Sindico", senha_hash: "sindico123", perfil: "sindico" },
+    ];
+
+    for (const du of demoUsers) {
+      const exists = this.usuarios.find((u) => u.email === du.email);
+      if (!exists) {
+        this.usuarios.push({
+          id: this.nextUserId++,
+          nome: du.nome,
+          email: du.email,
+          senha_hash: du.senha_hash,
+          perfil: du.perfil,
+          ativo: true,
+          criado_em: new Date().toISOString(),
+        });
+      }
     }
   }
 
