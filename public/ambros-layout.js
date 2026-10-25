@@ -19,6 +19,98 @@
     return { nome: "Administrador", email: "adm@adm.com", perfil: "administrador" };
   }
 
+  // ===================================================================
+  // Multi-tenant: selecionar e obter tenant ativo
+  // ===================================================================
+  function getSelectedTenantSlug() {
+    return localStorage.getItem("ambros_tenant") || null;
+  }
+
+  function setSelectedTenantSlug(slug) {
+    localStorage.setItem("ambros_tenant", slug);
+  }
+
+  async function loadTenants() {
+    try {
+      const res = await fetch("/api/tenants", {
+        headers: { Authorization: `Bearer ${getAuthToken()}` },
+      });
+      if (res.ok) return await res.json();
+    } catch (_) {}
+    return [];
+  }
+
+  // Renderiza o seletor de tenant no header (se ainda não existir)
+  function renderTenantSelector() {
+    if (document.getElementById("tenant-selector")) return;
+
+    const container = document.createElement("div");
+    container.id = "tenant-selector";
+    container.style.cssText = `
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      color: #64748b;
+    `;
+
+    const label = document.createElement("span");
+    label.textContent = "Condomínio:";
+    label.style.fontWeight = "600";
+    container.appendChild(label);
+
+    const select = document.createElement("select");
+    select.id = "tenant-select";
+    select.style.cssText = `
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      color: #0f172a;
+      font-size: 0.875rem;
+      cursor: pointer;
+    `;
+
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Carregando...";
+    select.appendChild(defaultOption);
+    container.appendChild(select);
+
+    // Inserir após o user popover no sidebar, ou no topo da página
+    const sidebarUser = document.querySelector(".sidebar-user-container");
+    const topBar = document.querySelector(".top-bar, header, .navbar");
+    const target = sidebarUser || topBar || document.body;
+    if (target.parentNode) {
+      target.parentNode.insertBefore(container, target.nextSibling);
+    } else {
+      document.body.appendChild(container);
+    }
+
+    // Carregar tenants
+    loadTenants().then((tenants) => {
+      select.innerHTML = "";
+      tenants.forEach((t) => {
+        const opt = document.createElement("option");
+        opt.value = t.slug;
+        opt.textContent = t.name;
+        if (t.slug === getSelectedTenantSlug()) opt.selected = true;
+        select.appendChild(opt);
+      });
+      if (!getSelectedTenantSlug() && tenants.length > 0) {
+        select.value = tenants[0].slug;
+        setSelectedTenantSlug(tenants[0].slug);
+      }
+    });
+
+    select.addEventListener("change", (e) => {
+      setSelectedTenantSlug(e.target.value);
+      // Recarregar a página para aplicar o novo tenant
+      window.location.reload();
+    });
+  }
+
   function getAuthToken() {
     return localStorage.getItem("ambros_token") || sessionStorage.getItem("ambros_token");
   }
@@ -804,4 +896,5 @@
   } else {
     initLayout();
   }
+  renderTenantSelector();
 })();

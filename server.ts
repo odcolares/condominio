@@ -14,6 +14,7 @@ import { ocorrenciasRouter, restricoesRouter } from "./src/routes/ocorrencias.js
 import { reservasRouter } from "./src/routes/reservas.js";
 import { portalRouter } from "./src/routes/portal.js";
 import { leadsRouter } from "./src/routes/leads.js";
+import { tenantsRouter } from "./src/routes/tenants.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,6 +50,7 @@ const routers = [
   { path: "/reservas", router: reservasRouter },
   { path: "/portal", router: portalRouter },
   { path: "/leads", router: leadsRouter },
+  { path: "/tenants", router: tenantsRouter },
 ];
 
 for (const { path: routePath, router } of routers) {
@@ -77,6 +79,7 @@ const apiPrefixes = [
   "/reservas",
   "/portal",
   "/leads",
+  "/tenants",
 ];
 
 app.use((req, res, next) => {
