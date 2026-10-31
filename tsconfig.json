@@ -6,7 +6,9 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
   "include": ["server.ts", "src/**/*"],
   "exclude": ["src/**/*.test.ts"]

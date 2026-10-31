@@ -9,7 +9,7 @@
 // - Placa: formato Mercosul LLL-NN (sem I, O, Q, Nenhum.).
 // - Telegram: handle sincetico derivado do nome completo.
 
-import { intBetween } from './rng';
+import { intBetween } from './rng.js';
 
 const LETTERS = 'ABCDEFGHJKLMNPRSTUVWXYZ';
 const DIGITS = '0123456789';

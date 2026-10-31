@@ -88,15 +88,15 @@ export interface Encomenda {
   tipo_volume: string;
   local_armazenamento: string;
   observacoes: string | null;
-  codigo_retirada: string;
+  codigo_retirada: string | null;
   status: StatusEncomenda;
-  recebido_em: string;
-  recebido_por: string;
+  recebido_em: string | null;
+  recebido_por: string | null;
   retirado_em: string | null;
   retirado_por: string | null;
   notificacao_enviada_whatsapp: boolean;
   notificacao_enviada_telegram: boolean;
-  mensagem_aviso: string;
+  mensagem_aviso: string | null;
 }
 
 export interface Prestador {

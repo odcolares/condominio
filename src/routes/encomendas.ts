@@ -50,7 +50,7 @@ encomendasRouter.get("", (req, res) => {
       const matchNome = e.morador_nome.toLowerCase().includes(busca);
       const matchUnidade = e.morador_unidade.toLowerCase().includes(busca);
       const matchRastreio = e.codigo_rastreio.toLowerCase().includes(busca);
-      const matchCodigo = e.codigo_retirada.toLowerCase().includes(busca);
+      const matchCodigo = e.codigo_retirada?.toLowerCase().includes(busca) || false;
       const matchTransp = e.transportadora.toLowerCase().includes(busca);
       if (!matchNome && !matchUnidade && !matchRastreio && !matchCodigo && !matchTransp) {
         return false;
@@ -63,7 +63,9 @@ encomendasRouter.get("", (req, res) => {
   resultado.sort((a, b) => {
     if (a.status === "pendente" && b.status !== "pendente") return -1;
     if (a.status !== "pendente" && b.status === "pendente") return 1;
-    return new Date(b.recebido_em).getTime() - new Date(a.recebido_em).getTime();
+    const aDate = new Date(a.recebido_em || "1970-01-01T00:00:00.000Z");
+    const bDate = new Date(b.recebido_em || "1970-01-01T00:00:00.000Z");
+    return bDate.getTime() - aDate.getTime();
   });
 
   return res.json(resultado);
