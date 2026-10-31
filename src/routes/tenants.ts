@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { authMiddleware, tenantMiddleware, AuthenticatedRequest } from "../auth.js";
-import { generate } from "../seeds/generate.ts";
+import { generate } from "../../seeds/generate.ts";
 
 export const tenantsRouter = Router();
 tenantsRouter.use(authMiddleware, tenantMiddleware);

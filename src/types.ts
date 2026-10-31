@@ -116,7 +116,7 @@ export interface Prestador {
   morador_autorizador_id: number | null;
   morador_autorizador_nome: string | null;
   data_inicio: string; // YYYY-MM-DD
-  data_fim: string; // YYYY-MM-DD
+  data_fim: string | null; // YYYY-MM-DD
   horario_permitido: string | null;
   observacao: string | null;
   presente: boolean;

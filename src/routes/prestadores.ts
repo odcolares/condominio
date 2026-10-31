@@ -14,7 +14,7 @@ function addDaysUTC(dateStr: string, days: number): string {
   return dt.toISOString().split("T")[0];
 }
 
-function isExpirado(dataFim: string): boolean {
+function isExpirado(dataFim: string | null): boolean {
   if (!dataFim) return false;
   const todayUTC = new Date().toISOString().split("T")[0];
   return todayUTC > dataFim;

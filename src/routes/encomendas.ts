@@ -85,7 +85,7 @@ encomendasRouter.get("/:id", (req, res) => {
     telegram: encomenda.morador_telegram,
   };
 
-  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso);
+  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso ?? "");
 
   return res.json({ ...encomenda, ...links });
 });
@@ -184,7 +184,7 @@ encomendasRouter.post("/:id/retirar", (req, res) => {
   }
 
   const codDigitado = String(codigo_retirada).trim().toUpperCase();
-  const codEsperado = encomenda.codigo_retirada.trim().toUpperCase();
+  const codEsperado = (encomenda.codigo_retirada ?? "").trim().toUpperCase();
 
   if (codDigitado !== codEsperado) {
     return res.status(400).json({
@@ -233,7 +233,7 @@ encomendasRouter.post("/:id/notificar", (req, res) => {
     telegram: encomenda.morador_telegram,
   };
 
-  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso);
+  const links = gerarLinksNotificacao(destino, encomenda.mensagem_aviso ?? "");
 
   return res.json({
     sucesso: true,
