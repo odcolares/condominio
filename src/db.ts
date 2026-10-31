@@ -152,6 +152,7 @@ class InMemoryDB {
       this.moradores[0].telegram = "@carloslima502";
       this.moradores[0].nome_completo = "Carlos Lima";
     }
+    this.rebaseIds();
     this.save();
   }
 
@@ -882,6 +883,24 @@ class InMemoryDB {
   getNextPreAutorizacaoId() {
     return this.nextPreAutorizacaoId++;
   }
+  rebaseIds() {
+    const maxId = (arr: { id: number }[]) =>
+      arr.reduce((max, item) => Math.max(max, item.id), 0);
+    this.nextUserId = maxId(this.usuarios) + 1;
+    this.nextMoradorId = maxId(this.moradores) + 1;
+    this.nextVeiculoId = maxId(this.veiculos) + 1;
+    this.nextVisitanteId = maxId(this.visitantes) + 1;
+    this.nextAcessoId = maxId(this.acessos) + 1;
+    this.nextEncomendaId = maxId(this.encomendas) + 1;
+    this.nextPrestadorId = maxId(this.prestadores) + 1;
+    this.nextOcorrenciaId = maxId(this.ocorrencias) + 1;
+    this.nextRestricaoId = maxId(this.restricoes) + 1;
+    this.nextReservaId = maxId(this.reservas) + 1;
+    this.nextComunicadoId = maxId(this.comunicados) + 1;
+    this.nextNotificacaoId = maxId(this.notificacoes) + 1;
+    this.nextPreAutorizacaoId = maxId(this.preautorizacoes) + 1;
+    this.nextLeadId = maxId(this.leads) + 1;
+  }
   getNextLeadId() {
     return this.nextLeadId++;
   }
@@ -924,6 +943,7 @@ class InMemoryDB {
       this.moradores[0].telegram = "@carloslima502";
       this.moradores[0].nome_completo = "Carlos Lima";
     }
+    this.rebaseIds();
   }
 }
 

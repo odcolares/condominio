@@ -129,7 +129,6 @@ portalRouter.post("/preautorizacao", authMiddleware, (req, res) => {
     criado_em: new Date().toISOString(),
   };
   db.visitantes.push(novoVisitante);
-
   // Notificação no app
   db.notificacoes.push({
     id: db.getNextNotificacaoId(),
