@@ -9,11 +9,11 @@
 // - Veiculos com morador_id NULO sao visitantes ou especulativos
 // - Prestadores com tipo_vinculo=unidade precisam morador_autorizador_id valido
 
-import { pick, intBetween, chance } from './rng';
-import { FIRST_NAMES, LAST_NAMES, generateCpf, generatePhone, generatePlate, generateTelegram } from './names';
-import { Morador, Veiculo, Visitante, Acesso, Encomenda, Ocorrencia, Restricao, Reserva, Comunicado, NotificacaoMorador, PreAutorizacaoVisitante, Prestador, EspacoComum } from '../src/types';
-import { TenantConfig, TENANTS } from '../src/tenant';
-import { makeRng } from './rng';
+import { pick, intBetween, chance } from './rng.ts';
+import { FIRST_NAMES, LAST_NAMES, generateCpf, generatePhone, generatePlate, generateTelegram } from './names.ts';
+import { Morador, Veiculo, Visitante, Acesso, Encomenda, Ocorrencia, Restricao, Reserva, Comunicado, NotificacaoMorador, PreAutorizacaoVisitante, Prestador, EspacoComum } from '../src/types.ts';
+import { TenantConfig, TENANTS } from '../src/tenant.ts';
+import { makeRng } from './rng.ts';
 
 // ===================================================================
 // Helper functions
@@ -222,7 +222,7 @@ export function generateEncomendas(tenant: TenantConfig, moradores: Morador[], b
     );
     const dataEntrega = status === 'entregue'
       ? new Date(dataCriacao).getTime() + 86400000 * intBetween(1, 7, balance)
-      : null;
+      : (null as null);
 
     encomendas.push({
       id: encomendas.length + 1,
@@ -239,7 +239,7 @@ export function generateEncomendas(tenant: TenantConfig, moradores: Morador[], b
       observacoes: pick(['Nenhuma', 'Entrega preferencial', 'Fragil', 'Perecivel'], balance),
       codigo_retirada: pick(['QR-100', 'QR-101', 'QR-102', 'QR-103'], balance),
       status: status,
-      recebido_em: status === 'entregue' ? new Date(dataEntrega).toISOString() : null,
+      recebido_em: status === 'entregue' ? new Date(dataEntrega as number).toISOString() : null,
       recebido_por: status === 'entregue' ? 'Portaria' : null,
       retirado_em: status === 'devolvida' ? new Date(new Date(dataCriacao).getTime() + 86400000 * intBetween(1, 3, balance)).toISOString() : null,
       retirado_por: status === 'devolvida' ? 'Morador' : null,

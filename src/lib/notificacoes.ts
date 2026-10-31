@@ -72,7 +72,7 @@ export function unidadeMorador(morador: Morador): string {
 
 export function tmplEncomenda(morador: Morador, enc: Encomenda): string {
   const unidade = enc.morador_unidade || unidadeMorador(morador);
-  const dataRecebimento = new Date(enc.recebido_em);
+  const dataRecebimento = enc.recebido_em ? new Date(enc.recebido_em) : new Date();
   const dataFmt = `${String(dataRecebimento.getDate()).padStart(2, "0")}/${String(dataRecebimento.getMonth() + 1).padStart(2, "0")} ${String(dataRecebimento.getHours()).padStart(2, "0")}:${String(dataRecebimento.getMinutes()).padStart(2, "0")}`;
 
   let msg = `📦 Nova encomenda ${enc.codigo_retirada} para ${unidade}.\n`;
