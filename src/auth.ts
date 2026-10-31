@@ -7,6 +7,7 @@ const SECRET_KEY = process.env.SECRET_KEY || "troque-esta-chave-em-producao";
 
 export interface AuthenticatedRequest extends Request {
   user?: Usuario;
+  tenantSlug?: string;
 }
 
 export function createToken(email: string): string {
@@ -45,4 +46,30 @@ export function requirePerfil(...perfis: Perfil[]) {
     }
     next();
   };
+}
+
+// ===================================================================
+// Middleware de multi-tenant: lê header X-Tenant-Id
+// ===================================================================
+export function tenantMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const tenantHeader = req.headers["x-tenant-id"] as string | undefined;
+  const queryTenant = typeof req.query.tenant === "string" ? req.query.tenant : undefined;
+
+  const requestedSlug = tenantHeader || queryTenant;
+
+  if (requestedSlug) {
+    const tenant = db.tenantConfigs.find((t) => t.slug === requestedSlug);
+    if (!tenant) {
+      return res.status(400).json({ detail: `Tenant '${requestedSlug}' não encontrado` });
+    }
+    req.tenantSlug = requestedSlug;
+  } else {
+    // Default: primeiro tenant disponível
+    const defaultTenant = db.tenantConfigs[0];
+    if (defaultTenant) {
+      req.tenantSlug = defaultTenant.slug;
+    }
+  }
+
+  next();
 }
