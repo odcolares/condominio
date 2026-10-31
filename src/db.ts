@@ -192,8 +192,8 @@ class InMemoryDB {
       {
         id: this.nextUserId++,
         nome: "Administrador",
-        email: "admin@ambros.com",
-        senha_hash: "admin123",
+         email: "adm@adm.com",
+         senha_hash: "123",
         perfil: "administrador",
         ativo: true,
         criado_em: now.toISOString(),
@@ -202,7 +202,7 @@ class InMemoryDB {
         id: this.nextUserId++,
         nome: "Porteiro",
         email: "portaria@ambros.com",
-        senha_hash: "portaria123",
+         senha_hash: "123",
         perfil: "portaria",
         ativo: true,
         criado_em: now.toISOString(),
@@ -211,7 +211,7 @@ class InMemoryDB {
         id: this.nextUserId++,
         nome: "Carlos Lima",
         email: "carlos@ambros.com",
-        senha_hash: "morador123",
+         senha_hash: "123",
         perfil: "morador",
         ativo: true,
         criado_em: now.toISOString(),
@@ -220,7 +220,7 @@ class InMemoryDB {
         id: this.nextUserId++,
         nome: "Sindico",
         email: "sindico@ambros.com",
-        senha_hash: "sindico123",
+         senha_hash: "123",
         perfil: "sindico",
         ativo: true,
         criado_em: now.toISOString(),
@@ -790,10 +790,10 @@ class InMemoryDB {
   // Garante que os usuarios de demo existam mesmo quando carregando do database.json
   ensureDemoUsers() {
     const demoUsers = [
-      { email: "admin@ambros.com", nome: "Administrador", senha_hash: "admin123", perfil: "administrador" },
-      { email: "portaria@ambros.com", nome: "Porteiro", senha_hash: "portaria123", perfil: "portaria" },
-      { email: "carlos@ambros.com", nome: "Carlos Lima", senha_hash: "morador123", perfil: "morador" },
-      { email: "sindico@ambros.com", nome: "Sindico", senha_hash: "sindico123", perfil: "sindico" },
+       { email: "adm@adm.com", nome: "Administrador", senha_hash: "123", perfil: "administrador" },
+       { email: "portaria@ambros.com", nome: "Porteiro", senha_hash: "123", perfil: "portaria" },
+       { email: "carlos@ambros.com", nome: "Carlos Lima", senha_hash: "123", perfil: "morador" },
+       { email: "sindico@ambros.com", nome: "Sindico", senha_hash: "123", perfil: "sindico" },
     ];
 
     for (const du of demoUsers) {
