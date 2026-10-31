@@ -60,7 +60,7 @@ moradoresRouter.post("", (req, res) => {
     return res.status(422).json({ detail: "Apartamento é obrigatório" });
   }
 
-  const existing = db.moradores.find((m) => m.cpf === cpf);
+  const existing = db.moradores.find((m) => m.cpf.trim() === String(cpf).trim());
   if (existing) {
     return res.status(409).json({ detail: "Já existe morador com esse CPF" });
   }

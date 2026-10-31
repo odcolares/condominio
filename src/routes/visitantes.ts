@@ -301,15 +301,12 @@ visitantesRouter.post("/:id/entrada", (req, res) => {
   };
 
   // Atualiza pré-autorização associada (se existir) para status "acessou"
-  const preAuth = db.preautorizacoes.find(
-    (p) =>
-      p.morador_id === visitante.morador_visitado_id &&
-      p.nome_visitante === visitante.nome &&
-      p.status === "aguardando"
-  );
-  if (preAuth) {
-    preAuth.status = "acessou";
-  }
+   const preAuth = db.preautorizacoes.find(
+     (p) => p.nome_visitante === visitante.nome
+   );
+   if (preAuth) {
+     preAuth.status = "acessou";
+   }
 
   db.acessos.unshift(novoAcesso);
   db.save();

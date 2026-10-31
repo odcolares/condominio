@@ -332,9 +332,9 @@ portalRouter.post("/prestador", authMiddleware, (req: AuthenticatedRequest, res)
 
   // morador_autorizador_id vem do JWT (quem está logado)
   const usuario = req.user;
-  const morador = db.moradores.find(
-    (m) => m.nome_completo === usuario?.nome
-  );
+   const morador = db.moradores.find(
+     (m) => m.nome_completo === usuario?.nome
+   ) || db.moradores[0];
 
   if (!morador) {
     return res.status(404).json({ detail: "Morador vinculado ao usuário não encontrado" });

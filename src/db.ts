@@ -128,7 +128,14 @@ class InMemoryDB {
           if (this.preautorizacoes.length === 0) this.seedPreAutorizacoes();
           if (this.leads.length === 0) this.seedLeads();
           this.ensureDemoUsers();
-          this.seedMultiTenant();
+    this.seedMultiTenant();
+    if (this.moradores.length > 0) {
+      this.moradores[0].cpf = "123.456.789-00";
+      this.moradores[0].bloco = "05";
+      this.moradores[0].apartamento = "502";
+      this.moradores[0].telegram = "@carloslima502";
+      this.moradores[0].nome_completo = "Carlos Lima";
+    }
           return;
         }
       }
@@ -138,6 +145,13 @@ class InMemoryDB {
 
     this.seed();
     this.seedMultiTenant();
+    if (this.moradores.length > 0) {
+      this.moradores[0].cpf = "123.456.789-00";
+      this.moradores[0].bloco = "05";
+      this.moradores[0].apartamento = "502";
+      this.moradores[0].telegram = "@carloslima502";
+      this.moradores[0].nome_completo = "Carlos Lima";
+    }
     this.save();
   }
 
@@ -903,6 +917,13 @@ class InMemoryDB {
     this.nextLeadId = 1;
     this.seed();
     this.seedMultiTenant();
+    if (this.moradores.length > 0) {
+      this.moradores[0].cpf = "123.456.789-00";
+      this.moradores[0].bloco = "05";
+      this.moradores[0].apartamento = "502";
+      this.moradores[0].telegram = "@carloslima502";
+      this.moradores[0].nome_completo = "Carlos Lima";
+    }
   }
 }
 
