@@ -10,6 +10,7 @@ export interface Usuario {
   perfil: string;
   ativo: boolean;
   criado_em: string;
+  foto_url: string | null;
 }
 
 export interface Morador {

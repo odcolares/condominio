@@ -148,6 +148,7 @@ export abstract class BaseDB {
         perfil: "administrador",
         ativo: true,
         criado_em: now.toISOString(),
+        foto_url: null,
       },
       {
         id: this.nextUserId++,
@@ -157,6 +158,7 @@ export abstract class BaseDB {
         perfil: "portaria",
         ativo: true,
         criado_em: now.toISOString(),
+        foto_url: null,
       },
       {
         id: this.nextUserId++,
@@ -166,6 +168,7 @@ export abstract class BaseDB {
         perfil: "morador",
         ativo: true,
         criado_em: now.toISOString(),
+        foto_url: null,
       },
       {
         id: this.nextUserId++,
@@ -175,6 +178,7 @@ export abstract class BaseDB {
         perfil: "sindico",
         ativo: true,
         criado_em: now.toISOString(),
+        foto_url: null,
       }
     );
 
@@ -769,6 +773,7 @@ export abstract class BaseDB {
           perfil: du.perfil,
           ativo: true,
           criado_em: new Date().toISOString(),
+          foto_url: null,
         });
       }
     }

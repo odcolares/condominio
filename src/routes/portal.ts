@@ -17,7 +17,9 @@ portalRouter.get("/morador", authMiddleware, (req: AuthenticatedRequest, res) =>
     morador = db.moradores.find((m) => m.id === moradorIdParam);
   } else if (usuario) {
     // Resolve morador automatically from JWT user when no morador_id is passed
-    morador = db.moradores.find((m) => m.nome_completo === usuario.nome);
+    // Resolve morador vinculado ao usuário autenticado por nome (case-insensitive + trim)
+    const nomeUsuario = usuario.nome.trim().toLowerCase();
+    morador = db.moradores.find((m) => m.nome_completo.trim().toLowerCase() === nomeUsuario);
     if (!morador) {
       morador = db.moradores[0];
     }
@@ -293,7 +295,9 @@ portalRouter.get("/prestadores", authMiddleware, (req: AuthenticatedRequest, res
   if (moradorIdParam) {
     morador = db.moradores.find((m) => m.id === moradorIdParam);
   } else if (usuario) {
-    morador = db.moradores.find((m) => m.nome_completo === usuario.nome) || db.moradores[0];
+    // Resolve morador vinculado ao usuário autenticado por nome (case-insensitive + trim)
+    const nomeUsuario = usuario.nome.trim().toLowerCase();
+    morador = db.moradores.find((m) => m.nome_completo.trim().toLowerCase() === nomeUsuario) || db.moradores[0];
   } else {
     morador = db.moradores[0];
   }
@@ -331,8 +335,9 @@ portalRouter.post("/prestador", authMiddleware, (req: AuthenticatedRequest, res)
 
   // morador_autorizador_id vem do JWT (quem está logado)
   const usuario = req.user;
+  const nomeUsuario = usuario?.nome.trim().toLowerCase();
    const morador = db.moradores.find(
-     (m) => m.nome_completo === usuario?.nome
+     (m) => m.nome_completo.trim().toLowerCase() === nomeUsuario
    ) || db.moradores[0];
 
   if (!morador) {

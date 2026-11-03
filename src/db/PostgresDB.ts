@@ -49,10 +49,11 @@ const TABLES: TableDef[] = [
         perfil VARCHAR(50) NOT NULL,
         ativo BOOLEAN DEFAULT true,
         criado_em TIMESTAMPTZ DEFAULT NOW(),
-        tenant_id VARCHAR(50)
+        tenant_id VARCHAR(50),
+        foto_url TEXT
       )
     `,
-    cols: ["id","nome","email","senha_hash","perfil","ativo","criado_em","tenant_id"],
+    cols: ["id","nome","email","senha_hash","perfil","ativo","criado_em","tenant_id","foto_url"],
     dateCols: [],
     tsCols: ["criado_em"],
   },

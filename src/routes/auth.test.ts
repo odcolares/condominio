@@ -84,4 +84,55 @@ describe("Auth Integration Tests", () => {
     expect(marcarRes.body).toHaveProperty("sucesso", true);
     expect(marcarRes.body.total_pendentes).toBe(0);
   });
+
+  it("PUT /auth/me/foto - atualizar foto de um usuário não altera foto de outros (não-regressão)", async () => {
+    // Login como admin e atualiza sua foto
+    const adminLogin = await request(app)
+      .post("/auth/login")
+      .send({ email: "adm@adm.com", senha: "123" });
+    const adminToken = adminLogin.body.access_token;
+
+    const fotoAdmin = "https://example.com/fotos/admin.jpg";
+    const resAdmin = await request(app)
+      .put("/auth/me/foto")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ foto_url: fotoAdmin });
+
+    expect(resAdmin.status).toBe(200);
+    expect(resAdmin.body.foto_url).toBe(fotoAdmin);
+
+    // Login como morador e atualiza sua foto com uma URL diferente
+    const moradorLogin = await request(app)
+      .post("/auth/login")
+      .send({ email: "carlos@ambros.com", senha: "123" });
+    const moradorToken = moradorLogin.body.access_token;
+
+    const fotoMorador = "https://example.com/fotos/carlos.jpg";
+    const resMorador = await request(app)
+      .put("/auth/me/foto")
+      .set("Authorization", `Bearer ${moradorToken}`)
+      .send({ foto_url: fotoMorador });
+
+    expect(resMorador.status).toBe(200);
+    expect(resMorador.body.foto_url).toBe(fotoMorador);
+
+    // Verifica que o admin mantém sua foto original (não foi sobrescrita pelo morador)
+    const adminMe = await request(app)
+      .get("/auth/me")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(adminMe.status).toBe(200);
+    expect(adminMe.body.foto_url).toBe(fotoAdmin);
+
+    // Verifica que o porteiro mantém foto null (não foi afetado por nenhuma atualização)
+    const portariaLogin = await request(app)
+      .post("/auth/login")
+      .send({ email: "portaria@ambros.com", senha: "123" });
+    const portariaToken = portariaLogin.body.access_token;
+
+    const portariaMe = await request(app)
+      .get("/auth/me")
+      .set("Authorization", `Bearer ${portariaToken}`);
+    expect(portariaMe.status).toBe(200);
+    expect(portariaMe.body.foto_url).toBeNull();
+  });
 });

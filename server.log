@@ -1,0 +1,35 @@
+[AMBROS] Servidor rodando em http://0.0.0.0:3000
+Erro no servidor capturado: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Usuário\Documents\Condominio\node_modules\body-parser\lib\types\json.js:96:19)
+    at C:\Users\Usuário\Documents\Condominio\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:226:14)
+    at invokeCallback (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:514:20)
+    at endReadableNT (node:internal/streams/readable:2147:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  expose: true,
+  statusCode: 400,
+  status: 400,
+  body: '{email:adm@adm.com,senha:123}',
+  type: 'entity.parse.failed'
+}
+Erro no servidor capturado: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Usuário\Documents\Condominio\node_modules\body-parser\lib\types\json.js:96:19)
+    at C:\Users\Usuário\Documents\Condominio\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:226:14)
+    at invokeCallback (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:238:16)
+    at done (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (C:\Users\Usuário\Documents\Condominio\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:514:20)
+    at endReadableNT (node:internal/streams/readable:2147:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  expose: true,
+  statusCode: 400,
+  status: 400,
+  body: '{email:adm@adm.com,senha:123}',
+  type: 'entity.parse.failed'
+}

@@ -42,11 +42,32 @@ authRouter.get("/me", authMiddleware, (req: AuthenticatedRequest, res: Response)
   return res.json(safeUser);
 });
 
+authRouter.put("/me/foto", authMiddleware, (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({ detail: "Não autenticado" });
+  }
+  const { foto_url } = req.body;
+  if (foto_url === undefined) {
+    return res.status(422).json({ detail: "Campo foto_url é obrigatório" });
+  }
+  // Usa req.user diretamente (cópia shallow do middleware) para evitar
+  // referência direta ao objeto compartilhado em db.usuarios.
+  // Sincroniza a mudança de volta ao objeto original em db.usuarios.
+  req.user.foto_url = foto_url === "" ? null : foto_url;
+  const originalUser = db.usuarios.find((u) => u.id === req.user!.id);
+  if (originalUser) {
+    originalUser.foto_url = req.user.foto_url;
+  }
+  db.save();
+  const { senha_hash, ...safeUser } = req.user;
+  return res.json(safeUser);
+});
+
 authRouter.put("/me", authMiddleware, (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ detail: "Não autenticado" });
   }
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, foto_url } = req.body;
   const usuario = db.usuarios.find((u) => u.id === req.user!.id);
   if (!usuario) {
     return res.status(404).json({ detail: "Usuário não encontrado" });
@@ -67,6 +88,10 @@ authRouter.put("/me", authMiddleware, (req: AuthenticatedRequest, res: Response)
 
   if (senha !== undefined && String(senha).trim() !== "") {
     usuario.senha_hash = String(senha).trim();
+  }
+
+  if (foto_url !== undefined) {
+    usuario.foto_url = foto_url === "" ? null : foto_url;
   }
 
   db.save();
@@ -112,6 +137,7 @@ authRouter.post("/usuarios", authMiddleware, adminMiddleware, (req: Authenticate
     perfil: perfil as "administrador" | "morador" | "portaria",
     ativo: ativo !== undefined ? Boolean(ativo) : true,
     criado_em: new Date().toISOString(),
+    foto_url: null,
   };
 
   db.usuarios.push(novoUsuario);

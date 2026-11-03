@@ -27,7 +27,10 @@ export function authMiddleware(req: AuthenticatedRequest, res: Response, next: N
     if (!user) {
       return res.status(401).json({ detail: "Credenciais inválidas" });
     }
-    req.user = user;
+    // Cópia shallow para evitar que req.user seja uma referência direta
+    // ao objeto compartilhado em db.usuarios, prevenindo efeitos colaterais
+    // quando o usuário logado é modificado (ex: atualização de foto).
+    req.user = { ...user };
     next();
   } catch {
     return res.status(401).json({ detail: "Credenciais inválidas" });

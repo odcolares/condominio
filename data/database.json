@@ -7,7 +7,8 @@
       "senha_hash": "123",
       "perfil": "administrador",
       "ativo": true,
-      "criado_em": "2026-11-03T13:46:52.456Z"
+      "criado_em": "2026-11-03T15:42:22.134Z",
+      "foto_url": "https://exemplo.com/foto-admin.jpg"
     },
     {
       "id": 2,
@@ -16,7 +17,8 @@
       "senha_hash": "123",
       "perfil": "portaria",
       "ativo": true,
-      "criado_em": "2026-11-03T13:46:52.456Z"
+      "criado_em": "2026-11-03T15:42:22.134Z",
+      "foto_url": null
     },
     {
       "id": 3,
@@ -25,7 +27,8 @@
       "senha_hash": "123",
       "perfil": "morador",
       "ativo": true,
-      "criado_em": "2026-11-03T13:46:52.456Z"
+      "criado_em": "2026-11-03T15:42:22.134Z",
+      "foto_url": null
     },
     {
       "id": 4,
@@ -34,7 +37,8 @@
       "senha_hash": "123",
       "perfil": "sindico",
       "ativo": true,
-      "criado_em": "2026-11-03T13:46:52.456Z"
+      "criado_em": "2026-11-03T15:42:22.134Z",
+      "foto_url": null
     }
   ],
   "moradores": [
@@ -3764,21 +3768,6 @@
       "registrado_por": "Portaria",
       "data_hora": "2024-10-11",
       "resolvido_em": null
-    },
-    {
-      "id": 9,
-      "titulo": "Incidente de Teste",
-      "categoria": "outros",
-      "gravidade": "baixa",
-      "status": "aberta",
-      "bloco": "05",
-      "apartamento": "502",
-      "morador_envolvido": null,
-      "descricao": "Teste de ocorrência pelo morador",
-      "acao_tomada": null,
-      "registrado_por": "Portaria",
-      "data_hora": "2026-11-03T13:46:52.466Z",
-      "resolvido_em": null
     }
   ],
   "restricoes": [
@@ -4491,8 +4480,8 @@
       "status": "novo",
       "origem": "landing-page",
       "observacao": "Interessado em controle de visitantes e encomendas",
-      "criado_em": "2026-11-03T13:46:52.456Z",
-      "atualizado_em": "2026-11-03T13:46:52.456Z"
+      "criado_em": "2026-11-03T15:42:22.134Z",
+      "atualizado_em": "2026-11-03T15:42:22.134Z"
     }
   ],
   "nextUserId": 5,
