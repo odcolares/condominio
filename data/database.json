@@ -7,7 +7,7 @@
       "senha_hash": "123",
       "perfil": "administrador",
       "ativo": true,
-      "criado_em": "2026-10-31T04:47:18.773Z"
+      "criado_em": "2026-11-03T13:46:52.456Z"
     },
     {
       "id": 2,
@@ -16,7 +16,7 @@
       "senha_hash": "123",
       "perfil": "portaria",
       "ativo": true,
-      "criado_em": "2026-10-31T04:47:18.773Z"
+      "criado_em": "2026-11-03T13:46:52.456Z"
     },
     {
       "id": 3,
@@ -25,7 +25,7 @@
       "senha_hash": "123",
       "perfil": "morador",
       "ativo": true,
-      "criado_em": "2026-10-31T04:47:18.773Z"
+      "criado_em": "2026-11-03T13:46:52.456Z"
     },
     {
       "id": 4,
@@ -34,7 +34,7 @@
       "senha_hash": "123",
       "perfil": "sindico",
       "ativo": true,
-      "criado_em": "2026-10-31T04:47:18.773Z"
+      "criado_em": "2026-11-03T13:46:52.456Z"
     }
   ],
   "moradores": [
@@ -3777,7 +3777,7 @@
       "descricao": "Teste de ocorrência pelo morador",
       "acao_tomada": null,
       "registrado_por": "Portaria",
-      "data_hora": "2026-10-31T04:47:18.782Z",
+      "data_hora": "2026-11-03T13:46:52.466Z",
       "resolvido_em": null
     }
   ],
@@ -4491,8 +4491,8 @@
       "status": "novo",
       "origem": "landing-page",
       "observacao": "Interessado em controle de visitantes e encomendas",
-      "criado_em": "2026-10-31T04:47:18.773Z",
-      "atualizado_em": "2026-10-31T04:47:18.773Z"
+      "criado_em": "2026-11-03T13:46:52.456Z",
+      "atualizado_em": "2026-11-03T13:46:52.456Z"
     }
   ],
   "nextUserId": 5,
