@@ -2,17 +2,23 @@ import { Router, Response } from "express";
 import { db } from "../db.js";
 import { createToken, authMiddleware, AuthenticatedRequest } from "../auth.js";
 import { Usuario } from "../types.js";
+import { hashSenha, compararSenha } from "../utils/hash.js";
 
 export const authRouter = Router();
 
-authRouter.post("/login", (req, res) => {
+authRouter.post("/login", async (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) {
     return res.status(401).json({ detail: "E-mail ou senha inválidos" });
   }
 
   const usuario = db.usuarios.find((u) => u.email === email);
-  if (!usuario || usuario.senha_hash !== senha) {
+  if (!usuario) {
+    return res.status(401).json({ detail: "E-mail ou senha inválidos" });
+  }
+
+  const senhasIguais = await compararSenha(senha, usuario.senha_hash);
+  if (!senhasIguais) {
     return res.status(401).json({ detail: "E-mail ou senha inválidos" });
   }
 
@@ -50,9 +56,6 @@ authRouter.put("/me/foto", authMiddleware, async (req: AuthenticatedRequest, res
   if (foto_url === undefined) {
     return res.status(422).json({ detail: "Campo foto_url é obrigatório" });
   }
-  // Usa req.user diretamente (cópia shallow do middleware) para evitar
-  // referência direta ao objeto compartilhado em db.usuarios.
-  // Sincroniza a mudança de volta ao objeto original em db.usuarios.
   req.user.foto_url = foto_url === "" ? null : foto_url;
   const originalUser = db.usuarios.find((u) => u.id === req.user!.id);
   if (originalUser) {
@@ -77,7 +80,7 @@ authRouter.put("/me", authMiddleware, async (req: AuthenticatedRequest, res: Res
     const emailTrim = email.trim();
     const existe = db.usuarios.find((u) => u.email === emailTrim && u.id !== usuario.id);
     if (existe) {
-      return res.status(422).json({ detail: "E-mail já está em uso por outro usuário" });
+      return res.status(422).json({ detail: "E-mail já em uso por outro usuário" });
     }
     usuario.email = emailTrim;
   }
@@ -87,7 +90,7 @@ authRouter.put("/me", authMiddleware, async (req: AuthenticatedRequest, res: Res
   }
 
   if (senha !== undefined && String(senha).trim() !== "") {
-    usuario.senha_hash = String(senha).trim();
+    usuario.senha_hash = await hashSenha(String(senha).trim());
   }
 
   if (foto_url !== undefined) {
@@ -129,11 +132,13 @@ authRouter.post("/usuarios", authMiddleware, adminMiddleware, async (req: Authen
     return res.status(422).json({ detail: "Já existe um usuário com este e-mail" });
   }
 
+  const senha_hash = await hashSenha(String(senha).trim());
+
   const novoUsuario: Usuario = {
     id: db.getNextUserId(),
     nome: nome.trim(),
     email: emailTrim,
-    senha_hash: String(senha).trim(),
+    senha_hash,
     perfil: perfil as "administrador" | "morador" | "portaria",
     ativo: ativo !== undefined ? Boolean(ativo) : true,
     criado_em: new Date().toISOString(),
@@ -143,7 +148,7 @@ authRouter.post("/usuarios", authMiddleware, adminMiddleware, async (req: Authen
   db.usuarios.push(novoUsuario);
   await db.save();
 
-  const { senha_hash, ...safe } = novoUsuario;
+  const { senha_hash: _hash, ...safe } = novoUsuario;
   return res.status(201).json(safe);
 });
 
@@ -160,7 +165,7 @@ authRouter.put("/usuarios/:id", authMiddleware, adminMiddleware, async (req: Aut
     const emailTrim = email.trim().toLowerCase();
     const existe = db.usuarios.find((u) => u.email === emailTrim && u.id !== id);
     if (existe) {
-      return res.status(422).json({ detail: "E-mail já está em uso por outro usuário" });
+      return res.status(422).json({ detail: "E-mail já em uso por outro usuário" });
     }
     usuario.email = emailTrim;
   }
@@ -170,7 +175,7 @@ authRouter.put("/usuarios/:id", authMiddleware, adminMiddleware, async (req: Aut
   }
 
   if (senha !== undefined && String(senha).trim() !== "") {
-    usuario.senha_hash = String(senha).trim();
+    usuario.senha_hash = await hashSenha(String(senha).trim());
   }
 
   if (perfil !== undefined) {
