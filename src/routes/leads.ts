@@ -51,6 +51,7 @@ leadsRouter.post("", async (req, res) => {
     sistema_atual,
     origem,
     observacao,
+    consentimento_lgpd,
   } = req.body;
 
   if (!nome || !String(nome).trim()) {
@@ -67,6 +68,11 @@ leadsRouter.post("", async (req, res) => {
     return res.status(422).json({ detail: "E-mail inválido" });
   }
 
+  // Validação LGPD — consentimento obrigatório no server-side
+  if (!consentimento_lgpd) {
+    return res.status(422).json({ detail: "Consentimento LGPD é obrigatório para captura de lead." });
+  }
+
   const now = new Date().toISOString();
   const novoLead: Lead = {
     id: db.getNextLeadId(),
@@ -79,6 +85,7 @@ leadsRouter.post("", async (req, res) => {
     status: "novo",
     origem: origem ? String(origem).trim() : null,
     observacao: observacao ? String(observacao).trim() : null,
+    consentimento_lgpd,
     criado_em: now,
     atualizado_em: now,
   };

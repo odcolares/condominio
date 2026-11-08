@@ -722,6 +722,7 @@ export abstract class BaseDB {
         status: "novo",
         origem: "landing-page",
         observacao: "Interessado em controle de visitantes e encomendas",
+        consentimento_lgpd: false,
         criado_em: now.toISOString(),
         atualizado_em: now.toISOString(),
       }

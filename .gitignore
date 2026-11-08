@@ -1,4 +1,4 @@
-# Segredos — NUNCA versionar
+# Segredos ??" NUNCA versionar
 .env
 .env.local
 .env.*.local
@@ -39,3 +39,6 @@ Thumbs.db
 .codegraph/
 .omc/
 .omo/
+
+# Logs do servidor
+server.log

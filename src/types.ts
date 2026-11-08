@@ -243,6 +243,7 @@ export interface Lead {
   status: StatusLead;
   origem: string | null;
   observacao: string | null;
+  consentimento_lgpd: boolean | null;
   criado_em: string;
   atualizado_em: string;
 }
