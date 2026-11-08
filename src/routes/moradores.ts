@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware, requirePerfil } from "../auth.js";
+import { authMiddleware, requirePerfil, tenantMiddleware } from "../auth.js";
 import { Morador } from "../types.js";
 
 export const moradoresRouter = Router();
-moradoresRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
+moradoresRouter.use(authMiddleware, tenantMiddleware, requirePerfil("administrador", "portaria"));
 
 moradoresRouter.get("", (req, res) => {
   const busca = typeof req.query.busca === "string" ? req.query.busca.toLowerCase() : null;
@@ -40,7 +40,7 @@ moradoresRouter.get("/:id", (req, res) => {
   return res.json(morador);
 });
 
-moradoresRouter.post("", (req, res) => {
+moradoresRouter.post("", async (req, res) => {
   const { nome_completo, cpf, telefone, whatsapp, telegram, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
 
   if (!nome_completo || !cpf) {
@@ -79,6 +79,7 @@ moradoresRouter.post("", (req, res) => {
     numero_vaga: numero_vaga ?? null,
     ativo: ativo !== undefined ? !!ativo : true,
     criado_em: new Date().toISOString(),
+    tenant_id: (req as any).tenantSlug ?? null,
   };
 
   db.moradores.push(novoMorador);
@@ -95,14 +96,15 @@ moradoresRouter.post("", (req, res) => {
       tipo_vinculo: "proprietario",
       titulo: novoMorador.nome_completo,
       criado_em: new Date().toISOString(),
+      tenant_id: (req as any).tenantSlug ?? null,
     });
   }
 
-  db.save();
+  await db.save();
   return res.status(201).json(novoMorador);
 });
 
-moradoresRouter.put("/:id", (req, res) => {
+moradoresRouter.put("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const morador = db.moradores.find((m) => m.id === id);
   if (!morador) {
@@ -118,20 +120,30 @@ moradoresRouter.put("/:id", (req, res) => {
     }
   }
 
-  const hasContato = (morador.whatsapp && morador.whatsapp.trim()) || (morador.telegram && morador.telegram.trim()) || (morador.telefone && morador.telefone.trim());
+  // VALIDAÇÃO USANDO OS NOVOS VALORES ENVIADOS NO BODY, NÃO OS VALORES ANTIGOS DO BANCO
+  const novoTelefone = req.body.telefone ?? morador.telefone;
+  const novoWhatsapp = req.body.whatsapp ?? morador.whatsapp;
+  const novoTelegram = req.body.telegram ?? morador.telegram;
+  const novoBloco = req.body.bloco ?? morador.bloco;
+  const novoApartamento = req.body.apartamento ?? morador.apartamento;
+
+  const hasContato = (String(novoWhatsapp ?? "").trim()) || (String(novoTelegram ?? "").trim()) || (String(novoTelefone ?? "").trim());
   if (!hasContato) {
     return res.status(422).json({ detail: "É obrigatório informar WhatsApp, Telegram ou telefone de contato do morador" });
   }
 
-  if (!morador.bloco || !String(morador.bloco).trim()) {
+  if (!String(novoBloco ?? "").trim()) {
     return res.status(422).json({ detail: "Bloco é obrigatório" });
   }
 
-  if (!morador.apartamento || !String(morador.apartamento).trim()) {
+  if (!String(novoApartamento ?? "").trim()) {
     return res.status(422).json({ detail: "Apartamento é obrigatório" });
   }
 
-  db.save();
+  // Garante isolamento multi-tenant na atualização
+  (morador as any).tenant_id = (req as any).tenantSlug ?? morador.tenant_id ?? null;
+
+  await db.save();
   return res.json(morador);
 });
 

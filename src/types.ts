@@ -27,6 +27,7 @@ export interface Morador {
   numero_vaga: string | null;
   ativo: boolean;
   criado_em: string;
+  tenant_id?: string | null;
 }
 
 export interface Veiculo {
@@ -39,6 +40,7 @@ export interface Veiculo {
   tipo_vinculo: 'proprietario' | 'visitante' | 'especulativo';
   criado_em: string;
   titulo: string | null; // Nome do titular (proprietario) ou null
+  tenant_id?: string | null;
 }
 
 export interface Visitante {

@@ -57,7 +57,7 @@ ocorrenciasRouter.get("/:id", authMiddleware, requirePerfil("administrador", "po
   return res.json({ ...o, ...links });
 });
 
-ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
+ocorrenciasRouter.post(["", "/"], authMiddleware, async (req, res) => {
   const {
     titulo,
     categoria,
@@ -91,7 +91,7 @@ ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
   };
 
   db.ocorrencias.push(nova);
-  db.save();
+  await db.save();
 
   const morador = moradorPorUnidade(nova.bloco, nova.apartamento);
   const destino: DestinoNotificacao | null = morador
@@ -101,7 +101,7 @@ ocorrenciasRouter.post(["", "/"], authMiddleware, (req, res) => {
   return res.status(201).json({ ...nova, ...links });
 });
 
-ocorrenciasRouter.put("/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
+ocorrenciasRouter.put("/:id", authMiddleware, requirePerfil("administrador", "portaria"), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const o = db.ocorrencias.find((item) => item.id === id);
   if (!o) {
@@ -138,7 +138,7 @@ ocorrenciasRouter.put("/:id", authMiddleware, requirePerfil("administrador", "po
     }
   }
 
-  db.save();
+  await db.save();
 
   const morador = moradorPorUnidade(o.bloco, o.apartamento);
   const destino: DestinoNotificacao | null = morador
@@ -148,7 +148,7 @@ ocorrenciasRouter.put("/:id", authMiddleware, requirePerfil("administrador", "po
   return res.json({ ...o, ...links });
 });
 
-ocorrenciasRouter.delete("/:id", authMiddleware, requirePerfil("administrador", "portaria"), (req, res) => {
+ocorrenciasRouter.delete("/:id", authMiddleware, requirePerfil("administrador", "portaria"), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.ocorrencias.findIndex((item) => item.id === id);
   if (idx === -1) {
@@ -156,7 +156,7 @@ ocorrenciasRouter.delete("/:id", authMiddleware, requirePerfil("administrador", 
   }
 
   db.ocorrencias.splice(idx, 1);
-  db.save();
+  await db.save();
   return res.status(204).send();
 });
 
@@ -170,7 +170,7 @@ restricoesRouter.get(["", "/"], (_req, res) => {
   return res.json(ativas);
 });
 
-restricoesRouter.post(["", "/"], (req, res) => {
+restricoesRouter.post(["", "/"], authMiddleware, async (req, res) => {
   const { tipo_identificador, valor_identificador, nome_pessoa, motivo, instrucao_portaria, bloqueio_total } = req.body;
 
   if (!tipo_identificador || !valor_identificador || !motivo || !instrucao_portaria) {
@@ -193,11 +193,11 @@ restricoesRouter.post(["", "/"], (req, res) => {
   };
 
   db.restricoes.push(nova);
-  db.save();
+  await db.save();
   return res.status(201).json(nova);
 });
 
-restricoesRouter.delete("/:id", (req, res) => {
+restricoesRouter.delete("/:id", authMiddleware, requirePerfil("administrador", "portaria"), async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const r = db.restricoes.find((item) => item.id === id);
   if (!r) {
@@ -205,7 +205,7 @@ restricoesRouter.delete("/:id", (req, res) => {
   }
 
   r.ativo = false;
-  db.save();
+  await db.save();
   return res.status(204).send();
 });
 

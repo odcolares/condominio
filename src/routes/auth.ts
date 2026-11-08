@@ -42,7 +42,7 @@ authRouter.get("/me", authMiddleware, (req: AuthenticatedRequest, res: Response)
   return res.json(safeUser);
 });
 
-authRouter.put("/me/foto", authMiddleware, (req: AuthenticatedRequest, res: Response) => {
+authRouter.put("/me/foto", authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ detail: "Não autenticado" });
   }
@@ -58,12 +58,12 @@ authRouter.put("/me/foto", authMiddleware, (req: AuthenticatedRequest, res: Resp
   if (originalUser) {
     originalUser.foto_url = req.user.foto_url;
   }
-  db.save();
+  await db.save();
   const { senha_hash, ...safeUser } = req.user;
   return res.json(safeUser);
 });
 
-authRouter.put("/me", authMiddleware, (req: AuthenticatedRequest, res: Response) => {
+authRouter.put("/me", authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({ detail: "Não autenticado" });
   }
@@ -94,7 +94,7 @@ authRouter.put("/me", authMiddleware, (req: AuthenticatedRequest, res: Response)
     usuario.foto_url = foto_url === "" ? null : foto_url;
   }
 
-  db.save();
+  await db.save();
 
   const newToken = createToken(usuario.email);
   const { senha_hash, ...safeUser } = usuario;
@@ -117,7 +117,7 @@ authRouter.get("/usuarios", authMiddleware, adminMiddleware, (req: Authenticated
   return res.json(lista);
 });
 
-authRouter.post("/usuarios", authMiddleware, adminMiddleware, (req: AuthenticatedRequest, res: Response) => {
+authRouter.post("/usuarios", authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const { nome, email, senha, perfil, ativo } = req.body;
   if (!nome || !email || !senha || !perfil) {
     return res.status(422).json({ detail: "Preencha todos os campos obrigatórios (nome, email, senha, perfil)" });
@@ -141,13 +141,13 @@ authRouter.post("/usuarios", authMiddleware, adminMiddleware, (req: Authenticate
   };
 
   db.usuarios.push(novoUsuario);
-  db.save();
+  await db.save();
 
   const { senha_hash, ...safe } = novoUsuario;
   return res.status(201).json(safe);
 });
 
-authRouter.put("/usuarios/:id", authMiddleware, adminMiddleware, (req: AuthenticatedRequest, res: Response) => {
+authRouter.put("/usuarios/:id", authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const id = parseInt(req.params.id, 10);
   const usuario = db.usuarios.find((u) => u.id === id);
   if (!usuario) {
@@ -181,13 +181,13 @@ authRouter.put("/usuarios/:id", authMiddleware, adminMiddleware, (req: Authentic
     usuario.ativo = Boolean(ativo);
   }
 
-  db.save();
+  await db.save();
 
   const { senha_hash, ...safe } = usuario;
   return res.json(safe);
 });
 
-authRouter.delete("/usuarios/:id", authMiddleware, adminMiddleware, (req: AuthenticatedRequest, res: Response) => {
+authRouter.delete("/usuarios/:id", authMiddleware, adminMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   const id = parseInt(req.params.id, 10);
   if (req.user!.id === id) {
     return res.status(400).json({ detail: "Você não pode excluir sua própria conta logada" });
@@ -199,7 +199,7 @@ authRouter.delete("/usuarios/:id", authMiddleware, adminMiddleware, (req: Authen
   }
 
   db.usuarios.splice(index, 1);
-  db.save();
+  await db.save();
 
   return res.json({ detail: "Usuário excluído com sucesso" });
 });

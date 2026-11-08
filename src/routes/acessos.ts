@@ -23,7 +23,7 @@ function resolverNome(tipo: TipoPessoa, pessoaId: number): string {
   return "";
 }
 
-acessosRouter.post("", (req, res) => {
+acessosRouter.post("", async (req, res) => {
   const { tipo_pessoa, pessoa_id, sentido, placa_veiculo, vaga, observacao } = req.body;
 
   if (!tipo_pessoa || !pessoa_id || !sentido) {
@@ -65,7 +65,7 @@ acessosRouter.post("", (req, res) => {
     }
   }
 
-  db.save();
+  await db.save();
   return res.status(201).json(acesso);
 });
 

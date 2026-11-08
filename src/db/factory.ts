@@ -4,7 +4,7 @@ import { PostgresDB } from "./PostgresDB.ts";
 
 export function createDatabase(): IDatabase {
   const type = (process.env.DB_TYPE || "json").toLowerCase();
-  if (type === "postgres") {
+  if (type === "postgres" || type === "pg") {
     return new PostgresDB();
   }
   return new InMemoryDB();

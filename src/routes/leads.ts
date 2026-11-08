@@ -41,7 +41,7 @@ leadsRouter.get("/:id", authMiddleware, requirePerfil("administrador"), (req: Au
   return res.json(lead);
 });
 
-leadsRouter.post("", (req, res) => {
+leadsRouter.post("", async (req, res) => {
   const {
     nome,
     email,
@@ -84,7 +84,7 @@ leadsRouter.post("", (req, res) => {
   };
 
   db.leads.push(novoLead);
-  db.save();
+  await db.save();
 
   return res.status(201).json({
     ...novoLead,
@@ -92,7 +92,7 @@ leadsRouter.post("", (req, res) => {
   });
 });
 
-leadsRouter.put("/:id", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
+leadsRouter.put("/:id", authMiddleware, requirePerfil("administrador"), async (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const lead = db.leads.find((l) => l.id === id);
   if (!lead) {
@@ -124,12 +124,12 @@ leadsRouter.put("/:id", authMiddleware, requirePerfil("administrador"), (req: Au
   }
 
   lead.atualizado_em = new Date().toISOString();
-  db.save();
+  await db.save();
 
   return res.json(lead);
 });
 
-leadsRouter.delete("/:id", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
+leadsRouter.delete("/:id", authMiddleware, requirePerfil("administrador"), async (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.leads.findIndex((l) => l.id === id);
   if (idx === -1) {
@@ -137,6 +137,6 @@ leadsRouter.delete("/:id", authMiddleware, requirePerfil("administrador"), (req:
   }
 
   db.leads.splice(idx, 1);
-  db.save();
+  await db.save();
   return res.status(204).send();
 });

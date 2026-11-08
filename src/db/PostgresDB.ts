@@ -441,10 +441,8 @@ export class PostgresDB extends BaseDB {
     this.rebaseIds();
   }
 
-  save(): void {
-    this.flush().catch((err) => {
-      console.error("Erro ao persistir no Postgres:", err);
-    });
+  async save(): Promise<void> {
+    await this.flush();
   }
 
   private async flush() {
