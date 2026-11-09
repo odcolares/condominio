@@ -1,15 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll } from "vitest";
 import request from "supertest";
 import { app } from "../../server.js";
 import { __resetDb } from "../db.js";
 
 describe("Leads CRUD Integration Tests (Local - DB Type: json)", () => {
-  beforeEach(() => {
-    __resetDb();
-  });
-
   let token: string;
-  let leadId: number;
 
   beforeAll(async () => {
     // Obter token de admin para endpoints protegidos
@@ -18,6 +13,12 @@ describe("Leads CRUD Integration Tests (Local - DB Type: json)", () => {
       .send({ email: "adm@adm.com", senha: "123" });
     token = loginRes.body.access_token;
   });
+
+  beforeEach(() => {
+    __resetDb();
+  });
+
+  let leadId: number;
 
   it("POST /leads - CREATE um novo lead", async () => {
     const res = await request(app)
