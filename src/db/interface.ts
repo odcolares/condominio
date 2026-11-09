@@ -66,5 +66,10 @@ export interface IDatabase {
   getNextLeadId(): number;
 
   save(): void;
+  saveComAuditoria(
+    usuarioId?: number,
+    usuarioEmail?: string,
+    dadosAntes?: Record<string, any>
+  ): Promise<void>;
   __resetDb(): void;
 }

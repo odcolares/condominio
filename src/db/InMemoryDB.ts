@@ -115,4 +115,15 @@ export class InMemoryDB extends BaseDB {
       console.error("Erro ao persistir banco em disco:", err);
     }
   }
+
+  async saveComAuditoria(
+    usuarioId?: number,
+    usuarioEmail?: string,
+    dadosAntes?: Record<string, any>
+  ): Promise<void> {
+    // Em modo JSON (InMemoryDB), não há banco real para auditoria.
+    // O método existe para satisfazer a interface IDatabase,
+    // mas não grava logs na tabela logs_auditoria.
+    console.info("Auditoria: modo InMemoryDB - log não gravado em banco real");
+  }
 }

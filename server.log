@@ -33,3 +33,5 @@ Erro no servidor capturado: SyntaxError: Expected property name or '}' in JSON a
   body: '{email:adm@adm.com,senha:123}',
   type: 'entity.parse.failed'
 }
+
+C:\Users\Usu rio\Documents\Condominio>

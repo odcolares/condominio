@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware, requirePerfil, tenantMiddleware } from "../auth.js";
+import { authMiddleware, requirePerfil, tenantMiddleware, AuthenticatedRequest } from "../auth.js";
 import { Morador } from "../types.js";
+
+// Tipo para dados antes/ depois da auditoria
+type DadosAuditoria = {
+  antes?: Record<string, any>;
+  depois?: Record<string, any>;
+};
 
 export const moradoresRouter = Router();
 moradoresRouter.use(authMiddleware, tenantMiddleware, requirePerfil("administrador", "portaria"));
@@ -40,7 +46,7 @@ moradoresRouter.get("/:id", (req, res) => {
   return res.json(morador);
 });
 
-moradoresRouter.post("", async (req, res) => {
+moradoresRouter.post("", authMiddleware, async (req: AuthenticatedRequest, res) => {
   const { nome_completo, cpf, telefone, whatsapp, telegram, bloco, apartamento, vinculo, foto_url, numero_vaga, ativo } = req.body;
 
   if (!nome_completo || !cpf) {
@@ -64,6 +70,13 @@ moradoresRouter.post("", async (req, res) => {
   if (existing) {
     return res.status(409).json({ detail: "Já existe morador com esse CPF" });
   }
+
+  // Capturar estado anterior (antes do INSERT) para auditoria
+  const moradorAntes: Record<string, any> = {
+    id: null, // Novo registro, não há anterior
+    cpf: String(cpf).trim(),
+    nome_completo: String(nome_completo).trim(),
+  };
 
   const novoMorador: Morador = {
     id: db.getNextMoradorId(),
@@ -100,11 +113,16 @@ moradoresRouter.post("", async (req, res) => {
     });
   }
 
-  await db.save();
+  // Obter user do contexto de autenticação
+  const userId = req.user?.id;
+  const userEmail = req.user?.email;
+
+  await db.saveComAuditoria(userId, userEmail, { moradores: { [novoMorador.id]: moradorAntes } });
+
   return res.status(201).json(novoMorador);
 });
 
-moradoresRouter.put("/:id", async (req, res) => {
+moradoresRouter.put("/:id", authMiddleware, async (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const morador = db.moradores.find((m) => m.id === id);
   if (!morador) {
@@ -143,21 +161,37 @@ moradoresRouter.put("/:id", async (req, res) => {
   // Garante isolamento multi-tenant na atualização
   (morador as any).tenant_id = (req as any).tenantSlug ?? morador.tenant_id ?? null;
 
-  await db.save();
+  // Capturar estado anterior (antes do UPDATE) para auditoria
+  const moradorAntes: Record<string, any> = { ...morador };
+
+  await db.saveComAuditoria(
+    req.user?.id,
+    req.user?.email,
+    { moradores: { [id]: moradorAntes } }
+  );
+
   return res.json(morador);
 });
 
-moradoresRouter.delete("/:id", (req, res) => {
+moradoresRouter.delete("/:id", authMiddleware, async (req: AuthenticatedRequest, res) => {
   const id = parseInt(req.params.id, 10);
   const idx = db.moradores.findIndex((m) => m.id === id);
   if (idx === -1) {
     return res.status(404).json({ detail: "Morador não encontrado" });
   }
 
-  db.moradores.splice(idx, 1);
+  // Capturar estado anterior (o morador que será deletado) para auditoria
+  const moradorDeletado = db.moradores[idx];
+  const moradorAntes: Record<string, any> = { ...moradorDeletado };
+
   // Remove linked veiculos
   db.veiculos = db.veiculos.filter((v) => v.morador_id !== id);
 
-  db.save();
+  // Obter user do contexto de autenticação
+  const userId = req.user?.id;
+  const userEmail = req.user?.email;
+
+  await db.saveComAuditoria(userId, userEmail, { moradores: { [id]: moradorAntes } });
+
   return res.status(204).send();
 });

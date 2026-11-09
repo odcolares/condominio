@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { db } from "../db.js";
-import { authMiddleware, requirePerfil } from "../auth.js";
+import { authMiddleware, requirePerfil, AuthenticatedRequest } from "../auth.js";
 import { Acesso, TipoPessoa, SentidoAcesso } from "../types.js";
 import { emparelharAcessos } from "../lib/duracao.js";
+
+// Tipo para dados antes/ depois da auditoria
+type DadosAuditoria = {
+  antes?: Record<string, any>;
+  depois?: Record<string, any>;
+};
 
 export const acessosRouter = Router();
 acessosRouter.use(authMiddleware, requirePerfil("administrador", "portaria"));
@@ -23,7 +29,7 @@ function resolverNome(tipo: TipoPessoa, pessoaId: number): string {
   return "";
 }
 
-acessosRouter.post("", async (req, res) => {
+acessosRouter.post("", authMiddleware, async (req: AuthenticatedRequest, res) => {
   const { tipo_pessoa, pessoa_id, sentido, placa_veiculo, vaga, observacao } = req.body;
 
   if (!tipo_pessoa || !pessoa_id || !sentido) {
@@ -47,6 +53,15 @@ acessosRouter.post("", async (req, res) => {
     registrado_em: new Date().toISOString(),
   };
 
+  // Capturar estado anterior (antes do INSERT) para auditoria
+  const acessoAntes: Record<string, any> = {
+    id: null, // Novo registro
+    tipo_pessoa,
+    pessoa_id,
+    nome,
+    sentido,
+  };
+
   db.acessos.push(acesso);
 
   // Atualiza presença do visitante
@@ -65,7 +80,11 @@ acessosRouter.post("", async (req, res) => {
     }
   }
 
-  await db.save();
+  await db.saveComAuditoria(
+    req.user?.id,
+    req.user?.email,
+    { acessos: { [acesso.id]: acessoAntes } }
+  );
   return res.status(201).json(acesso);
 });
 

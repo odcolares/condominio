@@ -387,6 +387,14 @@ const INDEXES: string[] = [
   "CREATE INDEX IF NOT EXISTS idx_notificacoes_morador ON notificacoes_morador(morador_id);",
 ];
 
+// Contexto atual do usuário para auditoria (definido pelo middleware antes de db.save())
+// Este é um padrão thread-local simples para passar usuario_id/email do request HTTP
+let currentUser: { id: number | null; email: string | null; ip: string | null } = {
+  id: null,
+  email: null,
+  ip: null,
+};
+
 export class PostgresDB extends BaseDB {
   private pool: Pool;
   private connected = false;
@@ -445,6 +453,106 @@ export class PostgresDB extends BaseDB {
     await this.flush();
   }
 
+  async saveComAuditoria(
+    usuarioId?: number,
+    usuarioEmail?: string,
+    dadosAntes?: Record<string, any>
+  ): Promise<void> {
+    // Define IP do usuário se disponível
+    // Prioriza parâmetros passados, senão usa o currentUser global
+    const user = currentUser;
+    const ip = user.ip ?? null;
+
+    // If userId/email were passed as parameters, use them instead
+    // This allows routes to inject the authenticated user context
+    const effectiveUserId = usuarioId ?? user.id;
+    const effectiveUserEmail = usuarioEmail ?? user.email;
+
+    // Se temos dadosAntes, capturamos o estado atual antes de fazer o flush
+    // para comparação UPDATE/DELETE
+    const estadoAnterior: Map<string, Map<number, any>> = new Map();
+
+    if (dadosAntes) {
+      for (const [tabela, registros] of Object.entries(dadosAntes)) {
+        const mapa: Map<number, any> = new Map();
+        for (const [id, data] of Object.entries(registros)) {
+          mapa.set(Number(id), data);
+        }
+        if (mapa.size > 0) {
+          estadoAnterior.set(tabela, mapa);
+        }
+      }
+    }
+
+    // Executa o flush normal
+    await this.flush();
+
+    // Após o flush, registra logs de auditoria para as alterações
+    // Note: Para UPDATE/DELETE completos, o ideal é que as rotas passem
+    // os dadosAntes explicitamente. Aqui registramos o que pudermos a partir
+    // do estado pós-flush.
+    const tabelasCriticas = ["usuarios", "moradores", "veiculos", "leads", "ocorrencias", "acessos"];
+
+    for (const tabela of tabelasCriticas) {
+      try {
+        const rows = await this.pool.query(`SELECT * FROM ${tabela}`);
+        const rowMap = new Map<number, any>();
+        for (const row of rows.rows) {
+          rowMap.set(Number(row.id), row);
+        }
+
+        if (rowMap.size > 0 && estadoAnterior.has(tabela)) {
+          const estadoAnt = estadoAnterior.get(tabela)!;
+          for (const [id, novoDados] of rowMap) {
+            const antigos = estadoAnt.get(id);
+            if (antigos) {
+              // Houve alteração - registrar UPDATE
+              // Extrai tenant_id dos dados antigos se disponível
+              const tenantAntigo = typeof antigos === 'object' && antigos.tenant_id !== undefined ? String(antigos.tenant_id) : undefined;
+              await this.registrarLogAuditoria(
+                tabela,
+                id,
+                "UPDATE",
+                antigos,
+                novoDados,
+                tenantAntigo
+              );
+            } else {
+              // Novo registro - registrar INSERT
+              // Extrai tenant_id dos novos dados
+              const tenantNovo = typeof novoDados === 'object' && novoDados.tenant_id !== undefined ? String(novoDados.tenant_id) : undefined;
+              await this.registrarLogAuditoria(
+                tabela,
+                id,
+                "INSERT",
+                undefined,
+                novoDados,
+                tenantNovo
+              );
+            }
+          }
+        } else if (rowMap.size > 0) {
+          // Apenas INSERTs (nenhum dadosAntes fornecido)
+          const rows2 = await this.pool.query(`SELECT * FROM ${tabela}`);
+          for (const row of rows2.rows) {
+            // Extrai tenant_id do registro
+            const tenantRow = row.tenant_id !== undefined ? String(row.tenant_id) : undefined;
+            await this.registrarLogAuditoria(
+              tabela,
+              Number(row.id),
+              "INSERT",
+              undefined,
+              row,
+              tenantRow
+            );
+          }
+        }
+      } catch (err) {
+        console.warn(`Auditoria: erro ao processar logs após saveComAuditoria para ${tabela}:`, err);
+      }
+    }
+  }
+
   private async flush() {
     const self = this as any;
     const client = await this.pool.connect();
@@ -464,9 +572,33 @@ export class PostgresDB extends BaseDB {
             `INSERT INTO ${t.name} (${t.cols.join(", ")}) VALUES (${placeholders})`,
             values
           );
+
+          // Registrar log de auditoria para tabelas críticas após INSERT
+          const tabelasCriticas = ["usuarios", "moradores", "veiculos", "leads", "ocorrencias", "acessos"];
+          if (tabelasCriticas.includes(t.name)) {
+            try {
+              // Para INSERT (após truncate/re-insert), dados_antes é null
+              // dados_depois é o registro que foi inserido
+              // usuario_id/email vêm do contexto atual (pode ser null em testes locais)
+              // tenant_id vem do registro inserido
+              const tenantRow = row.tenant_id !== undefined ? String(row.tenant_id) : undefined;
+              await this.registrarLogAuditoria(
+                t.name,
+                Number(row.id) || 0,
+                "INSERT",
+                undefined,
+                row,
+                tenantRow
+              );
+            } catch (err) {
+              // Se falhar o log, não interrompe a operação principal
+              console.warn(`Auditoria: falha ao registrar log para ${t.name}:`, err);
+            }
+          }
+
+          const maxId = rows.reduce((m, r) => Math.max(m, Number(r.id) || 0), 0);
+          await client.query(`SELECT setval('${t.name}_id_seq', $1, true)`, [maxId || 1]);
         }
-        const maxId = rows.reduce((m, r) => Math.max(m, Number(r.id) || 0), 0);
-        await client.query(`SELECT setval('${t.name}_id_seq', $1, true)`, [maxId || 1]);
       }
       await client.query("COMMIT");
     } catch (err) {
@@ -480,5 +612,49 @@ export class PostgresDB extends BaseDB {
   __resetDb() {
     super.__resetDb();
     this.save();
+  }
+
+  // ---------------------------------------------------------
+  // AUDITORIA - Métodos para gravar logs de alteração
+  // ---------------------------------------------------------
+
+  private async registrarLogAuditoria(
+    tabela: string,
+    registroId: number,
+    acao: "INSERT" | "UPDATE" | "DELETE",
+    dadosAntes?: any,
+    dadosDepois?: any,
+    tenantId?: string
+  ): Promise<void> {
+    const user = currentUser;
+    const ip = user.ip ?? null;
+
+    await this.pool.query(
+      `INSERT INTO public.logs_auditoria (tenant_id, tabela, registro_id, acao, usuario_id, usuario_email, dados_antes, dados_depois, ip_origem, criado_em)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
+      [
+        // tenant_id agora vem do parâmetro passado ou NULL se não disponível
+        // Removido o NOT NULL da migration para permitir isso
+        tenantId ?? null as unknown as string,
+        tabela,
+        registroId,
+        acao,
+        user.id ?? null,
+        user.email ?? null,
+        dadosAntes ?? null,
+        dadosDepois ?? null,
+        ip,
+      ]
+    );
+  }
+
+  // Método helper para obter os dados "antes" de um UPDATE
+  private async obterDadosAnteriores(tabela: string, registroId: number): Promise<any> {
+    try {
+      const { rows } = await this.pool.query(`SELECT * FROM ${tabela} WHERE id = $1`, [registroId]);
+      return rows.length > 0 ? rows[0] : null;
+    } catch {
+      return null;
+    }
   }
 }

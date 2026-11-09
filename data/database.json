@@ -7,8 +7,8 @@
       "senha_hash": "123",
       "perfil": "administrador",
       "ativo": true,
-      "criado_em": "2026-11-03T15:42:22.134Z",
-      "foto_url": "https://exemplo.com/foto-admin.jpg"
+      "criado_em": "2026-11-09T20:25:46.363Z",
+      "foto_url": null
     },
     {
       "id": 2,
@@ -17,7 +17,7 @@
       "senha_hash": "123",
       "perfil": "portaria",
       "ativo": true,
-      "criado_em": "2026-11-03T15:42:22.134Z",
+      "criado_em": "2026-11-09T20:25:46.363Z",
       "foto_url": null
     },
     {
@@ -27,7 +27,7 @@
       "senha_hash": "123",
       "perfil": "morador",
       "ativo": true,
-      "criado_em": "2026-11-03T15:42:22.134Z",
+      "criado_em": "2026-11-09T20:25:46.363Z",
       "foto_url": null
     },
     {
@@ -37,7 +37,7 @@
       "senha_hash": "123",
       "perfil": "sindico",
       "ativo": true,
-      "criado_em": "2026-11-03T15:42:22.134Z",
+      "criado_em": "2026-11-09T20:25:46.363Z",
       "foto_url": null
     }
   ],
@@ -1676,6 +1676,24 @@
     }
   ],
   "visitantes": [
+    {
+      "id": 21,
+      "nome": "Visitante Acesso",
+      "documento": "111222333",
+      "tipo_documento": "RG",
+      "telefone": "11777777777",
+      "foto_url": null,
+      "placa_veiculo": null,
+      "vaga": null,
+      "bloco": null,
+      "apartamento": null,
+      "morador_visitado_id": null,
+      "agendado_para": null,
+      "presente": false,
+      "nome_visitante": "Visitante Acesso",
+      "documento_visitante": "111222333",
+      "criado_em": "2026-11-09T20:25:46.369Z"
+    },
     {
       "id": 1,
       "nome": "Cristovao Rezende",
@@ -4480,18 +4498,19 @@
       "status": "novo",
       "origem": "landing-page",
       "observacao": "Interessado em controle de visitantes e encomendas",
-      "criado_em": "2026-11-03T15:42:22.134Z",
-      "atualizado_em": "2026-11-03T15:42:22.134Z"
+      "consentimento_lgpd": false,
+      "criado_em": "2026-11-09T20:25:46.363Z",
+      "atualizado_em": "2026-11-09T20:25:46.363Z"
     }
   ],
   "nextUserId": 5,
   "nextMoradorId": 51,
   "nextVeiculoId": 81,
-  "nextVisitanteId": 21,
+  "nextVisitanteId": 22,
   "nextAcessoId": 101,
   "nextEncomendaId": 16,
   "nextPrestadorId": 6,
-  "nextOcorrenciaId": 10,
+  "nextOcorrenciaId": 9,
   "nextRestricaoId": 6,
   "nextReservaId": 13,
   "nextComunicadoId": 7,

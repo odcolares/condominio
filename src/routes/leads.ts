@@ -3,6 +3,12 @@ import { db } from "../db.js";
 import { authMiddleware, requirePerfil, AuthenticatedRequest } from "../auth.js";
 import { Lead } from "../types.js";
 
+// Tipo para dados antes/ depois da auditoria
+type DadosAuditoria = {
+  antes?: Record<string, any>;
+  depois?: Record<string, any>;
+};
+
 export const leadsRouter = Router();
 
 leadsRouter.get("", authMiddleware, requirePerfil("administrador"), (req: AuthenticatedRequest, res) => {
@@ -41,7 +47,7 @@ leadsRouter.get("/:id", authMiddleware, requirePerfil("administrador"), (req: Au
   return res.json(lead);
 });
 
-leadsRouter.post("", async (req, res) => {
+leadsRouter.post("", authMiddleware, async (req: AuthenticatedRequest, res) => {
   const {
     nome,
     email,
@@ -73,6 +79,13 @@ leadsRouter.post("", async (req, res) => {
     return res.status(422).json({ detail: "Consentimento LGPD é obrigatório para captura de lead." });
   }
 
+  // Capturar estado anterior (antes do INSERT) para auditoria
+  const leadAntes: Record<string, any> = {
+    id: db.leads.findIndex((l) => l.email === emailTrim) !== -1 ? db.leads.find((l) => l.email === emailTrim)?.id : null,
+    email: emailTrim,
+    nome: String(nome).trim(),
+  };
+
   const now = new Date().toISOString();
   const novoLead: Lead = {
     id: db.getNextLeadId(),
@@ -91,7 +104,12 @@ leadsRouter.post("", async (req, res) => {
   };
 
   db.leads.push(novoLead);
-  await db.save();
+
+  // Obter user do contexto de autenticação
+  const userId = req.user?.id;
+  const userEmail = req.user?.email;
+
+  await db.saveComAuditoria(userId, userEmail, { leads: { [novoLead.id]: leadAntes } });
 
   return res.status(201).json({
     ...novoLead,
